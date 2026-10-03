@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Loan Approvals & Credit Decision Engine">
+  <title>Loan Approvals - GG BANK Admin</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar admin-sidebar" id="adminSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="topbar"></header>
+
+      <main class="content-area">
+        <div class="page-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              Admin Portal &bull; Credit Management
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-hand-holding-dollar"></i> Loan <span>Approvals & Credit Hub</span></h2>
+            <p class="page-description">Underwrite loan requests, evaluate credit risk, and execute instant fund disbursement.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="exportLoansCsv()">
+              <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+            <button class="btn btn-secondary" onclick="handleClearAllLoans()" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.35);">
+              <i class="fa-solid fa-trash-can"></i> Clear All Loans
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="filter-toolbar" style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <div class="search-box" style="flex: 1; min-width: 280px;">
+              <input type="text" class="form-control" id="loanSearchInput" placeholder="🔍 Search Loan ID, applicant account number, purpose...">
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select id="loanStatusFilter" class="form-control" style="width: 170px;">
+                <option value="ALL">All Statuses</option>
+                <option value="PENDING" selected>Pending Review</option>
+                <option value="APPROVED">Approved / Active</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loan Review Grid / Table -->
+        <div id="adminLoansContainer" class="loan-review-grid">
+          <!-- Dynamic Loan Cards -->
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Loan View Details Modal -->
+  <div class="modal-backdrop" id="loanDetailsModal">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-contract" style="color: var(--warning);"></i> Loan Application Dossier</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('loanDetailsModal').classList.remove('active')">&times;</button>
+      </div>
+      <div id="loanModalBody" style="padding: 16px 0; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('loanDetailsModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loan Supporting Document Viewer Modal (Cloudinary Document) -->
+  <div class="modal-backdrop" id="loanDocViewerModal">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> Loan Supporting Document</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('loanDocViewerModal').classList.remove('active')">&times;</button>
+      </div>
+      <div id="loanDocViewerHeader" style="background: var(--bg-surface); padding: 12px 16px; border-radius: var(--radius-md); margin-top: 10px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--accent-cyan);">
+        <div>
+          <div>Applicant: <strong id="loanDocApplicantName" style="color: #fff;">Customer</strong></div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);" id="loanDocRefId">LOAN ID: --</div>
+        </div>
+        <div style="text-align: right;">
+          <span class="badge badge-info" id="loanDocTypeBadge">Salary Slip / Proof</span>
+        </div>
+      </div>
+      <div id="loanDocViewerBody" style="text-align: center; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 16px; margin: 16px 0; border: 1px solid var(--border-color-subtle);">
+        <!-- Dynamic Image / Document Preview -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <a href="#" id="loanDocDownloadLink" target="_blank" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open in New Tab</a>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('loanDocViewerModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loan Approval & Officer Assignment Modal -->
+  <div class="modal-backdrop" id="loanApprovalModal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-stamp" style="color: var(--success);"></i> Loan Approval & Officer Assignment</h3>
+        <button class="modal-close-btn" onclick="closeLoanApprovalModal()">&times;</button>
+      </div>
+      <form id="loanApprovalForm" onsubmit="submitLoanApproval(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+        <input type="hidden" id="approveLoanId">
+        
+        <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border-left: 3px solid var(--accent-cyan);">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Application Reference</div>
+          <div style="font-size: 1.1rem; font-weight: 800; color: #fff; font-family: var(--font-mono); margin-top: 2px;" id="approveLoanRef">LOAN-123456</div>
+          <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.85rem;">
+            <span>Requested Principal: <strong id="approveLoanAmount" style="color: var(--success);">₹1,00,000</strong></span>
+            <span>Account: <strong id="approveLoanAccount" style="font-family: var(--font-mono);">10018849201</strong></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="assignLoanOfficerSelect">
+            <i class="fa-solid fa-user-tie" style="color: var(--accent-cyan);"></i> Assign Dedicated Loan Officer
+          </label>
+          <select id="assignLoanOfficerSelect" class="form-control" required>
+            <option value="off-001" data-name="Vikram Sharma" data-desig="Chief Credit Officer" selected>
+              Vikram Sharma &bull; Chief Credit Officer (Central Tech Branch)
+            </option>
+            <option value="off-002" data-name="Anita Roy" data-desig="Senior Personal Loan Underwriter">
+              Anita Roy &bull; Senior Personal Loan Underwriter (Central Tech Branch)
+            </option>
+            <option value="off-003" data-name="Priya Patel" data-desig="Lead Credit Compliance Officer">
+              Priya Patel &bull; Lead Credit Compliance Officer (Financial Tower Branch)
+            </option>
+            <option value="off-004" data-name="Karthik Rao" data-desig="Treasury Operations Manager">
+              Karthik Rao &bull; Treasury Operations Manager (Central Tech Branch)
+            </option>
+            <option value="off-005" data-name="Rajesh Kumar" data-desig="Branch Operations Supervisor">
+              Rajesh Kumar &bull; Branch Operations Supervisor (North Metro Branch)
+            </option>
+          </select>
+          <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px;">
+            The assigned officer will oversee underwriting, case surveillance, and repayment tracking.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="approveLoanRemarks">Officer Approval Remarks / Notes</label>
+          <input type="text" id="approveLoanRemarks" class="form-control" placeholder="e.g. Credit score verified. Approved under Standard Retail Policy." value="Approved by Senior Credit Officer. Credit risk verified.">
+        </div>
+
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--success);">
+          <i class="fa-solid fa-circle-check"></i> Funds will be atomically disbursed to the customer's account and the assigned officer will be linked.
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+          <button type="button" class="btn btn-secondary" onclick="closeLoanApprovalModal()">Cancel</button>
+          <button type="submit" class="btn btn-success" id="btnConfirmApprove"><i class="fa-solid fa-check-double"></i> Confirm Approval & Disburse</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reassign Loan Officer Modal -->
+  <div class="modal-backdrop" id="reassignOfficerModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-pen" style="color: var(--accent-cyan);"></i> Reassign Loan Officer</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('reassignOfficerModal').classList.remove('active')">&times;</button>
+      </div>
+      <form id="reassignOfficerForm" onsubmit="submitReassignOfficer(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+        <input type="hidden" id="reassignLoanId">
+        <div class="form-group">
+          <label class="form-label">Select Loan Officer</label>
+          <select id="reassignOfficerSelect" class="form-control" required>
+            <option value="off-001" data-name="Vikram Sharma" data-desig="Chief Credit Officer">Vikram Sharma &bull; Chief Credit Officer</option>
+            <option value="off-002" data-name="Anita Roy" data-desig="Senior Personal Loan Underwriter">Anita Roy &bull; Senior Personal Loan Underwriter</option>
+            <option value="off-003" data-name="Priya Patel" data-desig="Lead Credit Compliance Officer">Priya Patel &bull; Lead Credit Compliance Officer</option>
+            <option value="off-004" data-name="Karthik Rao" data-desig="Treasury Operations Manager">Karthik Rao &bull; Treasury Operations Manager</option>
+            <option value="off-005" data-name="Rajesh Kumar" data-desig="Branch Operations Supervisor">Rajesh Kumar &bull; Branch Operations Supervisor</option>
+          </select>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('reassignOfficerModal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Assignment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/admin-loans.js"></script>
+</body>
+</html>

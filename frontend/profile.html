@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Customer Profile Management & Document Verification">
+  <title>Customer Profile - GG BANK</title>
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
+
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
+
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="profile.html"><i class="fa-solid fa-user-gear"></i> <span>Profile</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">Customer Profile & KYC</div>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-user-gear"></i> Customer <span>Profile & KYC</span></h2>
+            <p class="page-description">Edit personal contact details and upload verified KYC proof documents. Edits are subject to verification and approval by Bank Operations Officers.</p>
+          </div>
+        </div>
+
+        <!-- Pending Officer Approval Alert Banner -->
+        <div class="card" id="pendingEditAlertBanner" style="display: none; background: rgba(245, 158, 11, 0.12); border-left: 4px solid var(--warning); padding: 18px 20px; margin-bottom: 24px;">
+          <div style="display: flex; gap: 14px; align-items: flex-start;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(245, 158, 11, 0.2); color: var(--warning); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+              <i class="fa-solid fa-user-clock"></i>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h4 style="color: #ffffff; margin: 0; font-size: 1.05rem;">Profile Update Request Pending Officer Review</h4>
+                <span class="badge badge-warning" style="font-size: 0.72rem;">UNDER REVIEW</span>
+              </div>
+              <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 6px 0 8px 0; line-height: 1.5;">
+                Your requested profile updates and attached verification proofs have been forwarded to the <strong>Bank Officer</strong> who manages account maintenance. Your current account details remain active until approved.
+              </p>
+              <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">
+                Request ID: <strong id="pendingReqIdText" style="color: var(--accent);">REQ-PROF-1002</strong> &bull; Submitted: <span id="pendingReqDateText">Just now</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Form Section -->
+        <form id="customerProfileForm">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+            
+            <!-- Left Column: Personal Information -->
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom: 16px;"><i class="fa-solid fa-id-card-clip"></i> Personal & Contact Information</h3>
+              
+              <div class="form-group">
+                <label class="form-label">Assigned 11-Digit Account Number</label>
+                <input type="text" id="profAccountNumber" class="form-control account-number-input" readonly style="opacity: 0.85; font-family: var(--font-mono); font-weight: 700; color: var(--accent);">
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">Permanent banking identifier (Cannot be altered).</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="profName">Full Name</label>
+                <input type="text" id="profName" class="form-control" required placeholder="Sarah Connor">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="profEmail">Email Address</label>
+                <input type="email" id="profEmail" class="form-control" required placeholder="sarah.connor@example.com">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="profPhone">Mobile Phone (+91)</label>
+                <input type="tel" id="profPhone" class="form-control" placeholder="+91 98401 23456" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="profDob">Date of Birth</label>
+                <input type="date" id="profDob" class="form-control" value="1992-06-15">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="profAddress">Residential Address</label>
+                <textarea id="profAddress" class="form-control" rows="3" placeholder="124 Brigade Road, Bengaluru, Karnataka 560025"></textarea>
+              </div>
+
+              <div style="margin-top: 10px; padding: 12px; background: var(--surface-secondary); border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; color: var(--text-secondary);">
+                <i class="fa-solid fa-circle-info" style="color: var(--accent);"></i> Note: Any edits to personal details will require verification by the Bank Operations Officer.
+              </div>
+            </div>
+
+            <!-- Right Column: Verification Proof Documents -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                  <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-file-shield" style="color: var(--accent);"></i> Verification Proof Documents</h3>
+                  <span class="badge badge-success" style="font-size: 0.72rem;">KYC Portal</span>
+                </div>
+
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+                  Upload or replace your supporting KYC proofs. You can drag & drop or click upload, and preview the uploaded document anytime.
+                </p>
+
+                <!-- Grid of 4 Proof Documents -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                  
+                  <!-- Proof 1: PAN Card -->
+                  <div class="card" style="padding: 14px; background: var(--surface-secondary); border: 1px dashed var(--border); border-radius: 10px;" id="profileDropzonePan">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <strong style="font-size: 0.85rem; color: #ffffff;"><i class="fa-solid fa-id-card" style="color: var(--accent);"></i> PAN Card</strong>
+                      <span class="badge" id="profBadgePan" style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.15); color: var(--success);">Uploaded</span>
+                    </div>
+                    <p style="font-size: 0.76rem; color: var(--text-secondary); margin: 0 0 10px 0;" id="profTextPan">PAN document attached</p>
+                    <div style="display: flex; gap: 6px;">
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('profInputPan').click()" style="flex: 1; font-size: 0.75rem; padding: 5px 8px;">
+                        <i class="fa-solid fa-upload"></i> Upload
+                      </button>
+                      <button type="button" class="btn btn-outline btn-sm" id="profBtnViewPan" onclick="viewProfileProofDocument('PAN Card', 'profDocPanData')" style="font-size: 0.75rem; padding: 5px 8px;">
+                        <i class="fa-solid fa-eye"></i> View
+                      </button>
+                    </div>
+                    <input type="file" id="profInputPan" accept="image/*,.pdf" style="display: none;" onchange="handleProfileDocUpload(event, 'Pan')">
+                    <input type="hidden" id="profDocPanData">
+                  </div>
+
+                  <!-- Proof 2: Aadhaar / ID Proof -->
+                  <div class="card" style="padding: 14px; background: var(--surface-secondary); border: 1px dashed var(--border); border-radius: 10px;" id="profileDropzoneAadhaar">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <strong style="font-size: 0.85rem; color: #ffffff;"><i class="fa-solid fa-fingerprint" style="color: #a855f7;"></i> Aadhaar / ID Proof</strong>
+                      <span class="badge" id="profBadgeAadhaar" style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.15); color: var(--success);">Uploaded</span>
+                    </div>
+                    <p style="font-size: 0.76rem; color: var(--text-secondary); margin: 0 0 10px 0;" id="profTextAadhaar">Aadhaar card attached</p>
+                    <div style="display: flex; gap: 6px;">
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('profInputAadhaar').click()" style="flex: 1; font-size: 0.75rem; padding: 5px 8px;">
+                        <i class="fa-solid fa-upload"></i> Upload
+                      </button>
+                      <button type="button" class="btn btn-outline btn-sm" id="profBtnViewAadhaar" onclick="viewProfileProofDocument('Aadhaar / ID Proof', 'profDocAadhaarData')" style="font-size: 0.75rem; padding: 5px 8px;">
+                        <i class="fa-solid fa-eye"></i> View
+                      </button>
+                    </div>
+                    <input type="file" id="profInputAadhaar" accept="image/*,.pdf" style="display: none;" onchange="handleProfileDocUpload(event, 'Aadhaar')">
+                    <input type="hidden" id="profDocAadhaarData">
+                  </div>
+
+                  <!-- Proof 3: Income Proof -->
+                  <div class="card" style="padding: 14px; background: var(--surface-secondary); border: 1px dashed var(--border); border-radius: 10px;" id="profileDropzoneIncome">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <strong style="font-size: 0.85rem; color: #ffffff;"><i class="fa-solid fa-file-invoice-dollar" style="color: var(--success);"></i> Income Proof</strong>
+                      <span class="badge" id="profBadgeIncome" style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.15); color: var(--success);">Uploaded</span>
+                    </div>
+                    <p style="font-size: 0.76rem; color: var(--text-secondary); margin: 0 0 10px 0;" id="profTextIncome">Salary Slip / ITR attached</p>
+                    <div style="display: flex; gap: 6px;">
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('profInputIncome').click()" style="flex: 1; font-size: 0.75rem; padding: 5px 8px;">
+                        <i class="fa-solid fa-upload"></i> Upload
+                      </button>
+                      <button type="button" class="btn btn-outline btn-sm" id="profBtnViewIncome" onclick="viewProfileProofDocument('Income Proof', 'profDocIncomeData')" style="font-size: 0.75rem; padding: 5px 8px;">
+                        <i class="fa-solid fa-eye"></i> View
+                      </button>
+                    </div>
+                    <input type="file" id="profInputIncome" accept="image/*,.pdf" style="display: none;" onchange="handleProfileDocUpload(event, 'Income')">
+                    <input type="hidden" id="profDocIncomeData">
+                  </div>
+
+                  <!-- Proof 4: Bank Statement -->
+                  <div class="card" style="padding: 14px; background: var(--surface-secondary); border: 1px dashed var(--border); border-radius: 10px;" id="profileDropzoneBankStatement">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <strong style="font-size: 0.85rem; color: #ffffff;"><i class="fa-solid fa-building-columns" style="color: #38bdf8;"></i> Bank Statement</strong>
+                      <span class="badge" id="profBadgeBankStatement" style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.15); color: var(--success);">Uploaded</span>
+                    </div>
+                    <p style="font-size: 0.76rem; color: var(--text-secondary); margin: 0 0 10px 0;" id="profTextBankStatement">Bank statement attached</p>
+                    <div style="display: flex; gap: 6px;">
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('profInputBankStatement').click()" style="flex: 1; font-size: 0.75rem; padding: 5px 8px;">
+                        <i class="fa-solid fa-upload"></i> Upload
+                      </button>
+                      <button type="button" class="btn btn-outline btn-sm" id="profBtnViewBankStatement" onclick="viewProfileProofDocument('Bank Statement', 'profDocBankStatementData')" style="font-size: 0.75rem; padding: 5px 8px;">
+                        <i class="fa-solid fa-eye"></i> View
+                      </button>
+                    </div>
+                    <input type="file" id="profInputBankStatement" accept="image/*,.pdf" style="display: none;" onchange="handleProfileDocUpload(event, 'BankStatement')">
+                    <input type="hidden" id="profDocBankStatementData">
+                  </div>
+
+                </div>
+
+                <div style="margin-top: 20px;">
+                  <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnSubmitProfileEdit">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Profile Edits for Officer Approval
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Security Card -->
+              <div class="card">
+                <h3 class="card-title" style="margin-bottom: 12px;"><i class="fa-solid fa-shield-halved"></i> Security Center</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+                  Configure Two-Factor OTP authentication, update your online banking password, and manage active login sessions.
+                </p>
+                <a href="security.html" class="btn btn-secondary btn-block">
+                  <i class="fa-solid fa-lock"></i> Open Security Dashboard
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </form>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Document Viewer & Preview Modal -->
+  <div class="modal-backdrop" id="profileDocViewerModal">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="profDocViewerTitle" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-file-lines" style="color: var(--accent);"></i> Document Preview
+        </h3>
+        <button class="modal-close" onclick="document.getElementById('profileDocViewerModal').classList.remove('active')">&times;</button>
+      </div>
+      <div id="profDocViewerBody" style="min-height: 260px; max-height: 480px; overflow-y: auto; background: var(--surface-secondary); border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; padding: 16px;">
+        <!-- Dynamic Document Preview -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+        <span style="font-size: 0.78rem; color: var(--text-secondary);" id="profDocViewerFilename">--</span>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('profileDocViewerModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cloudinary.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/profile.js"></script>
+
+</body>
+</html>

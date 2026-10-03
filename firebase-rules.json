@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Core Authentication & Authorization Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (request.auth.token.role == 'ADMIN' || request.auth.token.admin == true);
+    }
+
+    // Helper: Ensure sensitive user account attributes cannot be modified by customer
+    function notModifyingSensitiveUserFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'role', 'status', 'privilege', 'kycStatus', 'accountNumber', 'createdAt'
+      ]);
+    }
+
+    // Users Collection: Users read own doc; Profile updates restricted; Admins full access
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow update: if isAdmin() || (isOwner(userId) && notModifyingSensitiveUserFields());
+      allow delete: if isAdmin();
+    }
+
+    // Accounts Collection: Balance and status changes MUST go through Java Spring Boot backend
+    match /accounts/{accountId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAdmin(); // Direct client balance or status alterations strictly disallowed
+    }
+
+    // Transactions Collection: Strictly scoped to transaction owner / authorized parties & Admin
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.senderAccount == request.auth.token.accountNumber ||
+        resource.data.receiverAccount == request.auth.token.accountNumber ||
+        isAdmin()
+      );
+      allow write: if isAdmin(); // Atomic ledger writes restricted to privileged backend service
+    }
+
+    // Beneficiaries Collection: User-scoped CRUD strictly matching authenticated UID
+    match /beneficiaries/{beneficiaryId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Loans Collection: User can submit loan request for own UID; Admin approves / updates status
+    match /loans/{loanId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin(); // Status transitions (APPROVED/REJECTED/DISBURSED) restricted to Admin
+    }
+
+    // Budgets Collection: User-scoped financial planning
+    match /budgets/{budgetId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Notifications Collection: Users read own and mark read; Only backend/admin creates notifications
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || resource.data.userId == 'ALL' || isAdmin());
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAdmin(); // Arbitrary customers cannot forge notifications
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid || isAdmin();
+    }
+
+    // Bill Payments: User reads own records; writes executed via backend authorization
+    match /billPayments/{billId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Audit Logs: Strictly immutable security records; readable only by Admins; clients cannot forge
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin(); // Arbitrary clients cannot tamper with audit logs
+      allow update, delete: if false; // Immutable audit trail
+    }
+  }
+}

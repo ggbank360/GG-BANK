@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Account Created Successfully">
+  <title>Account Created Successfully - GG BANK</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- jsPDF Library for Download Details Certificate -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="auth-page">
+    <div class="auth-container">
+      
+      <!-- Brand Header -->
+      <div class="auth-brand-center">
+        <div class="logo-icon">GG</div>
+        <h1 class="brand-title" style="font-size: 2rem;">GG BANK</h1>
+        <p class="brand-subtitle">Smart Digital Banking System</p>
+      </div>
+
+      <!-- Mandatory Account Created Success Card -->
+      <div class="success-card">
+        
+        <!-- Animated Success Badge -->
+        <div class="success-icon-wrap">
+          <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h2 class="success-title">ACCOUNT CREATED SUCCESSFULLY!</h2>
+        <div class="success-subtitle">Welcome to GG BANK, <span id="createdCustomerNameDisplay">Customer</span></div>
+
+        <!-- 11-Digit Account Number Prominent Highlight Box -->
+        <div class="account-number-highlight-box">
+          <div class="acc-box-label">Your Unique 11-Digit Account Number</div>
+          
+          <div class="acc-box-number" id="createdAccountNumberDisplay">
+            12345678901
+          </div>
+
+          <!-- Account Meta Strip -->
+          <div class="acc-details-strip">
+            <div>
+              <span>Account Type:</span> <strong id="createdAccountTypeDisplay">SAVINGS</strong>
+            </div>
+            <div>
+              <span>Initial Balance:</span> <strong id="createdInitialBalanceDisplay" style="color: var(--success);">₹0.00</strong>
+            </div>
+            <div>
+              <span>Status:</span> <strong style="color: var(--success);">ACTIVE</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warning & Reminder Note -->
+        <div class="important-warning-note">
+          <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning); margin-right: 6px;"></i>
+          <strong>IMPORTANT:</strong> Save this 11-digit account number. You will need it every time you log in to GG BANK.
+        </div>
+
+        <!-- Mandatory Action Buttons -->
+        <div class="success-action-buttons">
+          
+          <!-- 1. Copy Account Number Button -->
+          <button class="btn btn-cyan btn-lg btn-block" id="btnCopyAccountNumber">
+            <i class="fa-regular fa-copy"></i> COPY ACCOUNT NUMBER
+          </button>
+
+          <!-- 2. Download Account Details PDF Button -->
+          <button class="btn btn-secondary btn-lg btn-block" id="btnDownloadAccountDetails">
+            <i class="fa-solid fa-file-arrow-down"></i> DOWNLOAD ACCOUNT DETAILS (PDF)
+          </button>
+
+          <!-- 3. Go To Login Button -->
+          <button class="btn btn-primary btn-lg btn-block" id="btnGoToLogin" style="margin-top: 6px;">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> GO TO LOGIN
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Firebase Client SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+
+  <!-- Application Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/account-created.js"></script>
+
+</body>
+</html>

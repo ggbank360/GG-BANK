@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Customer Registration and 3-Step Account Creation">
+  <title>Open Account - GG BANK</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Official Top Navigation Bar: Bank Logo & Name on Left Side -->
+  <header class="bank-header">
+    <div class="bank-header-left">
+      <a href="login.html" class="bank-logo-group" title="GG BANK Digital Banking">
+        <img src="images/logo.png" alt="GG BANK Logo" class="brand-logo-img">
+        <div class="bank-brand-text">
+          <div class="brand-title-main">GG BANK</div>
+          <div class="brand-subtitle-main">Digital Banking</div>
+        </div>
+      </a>
+      <div class="bank-header-badges">
+        <span class="official-badge"><i class="fa-solid fa-shield-halved"></i> RBI Regulated</span>
+      </div>
+    </div>
+
+    <div class="bank-header-right">
+      <a href="tel:1800442265" class="bank-helpline-pill" title="Toll-Free Customer Care">
+        <i class="fa-solid fa-headset"></i> Priority Helpline: 1800-GG-BANK
+      </a>
+      <!-- Dark / Light Mode Switcher -->
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <i class="fa-solid fa-sun" id="themeToggleIcon"></i>
+        <span id="themeToggleText">Light Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Split Screen Layout: Left Showcase & Right-Corner Registration Container -->
+  <div class="auth-page">
+    <div class="auth-page-container">
+      
+      <!-- ================= LEFT SIDE: PROMINENT LOGO & BRAND IDENTITY ================= -->
+      <div class="bank-showcase" style="align-items: center; justify-content: center; text-align: center; padding: 40px 20px;">
+        <div class="hero-brand-card" style="display: flex; flex-direction: column; align-items: center; gap: 20px; animation: fadeIn 0.4s ease;">
+          <img src="images/logo.png" alt="GG BANK Logo" class="hero-showcase-logo" style="width: 280px; max-width: 85%; height: auto; filter: drop-shadow(0 10px 30px rgba(0, 114, 255, 0.4)); transition: transform 0.3s ease;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+            <h1 style="font-size: 3.2rem; font-weight: 900; letter-spacing: 1.5px; color: var(--text-primary); margin: 0; line-height: 1;">GG BANK</h1>
+            <div style="font-size: 1.1rem; color: var(--accent-cyan); font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">Digital Banking</div>
+            <p style="font-size: 0.95rem; color: var(--text-secondary); margin-top: 10px; max-width: 360px; line-height: 1.6;">Secure Banking. Smarter Future.<br><span style="font-size: 0.82rem; color: var(--text-muted);">3-Step Paperless Account Opening &bull; Instant KYC Review</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= RIGHT SIDE: REGISTRATION CARD (RIGHT CORNER) ================= -->
+      <div class="bank-auth-wrapper">
+        <div class="auth-card">
+          <!-- 3-Step Stepper Bar -->
+          <div class="stepper-container">
+            <div class="stepper-track"></div>
+            <div class="stepper-progress" id="stepperProgress" style="width: 0%;"></div>
+
+            <div class="step-item active" id="stepIndicator1" onclick="jumpToStep(1)">
+              <div class="step-circle" id="stepCircle1">1</div>
+              <span class="step-label">Personal</span>
+            </div>
+
+            <div class="step-item" id="stepIndicator2" onclick="jumpToStep(2)">
+              <div class="step-circle" id="stepCircle2">2</div>
+              <span class="step-label">KYC Docs</span>
+            </div>
+
+            <div class="step-item" id="stepIndicator3" onclick="jumpToStep(3)">
+              <div class="step-circle" id="stepCircle3">3</div>
+              <span class="step-label">Account</span>
+            </div>
+          </div>
+
+          <form id="customerRegisterForm">
+            
+            <!-- STEP 1: PERSONAL DETAILS -->
+            <div class="wizard-step active" id="wizardStep1">
+              <h3 class="step-section-heading"><i class="fa-solid fa-user-tag" style="color: var(--accent-cyan);"></i> Step 1 – Personal Details</h3>
+              <p class="step-section-sub">Please enter your basic identity and contact details.</p>
+
+              <div class="form-group">
+                <label class="form-label" for="regName">Full Name</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-user input-icon"></i>
+                  <input type="text" id="regName" class="form-control" placeholder="Gowtham NK" required value="">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="regDob">Date of Birth</label>
+                  <input type="date" id="regDob" class="form-control" required value="" onchange="calculateAge()">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="regGender">Gender</label>
+                  <select id="regGender" class="form-control" required>
+                    <option value="Male" selected>Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="regPhone">Mobile Number</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-phone input-icon"></i>
+                    <input type="tel" id="regPhone" class="form-control" placeholder="9876543210" required value="">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="regEmail">Email Address</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input type="email" id="regEmail" class="form-control" placeholder="applicant@domain.com" required value="">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="regAddress">Address</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-location-dot input-icon"></i>
+                  <input type="text" id="regAddress" class="form-control" placeholder="42 Cyber City, Tech Park, Bangalore" required value="">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="regOccupation">Occupation</label>
+                <select id="regOccupation" class="form-control" required>
+                  <option value="Salaried Employee" selected>Salaried Employee</option>
+                  <option value="Self-Employed / Business">Self-Employed / Business</option>
+                  <option value="Student">Student</option>
+                  <option value="Professional (Doctor/Lawyer/CA)">Professional (Doctor/Lawyer/CA)</option>
+                  <option value="Retired">Retired</option>
+                  <option value="Homemaker">Homemaker</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="wizard-actions">
+                <div></div>
+                <button type="button" class="btn-wizard-next" onclick="nextWizardStep(1)">
+                  Next: KYC Documents <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 2: KYC DOCUMENTS -->
+            <div class="wizard-step" id="wizardStep2">
+              <h3 class="step-section-heading"><i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> Step 2 – KYC Documents</h3>
+              <p class="step-section-sub">Upload government-issued IDs and biometric verification assets.</p>
+
+              <!-- 1. Aadhaar Card -->
+              <div class="kyc-doc-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label class="form-label" style="margin: 0;" for="regAadhaarNumber">
+                    <i class="fa-solid fa-fingerprint" style="color: var(--warning);"></i> Aadhaar Number
+                  </label>
+                  <span class="badge badge-warning" style="font-size: 0.7rem;">UIDAI 12-Digit</span>
+                </div>
+                <input type="text" id="regAadhaarNumber" class="form-control" placeholder="2345 6789 0123" maxlength="14" required value="" style="font-family: var(--font-mono); margin-bottom: 8px;">
+                <div class="kyc-upload-dropzone" id="aadhaarDropzone" onclick="document.getElementById('aadhaarFileInput').click()">
+                  <i class="fa-solid fa-cloud-arrow-up" style="color: var(--warning);"></i>
+                  <span style="font-size: 0.8rem; margin-left: 6px;" id="aadhaarUploadLabel">Click or Drag & Drop Aadhaar Card (Image / PDF)</span>
+                  <input type="file" id="aadhaarFileInput" accept="image/*,.pdf" onchange="handleDocUpload(event, 'aadhaarUploadLabel', 'aadhaarPreviewThumb', 'aadhaarDocData')">
+                </div>
+                <img id="aadhaarPreviewThumb" class="kyc-preview-thumb" alt="Aadhaar Preview">
+                <input type="hidden" id="aadhaarDocData">
+              </div>
+
+              <!-- 2. PAN Card -->
+              <div class="kyc-doc-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label class="form-label" style="margin: 0;" for="regPanNumber">
+                    <i class="fa-solid fa-id-card" style="color: var(--accent-cyan);"></i> PAN Number
+                  </label>
+                  <span class="badge badge-info" style="font-size: 0.7rem;">Income Tax 10-Digit</span>
+                </div>
+                <input type="text" id="regPanNumber" class="form-control" placeholder="ABCDE1234F" maxlength="10" required value="" style="text-transform: uppercase; font-family: var(--font-mono); margin-bottom: 8px;">
+                <div class="kyc-upload-dropzone" id="panDropzone" onclick="document.getElementById('panFileInput').click()">
+                  <i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent-cyan);"></i>
+                  <span style="font-size: 0.8rem; margin-left: 6px;" id="panUploadLabel">Click or Drag & Drop PAN Card (Image / PDF)</span>
+                  <input type="file" id="panFileInput" accept="image/*,.pdf" onchange="handleDocUpload(event, 'panUploadLabel', 'panPreviewThumb', 'panDocData')">
+                </div>
+                <img id="panPreviewThumb" class="kyc-preview-thumb" alt="PAN Preview">
+                <input type="hidden" id="panDocData">
+              </div>
+
+              <!-- 3. Passport Photo & Signature Row -->
+              <div class="media-upload-row">
+                <!-- Passport-size photo -->
+                <div class="media-upload-card" id="photoDropzone">
+                  <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                    <i class="fa-solid fa-camera" style="color: var(--accent-cyan);"></i> Passport Photo
+                  </div>
+                  <div class="photo-preview-circle" id="photoPreviewContainer" onclick="document.getElementById('photoFileInput').click()" title="Click or Drag & Drop Photo">
+                    <i class="fa-solid fa-user-tie" id="photoPlaceholderIcon" style="font-size: 1.8rem;"></i>
+                    <img id="photoPreviewImg" alt="Passport Photo">
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; font-size: 0.72rem;" onclick="document.getElementById('photoFileInput').click()">
+                    Upload / Drop Photo
+                  </button>
+                  <input type="file" id="photoFileInput" accept="image/*" style="display: none;" onchange="handleSingleImgUpload(event, 'photoPreviewImg', 'photoPlaceholderIcon', 'photoDocData')">
+                  <input type="hidden" id="photoDocData">
+                </div>
+
+                <!-- Signature -->
+                <div class="media-upload-card" id="sigDropzone">
+                  <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                    <i class="fa-solid fa-signature" style="color: var(--success);"></i> Signature
+                  </div>
+                  <div class="signature-preview-box" id="sigPreviewContainer" onclick="document.getElementById('signatureFileInput').click()" title="Click or Drag & Drop Signature">
+                    <span id="sigPlaceholderText" style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-pen-nib"></i> Sign / Drop</span>
+                    <img id="signaturePreviewImg" alt="Signature Preview">
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; font-size: 0.72rem;" onclick="document.getElementById('signatureFileInput').click()">
+                    Upload / Drop Signature
+                  </button>
+                  <input type="file" id="signatureFileInput" accept="image/*" style="display: none;" onchange="handleSingleImgUpload(event, 'signaturePreviewImg', 'sigPlaceholderText', 'signatureDocData')">
+                  <input type="hidden" id="signatureDocData">
+                </div>
+              </div>
+
+              <div class="wizard-actions">
+                <button type="button" class="btn-wizard-back" onclick="prevWizardStep(2)">
+                  <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+                <button type="button" class="btn-wizard-next" onclick="nextWizardStep(2)">
+                  Next: Account Details <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 3: ACCOUNT DETAILS -->
+            <div class="wizard-step" id="wizardStep3">
+              <h3 class="step-section-heading"><i class="fa-solid fa-building-columns" style="color: var(--accent-cyan);"></i> Step 3 – Account Details</h3>
+              <p class="step-section-sub">Select your account tier, assign nominee, and secure credentials.</p>
+
+              <!-- Account Type Cards (Savings, Current, Student) -->
+              <label class="form-label" style="margin-bottom: 8px;">Account Type</label>
+              <div class="account-type-grid">
+                <div class="acc-type-card selected" id="accTypeSavings" onclick="selectAccType('SAVINGS')">
+                  <div class="acc-type-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                  <div class="acc-type-title">Savings</div>
+                  <div class="acc-type-badge">4.5% APY • ₹0 Min</div>
+                </div>
+
+                <div class="acc-type-card" id="accTypeCurrent" onclick="selectAccType('CURRENT')">
+                  <div class="acc-type-icon"><i class="fa-solid fa-briefcase"></i></div>
+                  <div class="acc-type-title">Current</div>
+                  <div class="acc-type-badge">Commercial • High Vol</div>
+                </div>
+
+                <div class="acc-type-card" id="accTypeStudent" onclick="selectAccType('STUDENT')">
+                  <div class="acc-type-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                  <div class="acc-type-title">Student</div>
+                  <div class="acc-type-badge">Zero Fee • Scholar</div>
+                </div>
+              </div>
+              <input type="hidden" id="regAccountType" value="SAVINGS">
+
+              <!-- Nominee Details -->
+              <div class="kyc-doc-card" style="margin-top: 14px;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-users" style="color: var(--accent-cyan);"></i> Nominee Information
+                </div>
+
+                <div class="form-group" style="margin-bottom: 8px;">
+                  <label class="form-label" for="regNomineeName">Nominee Name</label>
+                  <input type="text" id="regNomineeName" class="form-control" placeholder="Nominee Full Name" required value="">
+                </div>
+
+                <div class="form-row" style="margin-bottom: 0;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="regNomineeRelation">Nominee Relationship</label>
+                    <select id="regNomineeRelation" class="form-control" required>
+                      <option value="Mother" selected>Mother</option>
+                      <option value="Father">Father</option>
+                      <option value="Spouse">Spouse</option>
+                      <option value="Son">Son</option>
+                      <option value="Daughter">Daughter</option>
+                      <option value="Brother">Brother</option>
+                      <option value="Sister">Sister</option>
+                      <option value="Guardian">Guardian</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="regNomineePhone">Nominee Contact</label>
+                    <input type="tel" id="regNomineePhone" class="form-control" placeholder="9876501234" required value="">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Password Creation -->
+              <div class="form-group" style="margin-top: 12px;">
+                <label class="form-label" for="regPassword">Create Account Password</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-lock input-icon"></i>
+                  <input type="password" id="regPassword" class="form-control" placeholder="••••••••••••" required value="" oninput="checkStrength()">
+                  <i class="fa-regular fa-eye input-action-icon" id="toggleRegPassword" onclick="togglePass('regPassword', 'toggleRegPassword')"></i>
+                </div>
+                <div class="strength-meter"><div class="strength-bar" id="regStrengthBar" style="width: 100%; background-color: var(--success);"></div></div>
+                <div class="strength-text" id="regStrengthText" style="color: var(--success);">Strong Password</div>
+              </div>
+
+              <div style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan); margin-bottom: 14px;">
+                <i class="fa-solid fa-info-circle"></i> Once submitted, your 11-digit account number will be generated immediately and sent for admin KYC verification.
+              </div>
+
+              <div class="wizard-actions">
+                <button type="button" class="btn-wizard-back" onclick="prevWizardStep(3)">
+                  <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+                <button type="submit" class="btn btn-primary" id="btnRegisterSubmit" style="margin-left: auto;">
+                  <i class="fa-solid fa-paper-plane"></i> Submit & Open Account
+                </button>
+              </div>
+            </div>
+
+          </form>
+
+          <div style="text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-secondary);">
+            Already have an account? <a href="login.html" style="font-weight: 700; color: var(--accent-cyan);">Sign In</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Firebase Client SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- Application Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cloudinary.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/register.js"></script>
+
+</body>
+</html>

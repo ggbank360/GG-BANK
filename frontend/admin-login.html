@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Administrator Authentication Portal">
+  <title>Admin Login - GG BANK</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="auth-page">
+    <div class="auth-container">
+      
+      <!-- Brand Header -->
+      <div class="auth-brand-center">
+        <div class="logo-icon" style="width:56px;height:56px;"></div>
+        <h1 class="brand-title" style="font-size: 2rem;">GG BANK</h1>
+        <p class="brand-subtitle" style="color: #ff3b57;">Administration Control Portal</p>
+        <p class="auth-header-tagline">"Authorized Personnel Only"</p>
+      </div>
+
+      <!-- Admin Login Card -->
+      <div class="auth-card" style="border-color: rgba(255, 59, 87, 0.3);">
+        
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: #ffffff; text-align: center; margin-bottom: 8px;">
+          Administrator Login
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 20px;">
+          Sign in to access system supervision and approvals.
+        </p>
+
+        <form id="adminLoginForm">
+          <div class="form-group">
+            <label class="form-label" for="adminUsername">Admin Username / Email</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-user-shield input-icon"></i>
+              <input type="text" id="adminUsername" class="form-control" placeholder="admin@ggbank.com" required autocomplete="username">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="adminPassword">Master Password</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="adminPassword" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-danger btn-block btn-lg" id="btnAdminLoginSubmit" style="margin-top: 14px;">
+            <i class="fa-solid fa-shield-halved"></i> Access Admin Console
+          </button>
+
+          <div style="text-align: center; margin-top: 22px;">
+            <a href="login.html" style="font-size: 0.85rem; color: var(--accent-cyan);">
+              <i class="fa-solid fa-arrow-left"></i> Return to Customer Login
+            </a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('adminUsername').value.trim();
+      const p = document.getElementById('adminPassword').value;
+      const btn = document.getElementById('btnAdminLoginSubmit');
+
+      Utils.setLoading(btn, true, 'Authenticating Admin...');
+      try {
+        await Auth.loginAdmin(u, p);
+        Utils.showToast('Administrator session authenticated!', 'success');
+        setTimeout(() => {
+          window.location.href = 'admin-dashboard.html';
+        }, 600);
+      } catch (err) {
+        Utils.showToast(err.message, 'error', 'Access Denied');
+        Utils.setLoading(btn, false);
+      }
+    });
+  </script>
+
+</body>
+</html>

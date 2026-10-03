@@ -1,0 +1,14 @@
+# Firebase and application secrets
+backend/src/main/resources/serviceAccountKey.json
+.env
+*.env
+
+# Java build output
+backend/target/
+
+# IDE and editor files
+.vscode/
+.idea/
+
+# Logs
+*.log

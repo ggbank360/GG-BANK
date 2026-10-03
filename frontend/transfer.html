@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fund Transfer - GG BANK</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon">GG</div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <div class="nav-section-title">Main Portal</div>
+        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a></li>
+        <li class="nav-item"><a href="account.html" class="nav-link"><i class="fa-solid fa-id-card"></i> <span>My Account</span></a></li>
+        <li class="nav-item"><a href="transactions.html" class="nav-link"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a></li>
+        <li class="nav-item active"><a href="transfer.html" class="nav-link"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a></li>
+        <li class="nav-item"><a href="deposit.html" class="nav-link"><i class="fa-solid fa-circle-arrow-down"></i> <span>Deposit</span></a></li>
+        <li class="nav-item"><a href="withdraw.html" class="nav-link"><i class="fa-solid fa-circle-arrow-up"></i> <span>Withdraw</span></a></li>
+        <li class="nav-item"><a href="beneficiaries.html" class="nav-link"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a></li>
+
+        <div class="nav-section-title">Finance & Utilities</div>
+        <li class="nav-item"><a href="loans.html" class="nav-link"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a></li>
+        <li class="nav-item"><a href="budget.html" class="nav-link"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a></li>
+        <li class="nav-item"><a href="financial-insights.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span>Financial Insights</span></a></li>
+        <li class="nav-item"><a href="bill-payments.html" class="nav-link"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a></li>
+
+        <div class="nav-section-title">Settings</div>
+        <li class="nav-item"><a href="notifications.html" class="nav-link"><i class="fa-solid fa-bell"></i> <span>Notifications</span></a></li>
+        <li class="nav-item"><a href="security.html" class="nav-link"><i class="fa-solid fa-shield-halved"></i> <span>Security</span></a></li>
+        <li class="nav-item"><a href="profile.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span>Profile</span></a></li>
+        <li class="nav-item"><a href="#" onclick="Auth.logout()" class="nav-link" style="color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span></a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">Fund Transfer</div>
+        </div>
+        <div class="topbar-right">
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-paper-plane"></i> Money <span>Transfer</span></h2>
+            <p class="page-description">Fast, atomic, and secure double-entry money transfer engine.</p>
+          </div>
+        </div>
+
+        <div class="card" style="max-width: 680px;">
+          <form id="moneyTransferForm">
+            
+            <div class="form-group">
+              <label class="form-label" for="transferBeneficiarySelect">Select from Saved Beneficiaries</label>
+              <select id="transferBeneficiarySelect" class="form-control">
+                <option value="">-- Choose Saved Beneficiary or Enter Manually --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="transferBenName">Beneficiary Legal Name</label>
+              <input type="text" id="transferBenName" class="form-control" placeholder="Recipient Name" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="transferAccNumber">Recipient 12-Digit Account Number</label>
+                <input type="text" id="transferAccNumber" class="form-control" placeholder="100188492020" maxlength="12" inputmode="numeric" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="transferConfirmAccNumber">Confirm 12-Digit Account Number</label>
+                <input type="text" id="transferConfirmAccNumber" class="form-control" placeholder="100188492020" maxlength="12" inputmode="numeric" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="transferIfsc">IFSC Code</label>
+                <input type="text" id="transferIfsc" class="form-control" placeholder="GGBN0001234" value="GGBN0001234" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="transferAmount">Transfer Amount (₹)</label>
+                <input type="number" id="transferAmount" class="form-control" placeholder="5000" min="1" step="0.01" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="transferDesc">Payment Purpose / Description</label>
+              <input type="text" id="transferDesc" class="form-control" placeholder="e.g. Monthly Rent / College Tuition">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
+              <i class="fa-solid fa-lock"></i> Review & Transfer
+            </button>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Transfer Confirmation Modal -->
+  <div class="modal-backdrop" id="transferConfirmModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirm Money Transfer</h3>
+        <button class="modal-close-btn" data-modal-close>&times;</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-secondary);">
+        Please verify the recipient information before final transaction authorization.
+      </p>
+
+      <div class="confirm-details-list">
+        <div class="confirm-item">
+          <span class="label">Transfer To:</span>
+          <span class="val" id="modalConfirmTo">Johnathan Doe</span>
+        </div>
+        <div class="confirm-item">
+          <span class="label">Recipient Account:</span>
+          <span class="val" id="modalConfirmAcc" style="font-family: var(--font-mono); color: var(--accent-cyan);">1234 5678 901</span>
+        </div>
+        <div class="confirm-item">
+          <span class="label">Transfer Amount:</span>
+          <span class="val" id="modalConfirmAmount">₹5,000.00</span>
+        </div>
+        <div class="confirm-item">
+          <span class="label">Transaction Fee:</span>
+          <span class="val" style="color: var(--success);">₹0.00 (Free)</span>
+        </div>
+        <div class="confirm-item total-item">
+          <span class="label" style="font-weight: 700;">Total Debit:</span>
+          <span class="val" id="modalConfirmTotal">₹5,000.00</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnExecuteTransfer">
+          <i class="fa-solid fa-check"></i> Confirm & Transfer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/transfer.js"></script>
+
+</body>
+</html>

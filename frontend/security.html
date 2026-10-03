@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Profile & Security Center">
+  <title>Security Center - GG BANK</title>
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
+
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
+
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Profile & Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">Security Center</div>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-shield-halved"></i> Security & <span>Verification</span></h2>
+            <p class="page-description">Multi-factor authentication, credential safety, and active session governance.</p>
+          </div>
+        </div>
+
+        <!-- 1. Account Security Status Overview (Requirement 13) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          
+          <!-- Password Protected -->
+          <div class="card" style="padding: 20px; border-left: 4px solid var(--success);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Password Protected</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-top: 4px;">
+                  <i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Strong & Active
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Hashed with PBKDF2/BCrypt</div>
+              </div>
+              <div style="font-size: 1.8rem; color: var(--success);"><i class="fa-solid fa-key"></i></div>
+            </div>
+          </div>
+
+          <!-- Email Verified -->
+          <div class="card" style="padding: 20px; border-left: 4px solid var(--success);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Email Verified</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-top: 4px;" id="secEmailStatus">
+                  <i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Verified Primary
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;" id="secEmailText">customer@ggbank.com</div>
+              </div>
+              <div style="font-size: 1.8rem; color: var(--accent);"><i class="fa-solid fa-envelope-circle-check"></i></div>
+            </div>
+          </div>
+
+          <!-- 2FA Status -->
+          <div class="card" style="padding: 20px; border-left: 4px solid var(--accent);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Two-Factor Auth (2FA)</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: var(--accent); margin-top: 4px;" id="sec2faStatusText">
+                  <i class="fa-solid fa-shield-halved"></i> Enabled (OTP)
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Protected for High-Value Txns</div>
+              </div>
+              <div>
+                <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                  <input type="checkbox" id="toggle2FA" checked style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--accent); transition: .3s; border-radius: 24px;"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 2. Two-Column Layout: Change Password on Left, Active Login Activity on Right -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+          
+          <!-- Change Password Card -->
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 6px;"><i class="fa-solid fa-lock"></i> Change Online Banking Password</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+              Update your account password regularly to protect your financial assets.
+            </p>
+
+            <form id="secChangePasswordForm">
+              <div class="form-group">
+                <label class="form-label" for="secCurrentPassword">Current Password</label>
+                <input type="password" id="secCurrentPassword" class="form-control" placeholder="••••••••••••" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="secNewPassword">New Password</label>
+                <input type="password" id="secNewPassword" class="form-control" placeholder="Minimum 8 characters" required minlength="8">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Must contain letters, numbers, and at least 8 characters.</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="secConfirmPassword">Confirm New Password</label>
+                <input type="password" id="secConfirmPassword" class="form-control" placeholder="••••••••••••" required minlength="8">
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="btnUpdatePassword">
+                <i class="fa-solid fa-shield-check"></i> Update Password
+              </button>
+            </form>
+          </div>
+
+          <!-- Login Activity & Session Control Card (Requirement 13) -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-clock-rotate-left"></i> Login Activity & Devices</h3>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 4px 0 0 0;">Recent authorized login sessions.</p>
+              </div>
+              <button class="btn btn-danger btn-sm" id="btnSignOutAllSessions" style="font-size: 0.78rem;">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Terminate Other Sessions
+              </button>
+            </div>
+
+            <!-- Login Activity List -->
+            <div style="display: flex; flex-direction: column; gap: 12px;" id="loginActivityList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/security.js"></script>
+
+</body>
+</html>

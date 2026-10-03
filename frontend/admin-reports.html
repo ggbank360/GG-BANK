@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Regulatory Reports, Analytics & Data Exports">
+  <title>Reports & Analytics - GG BANK Admin</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- jsPDF & AutoTable for direct PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar admin-sidebar" id="adminSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="topbar"></header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              Admin Portal &bull; Analytics & Governance
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-file-invoice"></i> Regulatory <span>Reports & Export Hub</span></h2>
+            <p class="page-description">Generate comprehensive PDF statements, CSV logs, and Excel audits across all operational modules.</p>
+          </div>
+          
+          <!-- Period Filter -->
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label style="font-size: 0.85rem; color: var(--text-secondary);">Reporting Period:</label>
+            <select id="reportPeriodSelect" class="form-control" style="width: 150px;">
+              <option value="DAILY">Daily (Today)</option>
+              <option value="WEEKLY">Weekly</option>
+              <option value="MONTHLY" selected>Monthly (Current)</option>
+              <option value="YEARLY">Yearly (Annual)</option>
+              <option value="ALL">All Time Cumulative</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 7 Report Modules Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+          
+          <!-- 1. Customer Report Card -->
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                  <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                  <h3 class="card-title" style="font-size: 1.05rem;">Customer & KYC Portfolio</h3>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Accounts status, KYC verification & KYC records</div>
+                </div>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+                Complete customer audit directory with 11-digit accounts, contact records, active/blocked flags, and creation dates.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('CUSTOMER', 'PDF')">
+                <i class="fa-solid fa-file-pdf" style="color: #ff3b57;"></i> PDF
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('CUSTOMER', 'CSV')">
+                <i class="fa-solid fa-file-csv" style="color: #00f0ff;"></i> CSV
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('CUSTOMER', 'EXCEL')">
+                <i class="fa-solid fa-file-excel" style="color: #00e676;"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Transaction Report Card -->
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(0, 240, 255, 0.15); color: var(--accent-cyan); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                  <i class="fa-solid fa-money-bill-transfer"></i>
+                </div>
+                <div>
+                  <h3 class="card-title" style="font-size: 1.05rem;">Global Transaction Ledger</h3>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Full interbank clearing & surveillance history</div>
+                </div>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+                Comprehensive transaction history across deposits, withdrawals, transfers, and bill payments with running balances.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('TRANSACTION', 'PDF')">
+                <i class="fa-solid fa-file-pdf" style="color: #ff3b57;"></i> PDF
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('TRANSACTION', 'CSV')">
+                <i class="fa-solid fa-file-csv" style="color: #00f0ff;"></i> CSV
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('TRANSACTION', 'EXCEL')">
+                <i class="fa-solid fa-file-excel" style="color: #00e676;"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Deposit Report Card -->
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(0, 230, 118, 0.15); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                  <i class="fa-solid fa-circle-arrow-down"></i>
+                </div>
+                <div>
+                  <h3 class="card-title" style="font-size: 1.05rem;">Deposit & Credit Inflow</h3>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Cash deposits, wire credits & treasury inflows</div>
+                </div>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+                Inflow logs detailing source payment channels, beneficiary 11-digit accounts, credit amounts, and timestamps.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('DEPOSIT', 'PDF')">
+                <i class="fa-solid fa-file-pdf" style="color: #ff3b57;"></i> PDF
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('DEPOSIT', 'CSV')">
+                <i class="fa-solid fa-file-csv" style="color: #00f0ff;"></i> CSV
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('DEPOSIT', 'EXCEL')">
+                <i class="fa-solid fa-file-excel" style="color: #00e676;"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. Withdrawal Report Card -->
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(239, 68, 68, 0.15); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                  <i class="fa-solid fa-circle-arrow-up"></i>
+                </div>
+                <div>
+                  <h3 class="card-title" style="font-size: 1.05rem;">Withdrawal & Debit Outflow</h3>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Cash debits, ATM dispenses & settlements</div>
+                </div>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+                Detailed debit ledger reflecting cash withdrawals, merchant debits, and balance reductions.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('WITHDRAWAL', 'PDF')">
+                <i class="fa-solid fa-file-pdf" style="color: #ff3b57;"></i> PDF
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('WITHDRAWAL', 'CSV')">
+                <i class="fa-solid fa-file-csv" style="color: #00f0ff;"></i> CSV
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('WITHDRAWAL', 'EXCEL')">
+                <i class="fa-solid fa-file-excel" style="color: #00e676;"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. Transfer Report Card -->
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(139, 92, 246, 0.15); color: #a78bfa; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                  <i class="fa-solid fa-right-left"></i>
+                </div>
+                <div>
+                  <h3 class="card-title" style="font-size: 1.05rem;">Inter-Account Transfer Audit</h3>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">P2P & Wire movement audit</div>
+                </div>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+                Sender vs receiver reconciliation reports, transfer amounts, transaction categories, and timestamps.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('TRANSFER', 'PDF')">
+                <i class="fa-solid fa-file-pdf" style="color: #ff3b57;"></i> PDF
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('TRANSFER', 'CSV')">
+                <i class="fa-solid fa-file-csv" style="color: #00f0ff;"></i> CSV
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('TRANSFER', 'EXCEL')">
+                <i class="fa-solid fa-file-excel" style="color: #00e676;"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- 6. Loan Report Card -->
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(245, 158, 11, 0.15); color: var(--warning); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                  <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div>
+                  <h3 class="card-title" style="font-size: 1.05rem;">Loan Portfolio & Approvals</h3>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Credit underwriting & disbursement metrics</div>
+                </div>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+                Loan performance analysis showing requested principals, approved disbursements, EMIs, and rejection records.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('LOAN', 'PDF')">
+                <i class="fa-solid fa-file-pdf" style="color: #ff3b57;"></i> PDF
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('LOAN', 'CSV')">
+                <i class="fa-solid fa-file-csv" style="color: #00f0ff;"></i> CSV
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="downloadReport('LOAN', 'EXCEL')">
+                <i class="fa-solid fa-file-excel" style="color: #00e676;"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- 7. Financial Summary Card (Spanning full width) -->
+          <div class="card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #0c2152 0%, #00173d 50%, #003666 100%); border: 1px solid rgba(0, 240, 255, 0.25);">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+              <div>
+                <h3 class="card-title" style="color: #ffffff; font-size: 1.25rem;">
+                  <i class="fa-solid fa-scale-balanced" style="color: var(--accent-cyan);"></i> Comprehensive Executive Financial Summary
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                  High-level executive overview of total vault solvency, deposit vs debit ratios, and net disbursed liquidity.
+                </p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="downloadReport('FINANCIAL', 'PDF')">
+                  <i class="fa-solid fa-file-pdf"></i> Download Executive PDF
+                </button>
+                <button class="btn btn-secondary" onclick="downloadReport('FINANCIAL', 'CSV')">
+                  <i class="fa-solid fa-file-csv"></i> Download CSV
+                </button>
+                <button class="btn btn-secondary" onclick="downloadReport('FINANCIAL', 'EXCEL')">
+                  <i class="fa-solid fa-file-excel"></i> Download Excel
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/admin-reports.js"></script>
+</body>
+</html>

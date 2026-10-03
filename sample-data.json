@@ -1,0 +1,123 @@
+{
+  "users": [
+    {
+      "userId": "usr-gowtham-101",
+      "name": "Gowtham NK",
+      "email": "gowtham@ggbank.com",
+      "phone": "9876543210",
+      "dateOfBirth": "2003-05-14",
+      "address": "42 Cyber City, Tech Park, Bangalore",
+      "role": "CUSTOMER",
+      "status": "ACTIVE",
+      "createdAt": "2026-09-01T10:00:00.000Z"
+    },
+    {
+      "userId": "usr-sarah-102",
+      "name": "Sarah Connor",
+      "email": "sarah@ggbank.com",
+      "phone": "9123456780",
+      "dateOfBirth": "2001-11-20",
+      "address": "77 Silicon Boulevard, Chennai",
+      "role": "CUSTOMER",
+      "status": "ACTIVE",
+      "createdAt": "2026-09-01T11:00:00.000Z"
+    },
+    {
+      "userId": "usr-admin-999",
+      "name": "GG Bank Administrator",
+      "email": "admin@ggbank.com",
+      "phone": "9000000000",
+      "dateOfBirth": "1995-01-01",
+      "address": "GG BANK Headquarters, Financial Tower",
+      "role": "ADMIN",
+      "status": "ACTIVE",
+      "createdAt": "2026-09-01T09:00:00.000Z"
+    }
+  ],
+  "accounts": [
+    {
+      "accountId": "acc-gowtham-101",
+      "userId": "usr-gowtham-101",
+      "accountNumber": "10018849201",
+      "accountType": "SAVINGS",
+      "balance": 65450.00,
+      "ifscCode": "GGBN0001234",
+      "branch": "Central Tech Branch",
+      "status": "ACTIVE",
+      "createdAt": "2026-09-01T10:00:00.000Z"
+    },
+    {
+      "accountId": "acc-sarah-102",
+      "userId": "usr-sarah-102",
+      "accountNumber": "10018849202",
+      "accountType": "SAVINGS",
+      "balance": 32000.00,
+      "ifscCode": "GGBN0001234",
+      "branch": "Central Tech Branch",
+      "status": "ACTIVE",
+      "createdAt": "2026-09-01T11:00:00.000Z"
+    }
+  ],
+  "transactions": [
+    {
+      "transactionId": "TXN-2026-908101",
+      "senderAccount": "EXTERNAL-DEP",
+      "receiverAccount": "10018849201",
+      "amount": 50000.00,
+      "type": "DEPOSIT",
+      "category": "Salary",
+      "description": "Monthly Salary Credit",
+      "status": "COMPLETED",
+      "balanceAfter": 50000.00,
+      "createdAt": "2026-08-28T09:30:00.000Z"
+    },
+    {
+      "transactionId": "TXN-2026-908102",
+      "senderAccount": "10018849201",
+      "receiverAccount": "10018849202",
+      "amount": 5000.00,
+      "type": "TRANSFER",
+      "category": "Transfer",
+      "description": "Project Collab Payment",
+      "status": "COMPLETED",
+      "balanceAfter": 45000.00,
+      "createdAt": "2026-08-30T14:15:00.000Z"
+    },
+    {
+      "transactionId": "TXN-2026-908103",
+      "senderAccount": "10018849201",
+      "receiverAccount": "BESCOM-ELEC",
+      "amount": 1550.00,
+      "type": "BILL_PAYMENT",
+      "category": "Bills",
+      "description": "Electricity Bill - BESCOM",
+      "status": "COMPLETED",
+      "balanceAfter": 43450.00,
+      "createdAt": "2026-08-31T11:20:00.000Z"
+    },
+    {
+      "transactionId": "TXN-2026-908104",
+      "senderAccount": "10018849201",
+      "receiverAccount": "ZOMATO-FOOD",
+      "amount": 850.00,
+      "type": "WITHDRAWAL",
+      "category": "Food",
+      "description": "Weekend Dining & Food Order",
+      "status": "COMPLETED",
+      "balanceAfter": 42600.00,
+      "createdAt": "2026-09-01T19:40:00.000Z"
+    },
+    {
+      "transactionId": "TXN-2026-908105",
+      "senderAccount": "EXTERNAL-DEP",
+      "receiverAccount": "10018849201",
+      "amount": 22850.00,
+      "type": "DEPOSIT",
+      "category": "Other",
+      "description": "Freelance Tech Consultation",
+      "status": "COMPLETED",
+      "balanceAfter": 65450.00,
+      "createdAt": "2026-09-02T10:10:00.000Z"
+    }
+  ]
+}

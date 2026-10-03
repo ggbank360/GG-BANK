@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deposit Funds | GG BANK</title>
+  <script>
+    // Module removed per banking specifications: Redirect to Dashboard
+    window.location.replace('dashboard.html');
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .deposit-tab-btn {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: var(--surface-secondary);
+      color: var(--text-secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .deposit-tab-btn.active {
+      background: rgba(14, 165, 233, 0.15);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(14, 165, 233, 0.25);
+    }
+    .info-callout {
+      background: rgba(14, 165, 233, 0.08);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .info-callout strong {
+      color: #ffffff;
+    }
+    .copy-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--font-mono, monospace);
+      color: var(--accent);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-pill:hover {
+      background: rgba(14, 165, 233, 0.15);
+      border-color: var(--accent);
+    }
+    .gateway-chip {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .gateway-chip.active {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body class="dashboard-body">
+
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
+
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
+
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Profile & Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">Deposit &amp; Add Money</div>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-circle-arrow-down" style="color: var(--accent);"></i> Add &amp; Deposit <span>Funds</span></h2>
+            <p class="page-description">Explore multiple authorized channels to credit money into your GG BANK 11-digit account.</p>
+          </div>
+        </div>
+
+        <!-- Real-time Account Identity Card -->
+        <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(16, 30, 66, 0.95) 0%, rgba(11, 21, 45, 0.95) 100%); border-left: 4px solid var(--accent);">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+            <div>
+              <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.5px;">Active Receiving Account</div>
+              <div style="font-size: 1.25rem; font-weight: 800; color: #ffffff; margin-top: 2px;" class="customer-name-display">Sarah Connor</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                <span>Account No: <strong class="copy-pill" onclick="copyText('accPillVal', 'Account Number')" title="Click to copy"><span id="accPillVal">10018849201</span> <i class="fa-regular fa-copy"></i></strong></span>
+                <span>IFSC: <strong class="copy-pill" onclick="copyText('ifscPillVal', 'IFSC Code')" title="Click to copy"><span id="ifscPillVal">GGBN0001234</span> <i class="fa-regular fa-copy"></i></strong></span>
+                <span>Branch: <strong style="color: #fff;">Central Tech Branch</strong></span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700;">Current Available Balance</div>
+              <div style="font-size: 1.85rem; font-weight: 800; color: var(--success); font-family: var(--font-mono, monospace);" id="depCurrentBalance">₹10,000.00</div>
+              <span class="badge badge-success" style="margin-top: 4px;"><i class="fa-solid fa-circle-check"></i> Account Active</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Funding Channel Navigation Tabs -->
+        <div style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
+          <button type="button" class="deposit-tab-btn active" id="tabBtnTransfer" onclick="switchDepositTab('transfer')">
+            <i class="fa-solid fa-money-bill-transfer" style="color: var(--accent);"></i>
+            <span>1. Receive via Money Transfer</span>
+          </button>
+          <button type="button" class="deposit-tab-btn" id="tabBtnAdmin" onclick="switchDepositTab('admin')">
+            <i class="fa-solid fa-building-columns" style="color: #f59e0b;"></i>
+            <span>2. Admin / Branch Cash Deposit</span>
+          </button>
+          <button type="button" class="deposit-tab-btn" id="tabBtnGateway" onclick="switchDepositTab('gateway')">
+            <i class="fa-solid fa-credit-card" style="color: var(--success);"></i>
+            <span>3. Instant Payment Gateway</span>
+          </button>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: RECEIVE MONEY VIA TRANSFER FROM ANOTHER PERSON -->
+        <!-- ============================================================== -->
+        <div id="tabContentTransfer" class="deposit-tab-content">
+          <div class="card" style="max-width: 780px; margin: 0 auto;">
+            <div class="card-header" style="border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 16px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-money-bill-transfer" style="color: var(--accent);"></i> Receive Money from Another Person</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0 0;">
+                  Any individual with a GG BANK account or any other external bank account can transfer money to your account.
+                </p>
+              </div>
+              <span class="badge badge-info">IMPS / NEFT / RTGS</span>
+            </div>
+
+            <div class="info-callout">
+              <i class="fa-solid fa-circle-info" style="color: var(--accent); margin-right: 6px;"></i>
+              <strong>How Money Transfer Works:</strong> Give your 11-digit Account Number and IFSC Code to the person sending you money. Once they execute the transfer from their bank or GG Bank Transfer portal, the money is <strong>instantly credited</strong> into your balance.
+            </div>
+
+            <!-- Shareable Credentials Card -->
+            <div style="background: var(--surface-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+              <h4 style="color: #ffffff; font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                <span><i class="fa-solid fa-id-card-clip" style="color: var(--accent);"></i> Your Shareable Account Credentials</span>
+                <span class="badge badge-success" style="font-size: 0.72rem;">Verified</span>
+              </h4>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                <div style="padding: 12px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">11-Digit Account Number</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <strong style="font-family: var(--font-mono, monospace); font-size: 1.15rem; color: #ffffff;" id="shareAccNum">10018849201</strong>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="copyText('shareAccNum', 'Account Number')" style="padding: 3px 8px; font-size: 0.75rem;">
+                      <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                  </div>
+                </div>
+
+                <div style="padding: 12px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">IFSC Code (All Branches)</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <strong style="font-family: var(--font-mono, monospace); font-size: 1.15rem; color: var(--accent);" id="shareIfsc">GGBN0001234</strong>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="copyText('shareIfsc', 'IFSC Code')" style="padding: 3px 8px; font-size: 0.75rem;">
+                      <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                  </div>
+                </div>
+
+                <div style="padding: 12px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Virtual UPI Address (VPA)</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <strong style="font-family: var(--font-mono, monospace); font-size: 0.95rem; color: #a855f7;" id="shareUpi">10018849201@ggbank</strong>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="copyText('shareUpi', 'UPI ID')" style="padding: 3px 8px; font-size: 0.75rem;">
+                      <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                  </div>
+                </div>
+
+                <div style="padding: 12px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Beneficiary Name</div>
+                  <div style="margin-top: 6px;">
+                    <strong style="font-size: 1.05rem; color: #ffffff;" class="customer-name-display">Sarah Connor</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Instant Simulation Widget: Receive funds from another user right now -->
+            <div style="border: 1px dashed var(--accent); border-radius: 12px; padding: 20px; background: rgba(14, 165, 233, 0.04);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="margin: 0; color: #ffffff; font-size: 0.95rem;">
+                  <i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Test Simulated Incoming Transfer
+                </h4>
+                <span class="badge badge-primary" style="font-size: 0.7rem;">Live Demonstration</span>
+              </div>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 14px;">
+                Want to test receiving money right now? Simulate another person (e.g. David Miller or an employer) transferring funds directly to your 11-digit account.
+              </p>
+
+              <form id="simulateTransferForm" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+                <div style="flex: 1; min-width: 180px;">
+                  <label class="form-label" style="font-size: 0.78rem;">Sender Name</label>
+                  <input type="text" id="simSenderName" class="form-control" value="Michael Scott" required>
+                </div>
+                <div style="flex: 1; min-width: 140px;">
+                  <label class="form-label" style="font-size: 0.78rem;">Amount (₹)</label>
+                  <input type="number" id="simAmount" class="form-control" value="5000" min="1" step="1" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btnSimulateTransfer" style="height: 42px;">
+                  <i class="fa-solid fa-paper-plane"></i> Send to My Account
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: ADMIN TREASURY / BRANCH CASH DEPOSIT -->
+        <!-- ============================================================== -->
+        <div id="tabContentAdmin" class="deposit-tab-content" style="display: none;">
+          <div class="card" style="max-width: 780px; margin: 0 auto;">
+            <div class="card-header" style="border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 16px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-building-columns" style="color: #f59e0b;"></i> Admin &amp; Branch Cash Deposit</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0 0;">
+                  Official cash deposits performed over the bank counter or authorized treasury credits by GG Bank Administrators.
+                </p>
+              </div>
+              <span class="badge badge-warning">Branch Operations</span>
+            </div>
+
+            <div class="info-callout" style="border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.08);">
+              <i class="fa-solid fa-circle-info" style="color: #f59e0b; margin-right: 6px;"></i>
+              <strong>How Admin / Branch Deposit Works:</strong> When you deposit cash at any GG Bank branch cash counter, bank tellers and administrators verify the physical currency and execute a <strong>Treasury Direct Deposit</strong> into your 11-digit account. Funds reflect in real-time with an official SMS/email receipt.
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+              <div style="padding: 16px; background: var(--surface-secondary); border: 1px solid var(--border); border-radius: 10px;">
+                <div style="color: #f59e0b; font-size: 1.5rem; margin-bottom: 8px;"><i class="fa-solid fa-clock"></i></div>
+                <strong style="color: #ffffff; font-size: 0.95rem;">Branch Cash Counter Hours</strong>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Monday – Saturday: 9:30 AM to 4:30 PM across all physical branch locations.</p>
+              </div>
+
+              <div style="padding: 16px; background: var(--surface-secondary); border: 1px solid var(--border); border-radius: 10px;">
+                <div style="color: var(--success); font-size: 1.5rem; margin-bottom: 8px;"><i class="fa-solid fa-shield-halved"></i></div>
+                <strong style="color: #ffffff; font-size: 0.95rem;">Cash Limit &amp; KYC Compliance</strong>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Cash deposits up to ₹50,000 without PAN. Up to ₹2,00,000 with your verified PAN card on file.</p>
+              </div>
+
+              <div style="padding: 16px; background: var(--surface-secondary); border: 1px solid var(--border); border-radius: 10px;">
+                <div style="color: var(--accent); font-size: 1.5rem; margin-bottom: 8px;"><i class="fa-solid fa-receipt"></i></div>
+                <strong style="color: #ffffff; font-size: 0.95rem;">Instant CBS Ledger Entry</strong>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Official Core Banking System transaction voucher generated instantly upon credit.</p>
+              </div>
+            </div>
+
+            <!-- Admin Treasury Action for Demonstration / Admin testing -->
+            <div style="border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 12px; padding: 20px; background: rgba(245, 158, 11, 0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <h4 style="margin: 0; color: #ffffff; font-size: 0.95rem;">
+                    <i class="fa-solid fa-vault" style="color: #f59e0b;"></i> Simulate Branch Treasury Cash Deposit
+                  </h4>
+                  <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 2px 0 0 0;">
+                    Execute an official Admin Treasury cash credit directly into this account.
+                  </p>
+                </div>
+                <span class="badge badge-warning">Admin Treasury</span>
+              </div>
+
+              <form id="simulateAdminDepositForm" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-top: 12px;">
+                <div style="flex: 1; min-width: 160px;">
+                  <label class="form-label" style="font-size: 0.78rem;">Deposit Channel</label>
+                  <select id="simAdminChannel" class="form-control">
+                    <option value="Branch Cash Counter">Branch Cash Counter</option>
+                    <option value="Treasury Wire Clearance">Treasury Wire Clearance</option>
+                    <option value="Interbank Settlement">Interbank Settlement</option>
+                  </select>
+                </div>
+                <div style="flex: 1; min-width: 140px;">
+                  <label class="form-label" style="font-size: 0.78rem;">Amount (₹)</label>
+                  <input type="number" id="simAdminAmount" class="form-control" value="10000" min="1" step="1" required>
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                  <label class="form-label" style="font-size: 0.78rem;">Admin Remarks</label>
+                  <input type="text" id="simAdminRemarks" class="form-control" value="Authorized Cash Deposit at Branch Counter">
+                </div>
+                <button type="submit" class="btn btn-success" id="btnSimulateAdminDeposit" style="height: 42px;">
+                  <i class="fa-solid fa-circle-check"></i> Execute Admin Deposit
+                </button>
+              </form>
+            </div>
+
+            <!-- Recent Admin Deposits List -->
+            <div style="margin-top: 24px;">
+              <h4 style="color: #ffffff; font-size: 0.95rem; margin-bottom: 12px;">
+                <i class="fa-solid fa-clock-rotate-left"></i> Recent Cash &amp; Admin Credits for this Account
+              </h4>
+              <div id="adminDepositsListContainer">
+                <div style="text-align: center; color: var(--text-secondary); padding: 18px; font-size: 0.85rem;">
+                  Loading deposit ledger...
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: INSTANT PAYMENT GATEWAY (ONLINE SELF-DEPOSIT) -->
+        <!-- ============================================================== -->
+        <div id="tabContentGateway" class="deposit-tab-content" style="display: none;">
+          <div class="card" id="depositFormCard" style="max-width: 620px; margin: 0 auto;">
+            <div class="card-header" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-credit-card" style="color: var(--success);"></i> External Payment Gateway</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0 0;">
+                  Fund your account instantly using external Net Banking, UPI apps, or Debit Cards.
+                </p>
+              </div>
+              <span class="badge badge-success">Zero Fee</span>
+            </div>
+
+            <form id="depositFundsForm">
+              
+              <!-- Real-time Balance Calculation Strip -->
+              <div class="confirmation-meta-box" style="margin-bottom: 20px;">
+                <div class="confirmation-meta-row">
+                  <span class="confirmation-label">Current Available Balance</span>
+                  <span class="confirmation-val" id="depCurrentBalancePreview">₹10,000.00</span>
+                </div>
+                <div class="confirmation-meta-row">
+                  <span class="confirmation-label">Deposit Amount</span>
+                  <span class="confirmation-val" id="depAmountPreview" style="color: var(--success); font-weight: 700;">+₹0.00</span>
+                </div>
+                <div class="confirmation-meta-row">
+                  <span class="confirmation-label">Processing Fee</span>
+                  <span class="confirmation-val" style="color: var(--success);">₹0.00 (Zero Fee)</span>
+                </div>
+                <div class="confirmation-meta-row" style="border-top: 1px solid var(--border); padding-top: 8px;">
+                  <span class="confirmation-label" style="font-weight: 700; color: #ffffff;">Expected New Balance</span>
+                  <span class="confirmation-val" id="depNewBalancePreview" style="color: var(--accent); font-size: 1.15rem; font-weight: 800;">₹10,000.00</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="depositAmount">Deposit Amount (₹) *</label>
+                <div style="position: relative;">
+                  <span style="position: absolute; left: 14px; top: 12px; font-weight: 700; color: var(--text-secondary);">₹</span>
+                  <input type="number" id="depositAmount" class="form-control" placeholder="10000" min="10" step="1" required style="padding-left: 32px; font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono, monospace);">
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  <button type="button" class="btn btn-outline btn-sm" onclick="setDepositAmount(1000)">+₹1,000</button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="setDepositAmount(5000)">+₹5,000</button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="setDepositAmount(10000)">+₹10,000</button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="setDepositAmount(25000)">+₹25,000</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="depositMethod">Deposit Channel</label>
+                <select id="depositMethod" class="form-control">
+                  <option value="Instant Net Banking Gateway">Instant Net Banking (HDFC / SBI / ICICI / Axis)</option>
+                  <option value="UPI Virtual Payment Address">UPI (Google Pay / PhonePe / Paytm / BHIM)</option>
+                  <option value="Debit Card Payment">Debit Card (Visa / Mastercard / RuPay)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="depositDesc">Description / Notes</label>
+                <input type="text" id="depositDesc" class="form-control" placeholder="e.g. Freelance consultation / Savings top-up">
+              </div>
+
+              <button type="submit" class="btn btn-success btn-block btn-lg" id="btnDepositSubmit" style="margin-top: 16px;">
+                <i class="fa-solid fa-arrow-right"></i> Review &amp; Confirm Deposit
+              </button>
+            </form>
+          </div>
+
+          <!-- Success Screen -->
+          <div class="card confirmation-card" id="depositSuccessScreen" style="display: none; max-width: 500px; margin: 0 auto;">
+            <div class="confirmation-checkmark">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 style="font-size: 1.45rem; font-weight: 800; color: #ffffff;">Transaction Successful</h2>
+            <div class="confirmation-amount" id="depSuccessAmount" style="color: var(--success);">+₹10,000.00</div>
+
+            <div class="confirmation-meta-box">
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Transaction Reference</span>
+                <span class="confirmation-val" id="depSuccessTxnId" style="color: var(--accent);">TXN-2026-908105</span>
+              </div>
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Credited To</span>
+                <span class="confirmation-val" id="depSuccessAccount">1001 8849 201</span>
+              </div>
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">New Available Balance</span>
+                <span class="confirmation-val" id="depSuccessNewBal" style="color: #ffffff;">₹20,000.00</span>
+              </div>
+            </div>
+
+            <div class="confirmation-actions">
+              <a href="transactions.html" class="btn btn-secondary">
+                <i class="fa-solid fa-list-check"></i> View in Ledger
+              </a>
+              <button class="btn btn-primary" onclick="resetDepositForm()">
+                <i class="fa-solid fa-rotate-right"></i> Another Deposit
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Review Modal -->
+  <div class="modal-backdrop" id="depositConfirmModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-shield-check" style="color: var(--success);"></i> Review Deposit</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <div class="confirmation-meta-box">
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Deposit Amount</span>
+          <span class="confirmation-val" id="modalDepAmount" style="color: var(--success); font-size: 1.1rem; font-weight: 800;">₹10,000.00</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Deposit Method</span>
+          <span class="confirmation-val" id="modalDepMethod">Net Banking</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Target Account</span>
+          <span class="confirmation-val" id="modalDepAccount">1001 8849 201</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Updated Balance</span>
+          <span class="confirmation-val" id="modalDepNewBal" style="color: var(--accent); font-weight: 800;">₹20,000.00</span>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
+        <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button type="button" class="btn btn-success" id="btnConfirmDeposit">Confirm &amp; Deposit</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/deposit.js"></script>
+
+</body>
+</html>

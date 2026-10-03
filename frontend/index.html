@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Simple & Secure Digital Banking">
+  <title>GG BANK - Login & Digital Banking</title>
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- jsPDF for Certificate / Document Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Official Top Navigation Bar: Bank Logo & Name on Left Side -->
+  <header class="bank-header">
+    <div class="bank-header-left">
+      <a href="login.html" class="bank-logo-group" title="GG BANK Digital Banking">
+        <img src="images/logo.png" alt="GG BANK Logo" class="brand-logo-img">
+        <div class="bank-brand-text">
+          <div class="brand-title-main">GG BANK</div>
+          <div class="brand-subtitle-main">Digital Banking</div>
+        </div>
+      </a>
+      <div class="bank-header-badges">
+        <span class="official-badge"><i class="fa-solid fa-shield-halved"></i> RBI Regulated</span>
+      </div>
+    </div>
+
+    <div class="bank-header-right">
+      <a href="tel:1800442265" class="bank-helpline-pill" title="Toll-Free Customer Care">
+        <i class="fa-solid fa-headset"></i> Priority Helpline: 1800-GG-BANK
+      </a>
+      <!-- Dark / Light Mode Switcher -->
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <i class="fa-solid fa-sun" id="themeToggleIcon"></i>
+        <span id="themeToggleText">Light Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Split Screen Layout: Showcase on Left, Complete Auth Box Anchored in Right Corner -->
+  <div class="auth-page">
+    <div class="auth-page-container">
+      
+      <!-- ================= LEFT SIDE: PROMINENT LOGO & BRAND IDENTITY ================= -->
+      <div class="bank-showcase" style="align-items: center; justify-content: center; text-align: center; padding: 40px 20px;">
+        <div class="hero-brand-card" style="display: flex; flex-direction: column; align-items: center; gap: 20px; animation: fadeIn 0.4s ease;">
+          <img src="images/logo.png" alt="GG BANK Logo" class="hero-showcase-logo" style="width: 280px; max-width: 85%; height: auto; filter: drop-shadow(0 10px 30px rgba(0, 114, 255, 0.4)); transition: transform 0.3s ease;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+            <h1 style="font-size: 3.2rem; font-weight: 900; letter-spacing: 1.5px; color: var(--text-primary); margin: 0; line-height: 1;">GG BANK</h1>
+            <div style="font-size: 1.1rem; color: var(--accent-cyan); font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">Digital Banking</div>
+            <p style="font-size: 0.95rem; color: var(--text-secondary); margin-top: 10px; max-width: 360px; line-height: 1.6;">Secure Banking. Smarter Future.<br><span style="font-size: 0.82rem; color: var(--text-muted);">RBI Regulated &bull; 256-Bit SSL Encrypted &bull; 24/7 Priority Support</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= RIGHT SIDE: AUTH CONTAINER (RIGHT-CORNER PLACEMENT) ================= -->
+      <div class="bank-auth-wrapper">
+        
+        <div class="auth-card">
+          
+          <!-- 4 Portal Navigation Tabs -->
+          <div class="portal-tabs" role="tablist">
+            <button class="portal-tab-btn active" id="tabBtnLogin" onclick="switchPortalTab('tab-login')">
+              <i class="fa-solid fa-user"></i> Login
+            </button>
+            <button class="portal-tab-btn tab-register" id="tabBtnRegister" onclick="switchPortalTab('tab-register')">
+              <i class="fa-solid fa-user-plus"></i> Open Acc
+            </button>
+            <button class="portal-tab-btn tab-officer" id="tabBtnOfficer" onclick="switchPortalTab('tab-officer')">
+              <i class="fa-solid fa-user-tie"></i> Officer
+            </button>
+            <button class="portal-tab-btn tab-admin" id="tabBtnAdmin" onclick="switchPortalTab('tab-admin')">
+              <i class="fa-solid fa-shield-halved"></i> Admin
+            </button>
+          </div>
+
+          <!-- ================= TAB 1: CUSTOMER LOGIN ================= -->
+          <div class="tab-pane active" id="pane-tab-login">
+            <form id="customerLoginForm">
+              <div class="form-group">
+                <label class="form-label" for="loginEmail">Email Address</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-envelope input-icon"></i>
+                  <input 
+                    type="email" 
+                    id="loginEmail" 
+                    class="form-control" 
+                    placeholder="name@domain.com" 
+                    required 
+                    autocomplete="username"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <label class="form-label" for="loginPassword">Password</label>
+                  <a href="#" onclick="openRecoveryModal(event)" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan);">Forgot Password?</a>
+                </div>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-lock input-icon"></i>
+                  <input 
+                    type="password" 
+                    id="loginPassword" 
+                    class="form-control" 
+                    placeholder="••••••••••••" 
+                    required 
+                    autocomplete="current-password"
+                  >
+                  <i class="fa-regular fa-eye input-action-icon" id="toggleLoginPassword" onclick="togglePass('loginPassword', 'toggleLoginPassword')"></i>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 16px; font-size: 0.82rem; color: var(--text-secondary);">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" id="rememberMe" checked> Remember Me
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnLoginSubmit">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+              </button>
+            </form>
+
+            <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color-subtle); display: flex; flex-direction: column; gap: 8px; text-align: center; font-size: 0.84rem;">
+              <div style="color: var(--text-secondary);">
+                Don't have an account? <a href="#" onclick="switchPortalTab('tab-register')" style="font-weight: 700; color: var(--accent-cyan);">Open Digital Account</a>
+              </div>
+              <div style="color: var(--text-muted); font-size: 0.8rem;">
+                Staff Access: <a href="#" onclick="switchPortalTab('tab-officer')" style="font-weight: 600; color: var(--accent-cyan);"><i class="fa-solid fa-user-tie"></i> Officer Desk</a>
+                &bull; <a href="#" onclick="switchPortalTab('tab-admin')" style="font-weight: 600; color: var(--danger);"><i class="fa-solid fa-shield-halved"></i> Admin Portal</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= TAB 2: 3-STEP ACCOUNT CREATION FLOW ================= -->
+          <div class="tab-pane" id="pane-tab-register">
+
+            <!-- 3-Step Stepper Bar -->
+            <div class="stepper-container">
+              <div class="stepper-track"></div>
+              <div class="stepper-progress" id="stepperProgress" style="width: 0%;"></div>
+
+              <div class="step-item active" id="stepIndicator1" onclick="jumpToStep(1)">
+                <div class="step-circle" id="stepCircle1">1</div>
+                <span class="step-label">Personal</span>
+              </div>
+
+              <div class="step-item" id="stepIndicator2" onclick="jumpToStep(2)">
+                <div class="step-circle" id="stepCircle2">2</div>
+                <span class="step-label">KYC Docs</span>
+              </div>
+
+              <div class="step-item" id="stepIndicator3" onclick="jumpToStep(3)">
+                <div class="step-circle" id="stepCircle3">3</div>
+                <span class="step-label">Account</span>
+              </div>
+            </div>
+
+            <form id="customerRegisterForm">
+              
+              <!-- STEP 1: PERSONAL DETAILS -->
+              <div class="wizard-step active" id="wizardStep1">
+                <h3 class="step-section-heading"><i class="fa-solid fa-user-tag" style="color: var(--accent-cyan);"></i> Step 1 – Personal Details</h3>
+                <p class="step-section-sub">Please enter your basic identity and contact details.</p>
+
+                <div class="form-group">
+                  <label class="form-label" for="regName">Full Name</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-user input-icon"></i>
+                    <input type="text" id="regName" class="form-control" placeholder="Gowtham NK" required value="">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="regDob">Date of Birth</label>
+                    <input type="date" id="regDob" class="form-control" required value="" onchange="calculateAge()">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="regGender">Gender</label>
+                    <select id="regGender" class="form-control" required>
+                      <option value="Male" selected>Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="regPhone">Mobile Number</label>
+                    <div class="input-with-icon">
+                      <i class="fa-solid fa-phone input-icon"></i>
+                      <input type="tel" id="regPhone" class="form-control" placeholder="9876543210" required value="">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="regEmail">Email Address</label>
+                    <div class="input-with-icon">
+                      <i class="fa-solid fa-envelope input-icon"></i>
+                      <input type="email" id="regEmail" class="form-control" placeholder="applicant@domain.com" required value="">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="regAddress">Address</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-location-dot input-icon"></i>
+                    <input type="text" id="regAddress" class="form-control" placeholder="42 Cyber City, Tech Park, Bangalore" required value="">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="regOccupation">Occupation</label>
+                  <select id="regOccupation" class="form-control" required>
+                    <option value="Salaried Employee" selected>Salaried Employee</option>
+                    <option value="Self-Employed / Business">Self-Employed / Business</option>
+                    <option value="Student">Student</option>
+                    <option value="Professional (Doctor/Lawyer/CA)">Professional (Doctor/Lawyer/CA)</option>
+                    <option value="Retired">Retired</option>
+                    <option value="Homemaker">Homemaker</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="wizard-actions">
+                  <div></div>
+                  <button type="button" class="btn-wizard-next" onclick="nextWizardStep(1)">
+                    Next: KYC Documents <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 2: KYC DOCUMENTS -->
+              <div class="wizard-step" id="wizardStep2">
+                <h3 class="step-section-heading"><i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> Step 2 – KYC Documents</h3>
+                <p class="step-section-sub">Upload government-issued IDs and biometric verification assets.</p>
+
+                <!-- 1. Aadhaar Card -->
+                <div class="kyc-doc-card">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label class="form-label" style="margin: 0;" for="regAadhaarNumber">
+                      <i class="fa-solid fa-fingerprint" style="color: var(--warning);"></i> Aadhaar Number
+                    </label>
+                    <span class="badge badge-warning" style="font-size: 0.7rem;">UIDAI 12-Digit</span>
+                  </div>
+                  <input type="text" id="regAadhaarNumber" class="form-control" placeholder="2345 6789 0123" maxlength="14" required value="" style="font-family: var(--font-mono); margin-bottom: 8px;">
+                  <div class="kyc-upload-dropzone" id="aadhaarDropzone" onclick="document.getElementById('aadhaarFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up" style="color: var(--warning);"></i>
+                    <span style="font-size: 0.8rem; margin-left: 6px;" id="aadhaarUploadLabel">Click or Drag & Drop Aadhaar Card (Image / PDF)</span>
+                    <input type="file" id="aadhaarFileInput" accept="image/*,.pdf" onchange="handleDocUpload(event, 'aadhaarUploadLabel', 'aadhaarPreviewThumb', 'aadhaarDocData')">
+                  </div>
+                  <img id="aadhaarPreviewThumb" class="kyc-preview-thumb" alt="Aadhaar Preview">
+                  <input type="hidden" id="aadhaarDocData">
+                </div>
+
+                <!-- 2. PAN Card -->
+                <div class="kyc-doc-card">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label class="form-label" style="margin: 0;" for="regPanNumber">
+                      <i class="fa-solid fa-id-card" style="color: var(--accent-cyan);"></i> PAN Number
+                    </label>
+                    <span class="badge badge-info" style="font-size: 0.7rem;">Income Tax 10-Digit</span>
+                  </div>
+                  <input type="text" id="regPanNumber" class="form-control" placeholder="ABCDE1234F" maxlength="10" required value="" style="text-transform: uppercase; font-family: var(--font-mono); margin-bottom: 8px;">
+                  <div class="kyc-upload-dropzone" id="panDropzone" onclick="document.getElementById('panFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent-cyan);"></i>
+                    <span style="font-size: 0.8rem; margin-left: 6px;" id="panUploadLabel">Click or Drag & Drop PAN Card (Image / PDF)</span>
+                    <input type="file" id="panFileInput" accept="image/*,.pdf" onchange="handleDocUpload(event, 'panUploadLabel', 'panPreviewThumb', 'panDocData')">
+                  </div>
+                  <img id="panPreviewThumb" class="kyc-preview-thumb" alt="PAN Preview">
+                  <input type="hidden" id="panDocData">
+                </div>
+
+                <!-- 3. Passport-size photo & Signature -->
+                <div class="media-upload-row">
+                  <!-- Passport-size photo -->
+                  <div class="media-upload-card" id="photoDropzone">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                      <i class="fa-solid fa-camera" style="color: var(--accent-cyan);"></i> Passport Photo
+                    </div>
+                    <div class="photo-preview-circle" id="photoPreviewContainer" onclick="document.getElementById('photoFileInput').click()" title="Click or Drag & Drop Photo">
+                      <i class="fa-solid fa-user-tie" id="photoPlaceholderIcon" style="font-size: 1.8rem;"></i>
+                      <img id="photoPreviewImg" alt="Passport Photo">
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; font-size: 0.72rem;" onclick="document.getElementById('photoFileInput').click()">
+                      Upload / Drop Photo
+                    </button>
+                    <input type="file" id="photoFileInput" accept="image/*" style="display: none;" onchange="handleSingleImgUpload(event, 'photoPreviewImg', 'photoPlaceholderIcon', 'photoDocData')">
+                    <input type="hidden" id="photoDocData">
+                  </div>
+
+                  <!-- Signature -->
+                  <div class="media-upload-card" id="sigDropzone">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                      <i class="fa-solid fa-signature" style="color: var(--success);"></i> Signature
+                    </div>
+                    <div class="signature-preview-box" id="sigPreviewContainer" onclick="document.getElementById('signatureFileInput').click()" title="Click or Drag & Drop Signature">
+                      <span id="sigPlaceholderText" style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-pen-nib"></i> Sign / Drop</span>
+                      <img id="signaturePreviewImg" alt="Signature Preview">
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; font-size: 0.72rem;" onclick="document.getElementById('signatureFileInput').click()">
+                      Upload / Drop Signature
+                    </button>
+                    <input type="file" id="signatureFileInput" accept="image/*" style="display: none;" onchange="handleSingleImgUpload(event, 'signaturePreviewImg', 'sigPlaceholderText', 'signatureDocData')">
+                    <input type="hidden" id="signatureDocData">
+                  </div>
+                </div>
+
+                <div class="wizard-actions">
+                  <button type="button" class="btn-wizard-back" onclick="prevWizardStep(2)">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                  </button>
+                  <button type="button" class="btn-wizard-next" onclick="nextWizardStep(2)">
+                    Next: Account Details <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 3: ACCOUNT DETAILS -->
+              <div class="wizard-step" id="wizardStep3">
+                <h3 class="step-section-heading"><i class="fa-solid fa-building-columns" style="color: var(--accent-cyan);"></i> Step 3 – Account Details</h3>
+                <p class="step-section-sub">Select your account tier, assign nominee, and secure credentials.</p>
+
+                <!-- Account Type Cards (Savings, Current, Student) -->
+                <label class="form-label" style="margin-bottom: 8px;">Account Type</label>
+                <div class="account-type-grid">
+                  <div class="acc-type-card selected" id="accTypeSavings" onclick="selectAccType('SAVINGS')">
+                    <div class="acc-type-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                    <div class="acc-type-title">Savings</div>
+                    <div class="acc-type-badge">4.5% APY • ₹0 Min</div>
+                  </div>
+
+                  <div class="acc-type-card" id="accTypeCurrent" onclick="selectAccType('CURRENT')">
+                    <div class="acc-type-icon"><i class="fa-solid fa-briefcase"></i></div>
+                    <div class="acc-type-title">Current</div>
+                    <div class="acc-type-badge">Commercial • High Vol</div>
+                  </div>
+
+                  <div class="acc-type-card" id="accTypeStudent" onclick="selectAccType('STUDENT')">
+                    <div class="acc-type-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="acc-type-title">Student</div>
+                    <div class="acc-type-badge">Zero Fee • Scholar</div>
+                  </div>
+                </div>
+                <input type="hidden" id="regAccountType" value="SAVINGS">
+
+                <!-- Nominee Details -->
+                <div class="kyc-doc-card" style="margin-top: 14px;">
+                  <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-users" style="color: var(--accent-cyan);"></i> Nominee Information
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 8px;">
+                    <label class="form-label" for="regNomineeName">Nominee Name</label>
+                    <input type="text" id="regNomineeName" class="form-control" placeholder="Nominee Full Name" required value="">
+                  </div>
+
+                  <div class="form-row" style="margin-bottom: 0;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label class="form-label" for="regNomineeRelation">Nominee Relationship</label>
+                      <select id="regNomineeRelation" class="form-control" required>
+                        <option value="Mother" selected>Mother</option>
+                        <option value="Father">Father</option>
+                        <option value="Spouse">Spouse</option>
+                        <option value="Son">Son</option>
+                        <option value="Daughter">Daughter</option>
+                        <option value="Brother">Brother</option>
+                        <option value="Sister">Sister</option>
+                        <option value="Guardian">Guardian</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label class="form-label" for="regNomineePhone">Nominee Contact</label>
+                      <input type="tel" id="regNomineePhone" class="form-control" placeholder="9876501234" required value="">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Password Creation -->
+                <div class="form-group" style="margin-top: 12px;">
+                  <label class="form-label" for="regPassword">Create Account Password</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="regPassword" class="form-control" placeholder="••••••••••••" required value="" oninput="checkStrength()">
+                    <i class="fa-regular fa-eye input-action-icon" id="toggleRegPassword" onclick="togglePass('regPassword', 'toggleRegPassword')"></i>
+                  </div>
+                  <div class="strength-meter"><div class="strength-bar" id="regStrengthBar" style="width: 100%; background-color: var(--success);"></div></div>
+                  <div class="strength-text" id="regStrengthText" style="color: var(--success);">Strong Password</div>
+                </div>
+
+                <div style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan); margin-bottom: 14px;">
+                  <i class="fa-solid fa-info-circle"></i> Once submitted, your 11-digit account number will be generated immediately and sent for admin KYC verification.
+                </div>
+
+                <div class="wizard-actions">
+                  <button type="button" class="btn-wizard-back" onclick="prevWizardStep(3)">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                  </button>
+                  <button type="submit" class="btn btn-primary" id="btnRegisterSubmit" style="margin-left: auto;">
+                    <i class="fa-solid fa-paper-plane"></i> Submit & Open Account
+                  </button>
+                </div>
+              </div>
+
+            </form>
+
+            <div style="text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-secondary);">
+              Already have an account? <a href="#" onclick="switchPortalTab('tab-login')" style="font-weight: 700; color: var(--accent-cyan);">Sign In</a>
+            </div>
+          </div>
+
+          <!-- ================= TAB 3: ADMIN LOGIN ================= -->
+          <div class="tab-pane" id="pane-tab-admin">
+            
+            <form id="adminLoginForm">
+              <div class="form-group">
+                <label class="form-label" for="adminUsername">Admin Identifier / Email</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-user-shield input-icon" style="color: var(--danger);"></i>
+                  <input 
+                    type="text" 
+                    id="adminUsername" 
+                    class="form-control" 
+                    placeholder="admin@ggbank.com" 
+                    required 
+                    autocomplete="username"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="adminPassword">Master Security Key</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-key input-icon" style="color: var(--danger);"></i>
+                  <input 
+                    type="password" 
+                    id="adminPassword" 
+                    class="form-control" 
+                    placeholder="••••••••••••" 
+                    required 
+                    autocomplete="current-password"
+                  >
+                  <i class="fa-regular fa-eye input-action-icon" id="toggleAdminPassword" onclick="togglePass('adminPassword', 'toggleAdminPassword')"></i>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-danger btn-block btn-lg" id="btnAdminLoginSubmit" style="margin-top: 14px;">
+                <i class="fa-solid fa-shield-halved"></i> Access Bank Admin Console
+              </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-secondary);">
+              Officer Portal: <a href="#" onclick="switchPortalTab('tab-officer')" style="font-weight: 700; color: var(--accent-cyan);">Banking Officer Sign In</a>
+            </div>
+          </div>
+
+          <!-- ================= TAB 4: OFFICER LOGIN ================= -->
+          <div class="tab-pane" id="pane-tab-officer">
+            <form id="officerInlineLoginForm" onsubmit="handleOfficerInlineLogin(event)">
+              <div class="form-group">
+                <label class="form-label" for="officerInlineEmail">Officer Email or Employee ID</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-user-tie input-icon" style="color: var(--accent-cyan);"></i>
+                  <input 
+                    type="text" 
+                    id="officerInlineEmail" 
+                    class="form-control" 
+                    placeholder="e.g. EMP-1001 or officer@ggbank.com" 
+                    required 
+                    autocomplete="username"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="officerInlinePassword">Staff Password</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-lock input-icon" style="color: var(--accent-cyan);"></i>
+                  <input 
+                    type="password" 
+                    id="officerInlinePassword" 
+                    class="form-control" 
+                    placeholder="••••••••••••" 
+                    required 
+                    autocomplete="current-password"
+                  >
+                  <i class="fa-regular fa-eye input-action-icon" id="toggleOfficerInlinePassword" onclick="togglePass('officerInlinePassword', 'toggleOfficerInlinePassword')" style="cursor: pointer;"></i>
+                </div>
+              </div>
+
+              <div class="security-alert-box" style="margin-bottom: 16px; border-left: 3px solid var(--accent-cyan); background: rgba(56, 189, 248, 0.08); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; display: flex; gap: 8px; align-items: center;">
+                <i class="fa-solid fa-building-columns" style="color: var(--accent-cyan);"></i>
+                <div style="color: var(--text-secondary);">
+                  <strong style="color: #fff;">Staff Desk:</strong> Access loan underwriting, customer KYC reviews, and branch operations.
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnOfficerInlineLoginSubmit" onclick="handleOfficerInlineLogin(event)" style="margin-top: 10px; cursor: pointer;">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Open Officer Workspace
+              </button>
+            </form>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; font-size: 0.82rem;">
+              <a href="#" onclick="switchPortalTab('tab-login')" style="color: var(--text-secondary);">
+                <i class="fa-solid fa-arrow-left"></i> Customer Login
+              </a>
+              <a href="officer-login.html" style="font-weight: 700; color: var(--accent-cyan);">
+                <i class="fa-solid fa-up-right-from-square"></i> Full Officer Portal
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Account Creation Success Modal -->
+  <div class="modal-backdrop" id="accountCreatedModal">
+    <div class="modal-card success-card" style="max-width: 480px;">
+      <div class="success-icon-wrap">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">Application Submitted!</h2>
+      <p style="font-size: 0.88rem; color: var(--accent-cyan); margin-top: 3px;">Welcome to GG BANK, <span id="modalSuccessCustName">Customer</span></p>
+
+      <div class="account-number-highlight-box">
+        <div class="acc-box-label">Your Reserved 11-Digit Account Number</div>
+        <div class="acc-box-number" id="modalSuccessAccNumber">10018812345</div>
+        <div class="acc-details-strip">
+          <div><span style="color: var(--text-secondary);">Type:</span> <strong id="modalSuccessType" style="color: var(--text-primary);">SAVINGS</strong></div>
+          <div><span style="color: var(--text-secondary);">Status:</span> <strong style="color: var(--warning);">PENDING APPROVAL</strong></div>
+        </div>
+      </div>
+
+      <div style="background: rgba(245, 158, 11, 0.14); border-left: 4px solid var(--warning); padding: 12px 14px; font-size: 0.84rem; text-align: left; margin-bottom: 18px; border-radius: var(--radius-sm); line-height: 1.5; color: var(--text-primary);">
+        <strong>Document Verification:</strong><br>
+        Your KYC documents and Nominee details have been submitted to the bank admin.
+        <strong>You will be able to log in once your account is approved.</strong>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn btn-primary btn-block" onclick="copyCreatedAccount()">
+          <i class="fa-regular fa-copy"></i> Copy Account Number
+        </button>
+        <button class="btn btn-secondary btn-block" onclick="goToLoginWithCreatedAccount()">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Go to Login
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending KYC Review Resolution Modal -->
+  <div class="modal-backdrop" id="pendingApprovalModal">
+    <div class="modal-card" style="max-width: 500px; border-left: 4px solid var(--warning);">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 class="modal-title" style="color: var(--warning); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-clock"></i> Verification in Progress
+        </h3>
+        <button class="modal-close-btn" onclick="closePendingApprovalModal()">&times;</button>
+      </div>
+
+      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
+        <div style="font-size: 0.92rem; color: var(--text-primary); line-height: 1.5;">
+          The account for <strong id="pendingCustomerEmailDisplay" style="color: var(--accent-cyan); font-family: var(--font-mono);">customer</strong> has submitted documents and is currently waiting for Admin Approval.
+        </div>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 18px;">
+        Once verified by the bank officer or admin, you will have immediate access to your account.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn btn-primary btn-block" onclick="window.location.href='officer-login.html'" style="padding: 11px;">
+          <i class="fa-solid fa-user-tie"></i> Banking Officer Login
+        </button>
+        <button class="btn btn-secondary btn-block" onclick="closePendingApprovalModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Client SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- Application Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cloudinary.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    // Tab Switcher
+    function switchPortalTab(tabId) {
+      document.querySelectorAll('.portal-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+      if (tabId === 'tab-login') {
+        document.getElementById('tabBtnLogin')?.classList.add('active');
+        document.getElementById('pane-tab-login')?.classList.add('active');
+      } else if (tabId === 'tab-register') {
+        document.getElementById('tabBtnRegister')?.classList.add('active');
+        document.getElementById('pane-tab-register')?.classList.add('active');
+      } else if (tabId === 'tab-officer') {
+        document.getElementById('tabBtnOfficer')?.classList.add('active');
+        document.getElementById('pane-tab-officer')?.classList.add('active');
+      } else if (tabId === 'tab-admin') {
+        document.getElementById('tabBtnAdmin')?.classList.add('active');
+        document.getElementById('pane-tab-admin')?.classList.add('active');
+      }
+    }
+
+    // Toggle Password Visibility
+    function togglePass(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    // Theme Toggle with Memory
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('gg_theme', next);
+
+      const icon = document.getElementById('themeToggleIcon');
+      const text = document.getElementById('themeToggleText');
+      if (icon) {
+        icon.className = next === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      }
+      if (text) {
+        text.textContent = next === 'dark' ? 'Light Mode' : 'Dark Mode';
+      }
+    }
+
+    // Initialize Theme on Load
+    (function() {
+      const saved = localStorage.getItem('gg_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      const icon = document.getElementById('themeToggleIcon');
+      const text = document.getElementById('themeToggleText');
+      if (icon) icon.className = saved === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      if (text) text.textContent = saved === 'dark' ? 'Light Mode' : 'Dark Mode';
+    })();
+
+    // Stepper & Wizard Navigation Logic
+    let currentStep = 1;
+
+    function jumpToStep(step) {
+      if (step === currentStep) return;
+      if (step > currentStep) {
+        if (!validateStep(currentStep)) return;
+      }
+      setWizardStep(step);
+    }
+
+    function nextWizardStep(fromStep) {
+      if (!validateStep(fromStep)) return;
+      setWizardStep(fromStep + 1);
+    }
+
+    function prevWizardStep(fromStep) {
+      setWizardStep(fromStep - 1);
+    }
+
+    function setWizardStep(step) {
+      currentStep = step;
+      document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+      document.getElementById(`wizardStep${step}`)?.classList.add('active');
+
+      // Update stepper bar indicators
+      for (let i = 1; i <= 3; i++) {
+        const item = document.getElementById(`stepIndicator${i}`);
+        const circle = document.getElementById(`stepCircle${i}`);
+        if (!item || !circle) continue;
+
+        item.classList.remove('active', 'completed');
+        if (i < step) {
+          item.classList.add('completed');
+          circle.innerHTML = '<i class="fa-solid fa-check"></i>';
+        } else if (i === step) {
+          item.classList.add('active');
+          circle.textContent = i;
+        } else {
+          circle.textContent = i;
+        }
+      }
+
+      const progress = document.getElementById('stepperProgress');
+      if (progress) {
+        progress.style.width = step === 1 ? '0%' : (step === 2 ? '50%' : '100%');
+      }
+    }
+
+    function validateStep(step) {
+      if (step === 1) {
+        const name = document.getElementById('regName').value.trim();
+        const dob = document.getElementById('regDob').value;
+        const phone = document.getElementById('regPhone').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const address = document.getElementById('regAddress').value.trim();
+
+        if (!name || !dob || !phone || !email || !address) {
+          Utils.showToast('Please fill out all Step 1 Personal Details before continuing.', 'warning');
+          return false;
+        }
+        if (!email.includes('@')) {
+          Utils.showToast('Please enter a valid email address.', 'error');
+          return false;
+        }
+        return true;
+      } else if (step === 2) {
+        const aadhaar = document.getElementById('regAadhaarNumber').value.trim();
+        const pan = document.getElementById('regPanNumber').value.trim();
+
+        if (!aadhaar || !pan) {
+          Utils.showToast('Please provide Aadhaar and PAN numbers in Step 2.', 'warning');
+          return false;
+        }
+        return true;
+      }
+      return true;
+    }
+
+    // Account Type Card Selection
+    function selectAccType(type) {
+      document.querySelectorAll('.acc-type-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('regAccountType').value = type;
+
+      if (type === 'SAVINGS') {
+        document.getElementById('accTypeSavings')?.classList.add('selected');
+      } else if (type === 'CURRENT') {
+        document.getElementById('accTypeCurrent')?.classList.add('selected');
+      } else if (type === 'STUDENT') {
+        document.getElementById('accTypeStudent')?.classList.add('selected');
+      }
+    }
+
+    // Document & Single Image Upload Handlers with Drag & Drop
+    async function processDocFile(file, labelId, previewId, hiddenInputId) {
+      if (!file) return;
+      const label = document.getElementById(labelId);
+      const preview = document.getElementById(previewId);
+      const hidden = document.getElementById(hiddenInputId);
+
+      if (label) {
+        label.innerHTML = `<span style="color: var(--accent-cyan);"><i class="fa-solid fa-spinner fa-spin"></i> Attaching ${file.name}...</span>`;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if (hidden) hidden.value = e.target.result;
+        if (preview && file.type.startsWith('image/')) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        }
+      };
+      reader.readAsDataURL(file);
+
+      if (window.Cloudinary) {
+        try {
+          const res = await Cloudinary.upload(file, 'kyc_documents');
+          const finalUrl = (res && typeof res === 'object') ? (res.secure_url || res.url) : res;
+          if (finalUrl && typeof finalUrl === 'string' && finalUrl.length > 5) {
+            if (hidden) hidden.value = finalUrl;
+          }
+          if (label) {
+            label.innerHTML = `<span style="color: var(--success); font-weight: 600;"><i class="fa-solid fa-cloud-arrow-up"></i> ${file.name} (Uploaded)</span>`;
+          }
+          Utils.showToast(`${file.name} attached & uploaded!`, 'success');
+          return;
+        } catch (err) {
+          console.warn('Cloudinary notice, using local copy:', err);
+        }
+      }
+
+      if (label) {
+        label.innerHTML = `<span style="color: var(--success); font-weight: 600;"><i class="fa-solid fa-check"></i> ${file.name} (Attached)</span>`;
+      }
+      Utils.showToast(`${file.name} attached!`, 'info');
+    }
+
+    async function processSingleImgFile(file, imgId, placeholderId, hiddenInputId) {
+      if (!file) return;
+      const img = document.getElementById(imgId);
+      const placeholder = document.getElementById(placeholderId);
+      const hidden = document.getElementById(hiddenInputId);
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        if (hidden) hidden.value = e.target.result;
+        if (img) {
+          img.src = e.target.result;
+          img.style.display = 'block';
+        }
+        if (placeholder) {
+          placeholder.style.display = 'none';
+        }
+
+        if (window.Cloudinary) {
+          try {
+            const res = await Cloudinary.upload(file, 'kyc_media');
+            const finalUrl = (res && typeof res === 'object') ? (res.secure_url || res.url) : res;
+            if (finalUrl && typeof finalUrl === 'string' && finalUrl.length > 5) {
+              if (hidden) hidden.value = finalUrl;
+            }
+            Utils.showToast(`${file.name} attached & uploaded!`, 'success');
+            return;
+          } catch (err) {
+            console.warn('Cloudinary notice, using local copy:', err);
+          }
+        }
+
+        Utils.showToast(`${file.name} attached!`, 'info');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleDocUpload(event, labelId, previewId, hiddenInputId) {
+      const file = event.target.files && event.target.files[0];
+      if (file) processDocFile(file, labelId, previewId, hiddenInputId);
+    }
+
+    function handleSingleImgUpload(event, imgId, placeholderId, hiddenInputId) {
+      const file = event.target.files && event.target.files[0];
+      if (file) processSingleImgFile(file, imgId, placeholderId, hiddenInputId);
+    }
+
+    function setupDropzoneEvents(element, onFileDropped) {
+      if (!element) return;
+      ['dragenter', 'dragover'].forEach(name => {
+        element.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          element.classList.add('dragover');
+        }, false);
+      });
+      ['dragleave', 'drop'].forEach(name => {
+        element.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          element.classList.remove('dragover');
+        }, false);
+      });
+      element.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt ? dt.files : null;
+        if (files && files.length > 0) {
+          onFileDropped(files[0]);
+        }
+      }, false);
+    }
+
+    function initLoginKycDragAndDrop() {
+      const a = document.getElementById('aadhaarDropzone');
+      if (a) setupDropzoneEvents(a, (f) => processDocFile(f, 'aadhaarUploadLabel', 'aadhaarPreviewThumb', 'aadhaarDocData'));
+      const p = document.getElementById('panDropzone');
+      if (p) setupDropzoneEvents(p, (f) => processDocFile(f, 'panUploadLabel', 'panPreviewThumb', 'panDocData'));
+      const ad = document.getElementById('addressProofDropzone');
+      if (ad) setupDropzoneEvents(ad, (f) => processDocFile(f, 'addressProofUploadLabel', 'addressProofPreviewThumb', 'addressProofDocData'));
+      const ph = document.getElementById('photoPreviewContainer') || document.getElementById('photoDropzone');
+      if (ph) setupDropzoneEvents(ph, (f) => processSingleImgFile(f, 'photoPreviewImg', 'photoPlaceholderIcon', 'photoDocData'));
+      const sg = document.getElementById('sigPreviewContainer') || document.getElementById('sigDropzone');
+      if (sg) setupDropzoneEvents(sg, (f) => processSingleImgFile(f, 'signaturePreviewImg', 'sigPlaceholderText', 'signatureDocData'));
+    }
+    document.addEventListener('DOMContentLoaded', initLoginKycDragAndDrop);
+
+    // Age Calculation
+    function calculateAge() {
+      const dobInput = document.getElementById('regDob');
+      const ageInput = document.getElementById('regAge');
+      if (dobInput && dobInput.value && ageInput) {
+        const b = new Date(dobInput.value);
+        const now = new Date();
+        let age = now.getFullYear() - b.getFullYear();
+        if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) {
+          age--;
+        }
+        ageInput.value = age > 0 ? age : 0;
+      }
+    }
+
+    // Password Strength
+    function checkStrength() {
+      const val = document.getElementById('regPassword').value;
+      const bar = document.getElementById('regStrengthBar');
+      const txt = document.getElementById('regStrengthText');
+      let score = 0;
+      if (val.length >= 8) score += 25;
+      if (/[A-Z]/.test(val)) score += 25;
+      if (/[0-9]/.test(val)) score += 25;
+      if (/[^A-Za-z0-9]/.test(val)) score += 25;
+
+      bar.style.width = score + '%';
+      if (score <= 25) {
+        bar.style.backgroundColor = 'var(--danger)';
+        txt.textContent = 'Weak Password';
+        txt.style.color = 'var(--danger)';
+      } else if (score <= 50) {
+        bar.style.backgroundColor = 'var(--warning)';
+        txt.textContent = 'Moderate Password';
+        txt.style.color = 'var(--warning)';
+      } else {
+        bar.style.backgroundColor = 'var(--success)';
+        txt.textContent = 'Strong Password';
+        txt.style.color = 'var(--success)';
+      }
+    }
+
+    // Demo Autofill Helpers
+    function fillDemoCustomer() {
+      document.getElementById('loginEmail').value = 'gowtham@ggbank.com';
+      document.getElementById('loginPassword').value = 'Password@123';
+      Utils.showToast('Customer credentials filled!', 'info');
+    }
+
+    function fillDemoAdmin() {
+      document.getElementById('adminUsername').value = 'admin@ggbank.com';
+      document.getElementById('adminPassword').value = 'Password@123';
+      Utils.showToast('Admin credentials filled!', 'info');
+    }
+
+    function fillDemoKYCApplicant() {
+      // Step 1 Details
+      document.getElementById('regName').value = 'Sarah Connor';
+      document.getElementById('regDob').value = '2001-11-20';
+      document.getElementById('regGender').value = 'Female';
+      document.getElementById('regPhone').value = '9123456780';
+      document.getElementById('regEmail').value = 'sarah.new' + Math.floor(Math.random() * 900 + 100) + '@ggbank.com';
+      document.getElementById('regAddress').value = '120 Silicon Park, Tech Corridor, Chennai';
+      document.getElementById('regOccupation').value = 'Salaried Employee';
+
+      // Step 2 Details
+      document.getElementById('regAadhaarNumber').value = '5421 8976 1234';
+      document.getElementById('regPanNumber').value = 'SARAH7890K';
+      const addrTypeEl = document.getElementById('regAddressProofType');
+      if (addrTypeEl) addrTypeEl.value = 'Electricity Bill';
+
+      const sampleSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="180" viewBox="0 0 300 180"><rect width="300" height="180" fill="%23172752" rx="10"/><text x="20" y="35" fill="%2300f0ff" font-family="sans-serif" font-weight="bold" font-size="14">GOVERNMENT OF INDIA</text><text x="20" y="70" fill="%23fff" font-family="sans-serif" font-size="12">IDENTIFICATION DOCUMENT</text><rect x="20" y="90" width="70" height="70" fill="%2338bdf8" rx="5"/><text x="105" y="115" fill="%23e2e8f0" font-family="monospace" font-size="13">VERIFIED ID CARD</text><text x="105" y="140" fill="%2310b981" font-family="sans-serif" font-weight="bold" font-size="12">&#x2714; SECURE CHIP</text></svg>';
+      
+      document.getElementById('panDocData').value = sampleSvg;
+      document.getElementById('panPreviewThumb').src = sampleSvg;
+      document.getElementById('panPreviewThumb').style.display = 'block';
+      document.getElementById('panUploadLabel').textContent = 'PAN Card Attached';
+
+      document.getElementById('aadhaarDocData').value = sampleSvg;
+      document.getElementById('aadhaarPreviewThumb').src = sampleSvg;
+      document.getElementById('aadhaarPreviewThumb').style.display = 'block';
+      document.getElementById('aadhaarUploadLabel').textContent = 'Aadhaar Card Attached';
+
+      const addrDocEl = document.getElementById('addressProofDocData');
+      if (addrDocEl) addrDocEl.value = sampleSvg;
+      const addrThumb = document.getElementById('addressProofPreviewThumb');
+      if (addrThumb) { addrThumb.src = sampleSvg; addrThumb.style.display = 'block'; }
+      const addrLbl = document.getElementById('addressProofUploadLabel');
+      if (addrLbl) addrLbl.textContent = 'Address Proof Attached';
+
+      // Photo and Signature sample
+      const photoSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="60" fill="%230284c7"/><text x="60" y="70" fill="%23fff" font-size="40" text-anchor="middle">👤</text></svg>';
+      document.getElementById('photoDocData').value = photoSvg;
+      document.getElementById('photoPreviewImg').src = photoSvg;
+      document.getElementById('photoPreviewImg').style.display = 'block';
+      document.getElementById('photoPlaceholderIcon').style.display = 'none';
+
+      const sigSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60"><text x="20" y="42" fill="%2300f0ff" font-family="cursive" font-size="28" font-weight="bold">Sarah C.</text></svg>';
+      document.getElementById('signatureDocData').value = sigSvg;
+      document.getElementById('signaturePreviewImg').src = sigSvg;
+      document.getElementById('signaturePreviewImg').style.display = 'block';
+      document.getElementById('sigPlaceholderText').style.display = 'none';
+
+      // Step 3 Details
+      selectAccType('SAVINGS');
+      document.getElementById('regNomineeName').value = 'John Connor';
+      document.getElementById('regNomineeRelation').value = 'Son';
+      document.getElementById('regNomineePhone').value = '9876543211';
+      document.getElementById('regPassword').value = 'Password@123';
+      checkStrength();
+
+      Utils.showToast('Demo applicant details & documents attached for all 3 steps!', 'success');
+    }
+
+    // Pending Approval Modal Handling
+    let pendingCustomerEmail = '';
+
+    function openPendingApprovalModal(email) {
+      pendingCustomerEmail = email;
+      document.getElementById('pendingCustomerEmailDisplay').textContent = email;
+      document.getElementById('pendingApprovalModal').classList.add('active');
+    }
+
+    function closePendingApprovalModal() {
+      document.getElementById('pendingApprovalModal').classList.remove('active');
+    }
+
+    async function instantApprovePendingCustomer() {
+      const btn = document.getElementById('btnInstantApprove');
+      Utils.setLoading(btn, true, 'Approving Account...');
+      try {
+        const users = API.getMock('gg_users');
+        const user = users.find(u => u.email && u.email.toLowerCase() === pendingCustomerEmail.toLowerCase());
+        if (user) {
+          await API.request(`/admin/customers/${user.userId}/approve`, 'PUT', {
+            approvedBy: 'Bank Admin (Instant Verification)',
+            remarks: 'Approved KYC Documents'
+          });
+          Utils.showToast('Account Approved! Logging in...', 'success');
+          closePendingApprovalModal();
+          
+          // Log in
+          const pass = document.getElementById('loginPassword').value || 'Password@123';
+          const res = await Auth.loginWithEmail(pendingCustomerEmail, pass);
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 500);
+        } else {
+          Utils.showToast('User record not found.', 'error');
+        }
+      } catch (err) {
+        Utils.showToast('Approval error: ' + err.message, 'error');
+      } finally {
+        Utils.setLoading(btn, false);
+      }
+    }
+
+    // Customer Login Handler
+    document.getElementById('customerLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('btnLoginSubmit');
+
+      if (!email || !email.includes('@')) {
+        Utils.showToast('Please enter a valid email address.', 'error');
+        return;
+      }
+
+      Utils.setLoading(btn, true, 'Signing In...');
+      try {
+        const { user } = await Auth.loginWithEmail(email, pass);
+        Utils.showToast(`Welcome, ${user.name}!`, 'success');
+        setTimeout(() => {
+          if (user.role === 'OFFICER') {
+            window.location.href = 'officer-dashboard.html';
+          } else if (user.role === 'ADMIN') {
+            window.location.href = 'admin-dashboard.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        }, 500);
+      } catch (err) {
+        if (err.message && err.message.includes('Pending Approval')) {
+          openPendingApprovalModal(email);
+        } else {
+          Utils.showToast(err.message, 'error');
+        }
+        Utils.setLoading(btn, false);
+      }
+    });
+
+    // Officer Inline Functions
+    function fillDemoOfficerInline(email, label) {
+      document.getElementById('officerInlineEmail').value = email || 'vikram.sharma@ggbank.com';
+      document.getElementById('officerInlinePassword').value = 'Password@123';
+      Utils.showToast(`Selected: ${label || 'Officer'} credentials`, 'info');
+    }
+
+    async function handleOfficerInlineLogin(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const email = document.getElementById('officerInlineEmail').value.trim();
+      const pass = document.getElementById('officerInlinePassword').value;
+      const btn = document.getElementById('btnOfficerInlineLoginSubmit');
+
+      if (!email) {
+        Utils.showToast('Please enter officer staff email.', 'error');
+        return;
+      }
+
+      Utils.setLoading(btn, true, 'Opening Workspace...');
+      try {
+        await Auth.loginOfficer(email, pass || 'Password@123');
+        Utils.showToast('Officer Authenticated! Opening Desk...', 'success');
+        setTimeout(() => {
+          window.location.href = 'officer-dashboard.html';
+        }, 400);
+      } catch (err) {
+        Utils.showToast(err.message || 'Authentication failed', 'error');
+        Utils.setLoading(btn, false);
+      }
+    }
+
+    // Customer 3-Step Registration Handler
+    let latestCreatedAccount = null;
+
+    document.getElementById('customerRegisterForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const dob = document.getElementById('regDob').value;
+      const gender = document.getElementById('regGender').value;
+      const phone = document.getElementById('regPhone').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const address = document.getElementById('regAddress').value.trim();
+      const occupation = document.getElementById('regOccupation').value;
+      
+      const aadhaarNumber = document.getElementById('regAadhaarNumber').value.trim();
+      const aadhaarDoc = document.getElementById('aadhaarDocData').value;
+      const panNumber = document.getElementById('regPanNumber').value.trim().toUpperCase();
+      const panDoc = document.getElementById('panDocData').value;
+      const addressProofType = document.getElementById('regAddressProofType') ? document.getElementById('regAddressProofType').value : 'Not Required';
+      const addressProofDoc = document.getElementById('addressProofDocData') ? document.getElementById('addressProofDocData').value : '';
+      const photoDoc = document.getElementById('photoDocData').value;
+      const signatureDoc = document.getElementById('signatureDocData').value;
+
+      const accountType = document.getElementById('regAccountType').value;
+      const nomineeName = document.getElementById('regNomineeName').value.trim();
+      const nomineeRelation = document.getElementById('regNomineeRelation').value;
+      const nomineePhone = document.getElementById('regNomineePhone').value.trim();
+      const pass = document.getElementById('regPassword').value;
+
+      const btn = document.getElementById('btnRegisterSubmit');
+
+      if (!panNumber || !aadhaarNumber) {
+        Utils.showToast('Please provide both PAN and Aadhaar numbers.', 'error');
+        setWizardStep(2);
+        return;
+      }
+
+      Utils.setLoading(btn, true, 'Submitting Application...');
+
+      try {
+        const res = await API.request('/users/register', 'POST', {
+          name,
+          email,
+          phone,
+          dateOfBirth: dob,
+          gender,
+          address,
+          occupation,
+          accountType,
+          password: pass,
+          panNumber,
+          panDoc,
+          aadhaarNumber,
+          aadhaarDoc,
+          addressProofType,
+          addressProofDoc,
+          photoDoc,
+          signatureDoc,
+          nomineeName,
+          nomineeRelation,
+          nomineePhone
+        });
+
+        const createdAcc = res.data && res.data.account ? res.data.account : {
+          accountNumber: '100188' + Math.floor(10000 + Math.random() * 90000),
+          accountType: accountType
+        };
+
+        latestCreatedAccount = {
+          name,
+          accountNumber: createdAcc.accountNumber,
+          accountType: createdAcc.accountType || accountType,
+          createdDate: new Date().toLocaleDateString('en-GB')
+        };
+
+        document.getElementById('modalSuccessCustName').textContent = name;
+        document.getElementById('modalSuccessAccNumber').textContent = createdAcc.accountNumber;
+        document.getElementById('modalSuccessType').textContent = createdAcc.accountType || accountType;
+        document.getElementById('accountCreatedModal').classList.add('active');
+
+        Utils.showToast('Application submitted! Awaiting Admin Approval.', 'success');
+      } catch (err) {
+        Utils.showToast(err.message, 'error');
+      } finally {
+        Utils.setLoading(btn, false);
+      }
+    });
+
+    // Admin Login Handler
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('adminUsername').value.trim();
+      const p = document.getElementById('adminPassword').value;
+      const btn = document.getElementById('btnAdminLoginSubmit');
+
+      Utils.setLoading(btn, true, 'Signing In...');
+      try {
+        await Auth.loginAdmin(u, p);
+        Utils.showToast('Admin Authenticated!', 'success');
+        setTimeout(() => {
+          window.location.href = 'admin-dashboard.html';
+        }, 500);
+      } catch (err) {
+        Utils.showToast(err.message, 'error');
+        Utils.setLoading(btn, false);
+      }
+    });
+
+    // Success Modal Actions
+    function copyCreatedAccount() {
+      if (latestCreatedAccount) {
+        Utils.copyToClipboard(latestCreatedAccount.accountNumber, 'Account number copied: ' + latestCreatedAccount.accountNumber);
+      }
+    }
+
+    function goToLoginWithCreatedAccount() {
+      document.getElementById('accountCreatedModal').classList.remove('active');
+      switchPortalTab('tab-login');
+      if (latestCreatedAccount) {
+        document.getElementById('loginEmail').value = document.getElementById('regEmail').value;
+      }
+    }
+
+    function openRecoveryModal(e) {
+      e.preventDefault();
+      const em = prompt('Enter your registered email address to receive password reset link:');
+      if (em && em.includes('@')) {
+        Utils.showToast(`Password reset link sent to ${em}`, 'success');
+      } else if (em) {
+        Utils.showToast('Please enter a valid email address.', 'error');
+      }
+    }
+  </script>
+
+</body>
+</html>

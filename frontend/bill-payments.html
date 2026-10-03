@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Utility Bill Payments">
+  <title>Bill Payments - GG BANK</title>
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsPDF for downloading payment receipt -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
+
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
+
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Profile & Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">Bill Payments</div>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-receipt"></i> Bill <span>Payments</span></h2>
+            <p class="page-description">Instant verified utility payments with instant digital receipt generation.</p>
+          </div>
+        </div>
+
+        <!-- Bill Payment Card -->
+        <div class="card" id="billPaymentCard" style="max-width: 620px; margin: 0 auto;">
+          <form id="billPaymentForm">
+            
+            <!-- Category Pills / Selector (Requirement 11: Electricity, Water, Internet, Mobile, Gas, Other) -->
+            <div class="form-group">
+              <label class="form-label">Select Utility Category</label>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px;" id="billCategoryGrid">
+                <button type="button" class="btn btn-outline active-category-btn" data-category="Electricity" style="padding: 10px; font-size: 0.85rem;">
+                  <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Electricity
+                </button>
+                <button type="button" class="btn btn-outline" data-category="Water" style="padding: 10px; font-size: 0.85rem;">
+                  <i class="fa-solid fa-droplet" style="color: #38bdf8;"></i> Water
+                </button>
+                <button type="button" class="btn btn-outline" data-category="Internet" style="padding: 10px; font-size: 0.85rem;">
+                  <i class="fa-solid fa-wifi" style="color: #a855f7;"></i> Internet
+                </button>
+                <button type="button" class="btn btn-outline" data-category="Mobile" style="padding: 10px; font-size: 0.85rem;">
+                  <i class="fa-solid fa-mobile-screen" style="color: #4ade80;"></i> Mobile
+                </button>
+                <button type="button" class="btn btn-outline" data-category="Gas" style="padding: 10px; font-size: 0.85rem;">
+                  <i class="fa-solid fa-fire-flame-simple" style="color: #f97316;"></i> Gas
+                </button>
+                <button type="button" class="btn btn-outline" data-category="Other" style="padding: 10px; font-size: 0.85rem;">
+                  <i class="fa-solid fa-asterisk" style="color: #94a3b8;"></i> Other
+                </button>
+              </div>
+              <input type="hidden" id="billCategorySelect" value="Electricity">
+            </div>
+
+            <!-- Service Provider Dropdown -->
+            <div class="form-group">
+              <label class="form-label" for="billProviderSelect">Service Biller Provider</label>
+              <select id="billProviderSelect" class="form-control" required>
+                <!-- Populated dynamically based on category -->
+              </select>
+            </div>
+
+            <!-- Consumer Details -->
+            <div class="form-group">
+              <label class="form-label" for="billConsumerNumber" id="consumerFieldLabel">Consumer Account ID / Number</label>
+              <input type="text" id="billConsumerNumber" class="form-control" placeholder="e.g. 9840192831" required>
+            </div>
+
+            <!-- Bill Amount -->
+            <div class="form-group">
+              <label class="form-label" for="billAmount">Bill Amount (₹)</label>
+              <input type="number" id="billAmount" class="form-control" placeholder="1550" min="1" step="1" required>
+            </div>
+
+            <!-- Balance Preview -->
+            <div style="background: var(--surface-secondary); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; font-size: 0.85rem; display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">Debiting From: Savings (•••• 9201)</span>
+              <span style="color: var(--accent); font-weight: 700;" id="billAccountBal">₹65,450.00</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnPayBillSubmit">
+              <i class="fa-solid fa-arrow-right"></i> Review & Authorize Settlement
+            </button>
+          </form>
+        </div>
+
+        <!-- Success Screen with Payment Receipt (Requirement 11) -->
+        <div class="card confirmation-card" id="billSuccessScreen" style="display: none; max-width: 520px; margin: 0 auto;">
+          <div class="confirmation-checkmark">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <h2 style="font-size: 1.45rem; font-weight: 800; color: #ffffff;">Payment Successful</h2>
+          <div class="confirmation-amount" id="billSuccessAmount" style="color: var(--accent);">-₹1,550.00</div>
+
+          <div class="confirmation-meta-box">
+            <div class="confirmation-meta-row">
+              <span class="confirmation-label">Payment Receipt Reference</span>
+              <span class="confirmation-val" id="billSuccessRef" style="color: var(--accent);">BILL-2026-881920</span>
+            </div>
+            <div class="confirmation-meta-row">
+              <span class="confirmation-label">Biller Provider</span>
+              <span class="confirmation-val" id="billSuccessBiller">BESCOM Electricity Power Corp</span>
+            </div>
+            <div class="confirmation-meta-row">
+              <span class="confirmation-label">Consumer Reference ID</span>
+              <span class="confirmation-val" id="billSuccessConsumer">9840192831</span>
+            </div>
+            <div class="confirmation-meta-row">
+              <span class="confirmation-label">Settlement Status</span>
+              <span class="confirmation-val" style="color: var(--success); font-weight: 700;">Instant Settled</span>
+            </div>
+            <div class="confirmation-meta-row">
+              <span class="confirmation-label">Debited From Account</span>
+              <span class="confirmation-val" id="billSuccessSource">1001 8849 201</span>
+            </div>
+          </div>
+
+          <div class="confirmation-actions">
+            <button class="btn btn-secondary" id="btnDownloadBillReceipt">
+              <i class="fa-solid fa-download"></i> Download Receipt
+            </button>
+            <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">
+              <i class="fa-solid fa-circle-check"></i> Done
+            </button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Review Modal (Flow: Select Biller -> Enter Details -> Enter Amount -> Review -> Confirm -> Success) -->
+  <div class="modal-backdrop" id="billReviewModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-invoice-dollar"></i> Review Bill Payment</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <div class="confirmation-meta-box">
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Payable Amount</span>
+          <span class="confirmation-val" id="modalBillAmount" style="color: var(--danger); font-size: 1.15rem;">₹1,550.00</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Biller Category</span>
+          <span class="confirmation-val" id="modalBillCategory">Electricity</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Service Provider</span>
+          <span class="confirmation-val" id="modalBillProvider">BESCOM</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Consumer ID</span>
+          <span class="confirmation-val" id="modalBillConsumer">9840192831</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Convenience Fee</span>
+          <span class="confirmation-val" style="color: var(--success);">₹0.00 (Zero Fee)</span>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
+        <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmBillPay">Confirm & Pay</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/bill-payments.js"></script>
+
+</body>
+</html>

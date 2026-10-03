@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Customer Management & KYC Portal">
+  <title>Customer Management - GG BANK Admin</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar admin-sidebar" id="adminSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="topbar"></header>
+
+      <main class="content-area">
+        <!-- Page Header & Breadcrumb -->
+        <div class="page-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              Admin Portal &bull; Customer Management
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-users"></i> Customer <span>Directory & Approvals</span></h2>
+            <p class="page-description">Manage customers, view submitted KYC verification documents, and approve new digital accounts.</p>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <button class="btn btn-primary" onclick="openAddCustomerModal()">
+              <i class="fa-solid fa-user-plus"></i> Add New Customer
+            </button>
+            <button class="btn btn-secondary" onclick="exportCustomersCsv()">
+              <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+            <button class="btn btn-secondary" onclick="handleClearAllCustomers()" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.35);">
+              <i class="fa-solid fa-trash-can"></i> Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar with KYC Approval Toggle -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div style="display: flex; gap: 10px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color-subtle); padding-bottom: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" id="btnFilterAll" onclick="setQuickCustomerFilter('ALL')">
+              <i class="fa-solid fa-users"></i> All Customers
+            </button>
+            <button class="btn btn-warning btn-sm" id="btnFilterKYC" onclick="setQuickCustomerFilter('PENDING_APPROVAL')">
+              <i class="fa-solid fa-file-shield"></i> Pending Approvals <span class="badge" id="pendingKycBadgeCount" style="background: rgba(0,0,0,0.3); margin-left: 4px;">0</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnFilterActive" onclick="setQuickCustomerFilter('ACTIVE')">
+              <i class="fa-solid fa-circle-check"></i> Active
+            </button>
+          </div>
+
+          <div class="filter-toolbar" style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <div class="search-box" style="flex: 1; min-width: 280px;">
+              <input type="text" class="form-control" id="customerSearchInput" placeholder="🔍 Search customer name, account number, phone, email, PAN, DL, Aadhaar...">
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <label style="font-size: 0.85rem; color: var(--text-secondary);">Status Filter:</label>
+              <select id="customerStatusFilter" class="form-control" style="width: 170px;">
+                <option value="ALL">All Statuses</option>
+                <option value="PENDING_APPROVAL">Pending Approval</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="BLOCKED">Blocked</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Table Card -->
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Customer ID</th>
+                  <th>Customer Name</th>
+                  <th>Account Number</th>
+                  <th>Phone / Email</th>
+                  <th>Account Type</th>
+                  <th>Status</th>
+                  <th>Created Date</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminCustomersTableBody">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table Pagination Footer -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color-subtle);">
+            <div style="font-size: 0.85rem; color: var(--text-secondary);" id="customerCountSummary">
+              Showing 0 customers
+            </div>
+            <div style="display: flex; gap: 8px;" id="customerPaginationBtns">
+              <!-- Pagination controls -->
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Edit Customer Profile Modal -->
+  <div class="modal-backdrop" id="editCustomerModal">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-pen" style="color: var(--accent-cyan);"></i> Edit Customer Profile</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('editCustomerModal').classList.remove('active')">&times;</button>
+      </div>
+      <form id="editCustomerForm" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+        <input type="hidden" id="editCustUserId">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="editCustName" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" id="editCustPhone" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" id="editCustDob" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Registered Address</label>
+          <input type="text" id="editCustAddress" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Access Status</label>
+          <select id="editCustStatus" class="form-control">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="BLOCKED">BLOCKED</option>
+          </select>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('editCustomerModal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveEditCustomer">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add New Customer Modal -->
+  <div class="modal-backdrop" id="addCustomerModal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-plus" style="color: var(--accent-cyan);"></i> Register New Customer</h3>
+        <button class="modal-close-btn" onclick="closeAddCustomerModal()">&times;</button>
+      </div>
+      <form id="addCustomerForm" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+        <div class="form-group">
+          <label class="form-label">Customer Legal Name</label>
+          <input type="text" id="addCustName" class="form-control" placeholder="e.g. Sarah Connor" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="addCustEmail" class="form-control" placeholder="sarah@ggbank.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" id="addCustPhone" class="form-control" placeholder="9123456780" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Account Type</label>
+            <select id="addCustAccType" class="form-control">
+              <option value="SAVINGS">Savings Account</option>
+              <option value="CURRENT">Current Account</option>
+              <option value="BUSINESS">Business Account</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Initial Balance (₹)</label>
+            <input type="number" id="addCustBalance" class="form-control" placeholder="10000" min="0" value="10000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Registered Address</label>
+          <input type="text" id="addCustAddress" class="form-control" placeholder="City, State, Country" value="Bangalore, Karnataka">
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+          <button type="button" class="btn btn-secondary" onclick="closeAddCustomerModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Register Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Comprehensive KYC Document Viewer & Approval Modal -->
+  <div class="modal-backdrop" id="kycDocViewerModal">
+    <div class="modal-card" style="max-width: 820px;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div>
+          <h3 class="modal-title" id="kycViewerTitle" style="font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> Customer KYC Document Verification
+          </h3>
+          <div id="kycDocCustomerHeader" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
+            Applicant: <strong>Gowtham NK</strong>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('kycDocViewerModal').classList.remove('active')">&times;</button>
+      </div>
+
+      <!-- Approval Banner -->
+      <div id="kycApprovalAlertBanner" style="display: none; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 0.85rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-shield-halved" style="font-size: 1.2rem; flex-shrink: 0;"></i>
+        <div><strong>KYC Document Approval Review:</strong> Carefully examine the applicant's uploaded documents below before confirming account activation.</div>
+      </div>
+
+      <!-- Document Switcher Tabs -->
+      <div style="display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color-subtle); padding-bottom: 10px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary btn-sm" id="kycTabAll" onclick="switchKYCModalDoc('ALL')">
+          <i class="fa-solid fa-table-cells-large"></i> All Documents (Review Grid)
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabAadhaar" onclick="switchKYCModalDoc('AADHAAR')">
+          <i class="fa-solid fa-fingerprint"></i> Aadhaar Card
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabPan" onclick="switchKYCModalDoc('PAN')">
+          <i class="fa-solid fa-id-card"></i> PAN Card
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabPhoto" onclick="switchKYCModalDoc('PHOTO')">
+          <i class="fa-solid fa-user-circle"></i> Passport Photo
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabSignature" onclick="switchKYCModalDoc('SIGNATURE')">
+          <i class="fa-solid fa-signature"></i> Signature
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabNominee" onclick="switchKYCModalDoc('NOMINEE')">
+          <i class="fa-solid fa-users"></i> Nominee
+        </button>
+      </div>
+
+      <!-- Document Display Area -->
+      <div id="kycViewerBody" style="text-align: center; min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; border: 1px solid var(--border-color-subtle);">
+        <!-- Dynamic Document Preview -->
+      </div>
+
+      <!-- Document Metadata Info -->
+      <div id="kycDocMetaBox" style="background: var(--bg-surface); padding: 12px 14px; border-radius: var(--radius-sm); font-size: 0.82rem; margin-bottom: 16px; border-left: 3px solid var(--accent-cyan); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <span style="color: var(--text-muted);">Document Number:</span> <strong id="kycModalDocNumber" style="font-family: var(--font-mono); color: #fff;">--</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted);">Verification Status:</span> <span class="badge badge-success" id="kycModalDocStatus">VERIFIED</span>
+        </div>
+      </div>
+
+      <!-- Modal Footer with Direct Verification & Approval Actions -->
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('kycDocViewerModal').classList.remove('active')">
+          Close
+        </button>
+        <div style="display: flex; gap: 8px;" id="kycModalActionBtns">
+          <!-- Dynamic Approve/Reject buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/admin-customers.js"></script>
+</body>
+</html>

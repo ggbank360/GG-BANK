@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Customer Detailed KYC & Portfolio Dossier">
+  <title>Customer Details - GG BANK Admin</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar admin-sidebar" id="adminSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="topbar"></header>
+
+      <main class="content-area">
+        
+        <!-- Back Navigation & Header -->
+        <div style="margin-bottom: 20px;">
+          <a href="customers.html" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-arrow-left"></i> Back to Customers
+          </a>
+        </div>
+
+        <div class="page-header" style="margin-bottom: 24px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              Admin Portal &bull; Customer Verification
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-id-card"></i> Customer <span>KYC & Account Profile</span></h2>
+            <p class="page-description">Verify submitted KYC documents, account balances, and transaction history.</p>
+          </div>
+          <div style="display: flex; gap: 10px;" id="customerActionButtons">
+            <!-- Dynamic Actions -->
+          </div>
+        </div>
+
+        <div id="customerDetailsContent">
+          <!-- Rendered dynamically -->
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Comprehensive KYC Document Viewer & Verification Modal -->
+  <div class="modal-backdrop" id="kycDocViewerModal">
+    <div class="modal-card" style="max-width: 820px;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div>
+          <h3 class="modal-title" id="kycViewerTitle" style="font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> Customer KYC Document Verification
+          </h3>
+          <div id="kycDocCustomerHeader" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
+            Applicant: <strong id="kycDocHolderName">Customer</strong>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('kycDocViewerModal').classList.remove('active')">&times;</button>
+      </div>
+
+      <!-- Approval Banner -->
+      <div id="kycApprovalAlertBanner" style="display: none; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 0.85rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-shield-halved" style="font-size: 1.2rem; flex-shrink: 0;"></i>
+        <div><strong>KYC Document Approval Review:</strong> Carefully examine the applicant's uploaded documents below before confirming account activation.</div>
+      </div>
+
+      <!-- Document Switcher Tabs -->
+      <div style="display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color-subtle); padding-bottom: 10px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary btn-sm" id="kycTabAll" onclick="switchKYCDetailsDoc('ALL')">
+          <i class="fa-solid fa-table-cells-large"></i> All Documents (Review Grid)
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabPan" onclick="switchKYCDetailsDoc('PAN')">
+          <i class="fa-solid fa-id-card"></i> PAN Card
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabAadhaar" onclick="switchKYCDetailsDoc('AADHAAR')">
+          <i class="fa-solid fa-fingerprint"></i> Aadhaar / ID Proof
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabIncome" onclick="switchKYCDetailsDoc('INCOME')">
+          <i class="fa-solid fa-file-invoice-dollar"></i> Income Proof
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabBankStatement" onclick="switchKYCDetailsDoc('STATEMENT')">
+          <i class="fa-solid fa-file-lines"></i> Bank Statement
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabPhoto" onclick="switchKYCDetailsDoc('PHOTO')">
+          <i class="fa-solid fa-user-circle"></i> Passport Photo
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabSignature" onclick="switchKYCDetailsDoc('SIGNATURE')">
+          <i class="fa-solid fa-signature"></i> Signature
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabNominee" onclick="switchKYCDetailsDoc('NOMINEE')">
+          <i class="fa-solid fa-users"></i> Nominee
+        </button>
+      </div>
+
+      <!-- Document Display Area -->
+      <div id="kycViewerBody" style="text-align: center; min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; border: 1px solid var(--border-color-subtle);">
+        <!-- Dynamic Document Preview -->
+      </div>
+
+      <!-- Document Metadata Info -->
+      <div id="kycDocMetaBox" style="background: var(--bg-surface); padding: 12px 14px; border-radius: var(--radius-sm); font-size: 0.82rem; margin-bottom: 16px; border-left: 3px solid var(--accent-cyan); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <span style="color: var(--text-muted);">Document Number:</span> <strong id="kycModalDocNumber" style="font-family: var(--font-mono); color: #fff;">--</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted);">Verification Status:</span> <span class="badge badge-success" id="kycModalDocStatus">VERIFIED</span>
+        </div>
+      </div>
+
+      <!-- Modal Footer with Direct Verification & Approval Actions -->
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('kycDocViewerModal').classList.remove('active')">
+          Close
+        </button>
+        <div style="display: flex; gap: 8px;" id="kycModalActionBtns">
+          <!-- Dynamic Approve/Reject buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer QR Code Modal -->
+  <div class="modal-backdrop" id="customerQrModal">
+    <div class="modal-card" style="max-width: 480px; text-align: center;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 class="modal-title" style="font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-qrcode" style="color: var(--accent-cyan);"></i> Official Customer Receiving QR
+        </h3>
+        <button class="modal-close-btn" onclick="document.getElementById('customerQrModal').classList.remove('active')">&times;</button>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 16px;">
+        <div style="font-size: 1.2rem; font-weight: 800; color: #fff;" id="modalQrCustName">Customer Name</div>
+        <div style="font-family: var(--font-mono); color: var(--accent-cyan); font-size: 0.95rem; margin-top: 2px;" id="modalQrCustAcc">10018849201</div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">IFSC: GGBN0001234 &bull; Central Tech Branch</div>
+
+        <div id="modalQrContainer" style="background: #ffffff; padding: 16px; border-radius: 14px; display: inline-block; margin: 16px auto; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 3px solid var(--accent-cyan);"></div>
+
+        <div style="font-size: 0.82rem; color: var(--text-muted); font-family: var(--font-mono);" id="modalQrCustUpi">10018849201@ggbank</div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary" onclick="downloadModalQr()">
+          <i class="fa-solid fa-download"></i> Download QR Image
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('customerQrModal').classList.remove('active')">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/lib/qrcode.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/customer-details.js"></script>
+</body>
+</html>

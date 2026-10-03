@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Accounts Management & Portfolio Surveillance">
+  <title>Account Management - GG BANK Admin</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar admin-sidebar" id="adminSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="topbar"></header>
+
+      <main class="content-area">
+        <div class="page-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              Admin Portal &bull; Accounts Portfolio
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-vault"></i> Account <span>Portfolios & Ledger</span></h2>
+            <p class="page-description">Complete listing of registered 11-digit accounts, balances, and operational statuses.</p>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <button class="btn btn-primary" onclick="openAddAccountModal()">
+              <i class="fa-solid fa-folder-plus"></i> Add New Account
+            </button>
+            <button class="btn btn-secondary" onclick="exportAccountsCsv()">
+              <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+            <button class="btn btn-secondary" onclick="handleClearAllAccounts()" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.35);">
+              <i class="fa-solid fa-trash-can"></i> Clear All Accounts
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="filter-toolbar" style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <div class="search-box" style="flex: 1; min-width: 280px;">
+              <input type="text" class="form-control" id="accountSearchInput" placeholder="🔍 Search 11-digit account number, customer name, IFSC, branch...">
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select id="accountTypeFilter" class="form-control" style="width: 140px;">
+                <option value="ALL">All Types</option>
+                <option value="SAVINGS">Savings</option>
+                <option value="CURRENT">Current</option>
+                <option value="BUSINESS">Business</option>
+                <option value="TREASURY">Treasury</option>
+              </select>
+
+              <select id="accountStatusFilter" class="form-control" style="width: 140px;">
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="BLOCKED">Blocked</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Table Card -->
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>11-Digit Account No</th>
+                  <th>Customer Name</th>
+                  <th>Account Type</th>
+                  <th>Available Balance</th>
+                  <th>IFSC Code</th>
+                  <th>Branch</th>
+                  <th>Status</th>
+                  <th>Created Date</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminAccountsTableBody">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color-subtle);">
+            <div style="font-size: 0.85rem; color: var(--text-secondary);" id="accountCountSummary">
+              Showing 0 accounts
+            </div>
+            <div style="display: flex; gap: 8px;" id="accountPaginationBtns">
+              <!-- Pagination controls -->
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Add New Account Modal -->
+  <div class="modal-backdrop" id="addAccountModal">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-folder-plus" style="color: var(--accent-cyan);"></i> Provision New 11-Digit Account</h3>
+        <button class="modal-close-btn" onclick="closeAddAccountModal()">&times;</button>
+      </div>
+      <form id="addAccountForm">
+        <div class="form-group">
+          <label class="form-label" for="newAccCustomerName">Account Holder Legal Name</label>
+          <input type="text" id="newAccCustomerName" class="form-control" placeholder="e.g. Gowtham NK" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newAccEmail">Email Address</label>
+            <input type="email" id="newAccEmail" class="form-control" placeholder="customer@ggbank.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newAccPhone">Phone Number</label>
+            <input type="tel" id="newAccPhone" class="form-control" placeholder="9876543210" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newAccNumber">11-Digit Account Number</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="newAccNumber" class="form-control" placeholder="10018849203" maxlength="11" pattern="\d{11}" required>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="generateRandom11DigitAcc()" title="Generate Random 11-digit Number">
+                <i class="fa-solid fa-dice"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newAccType">Account Type</label>
+            <select id="newAccType" class="form-control">
+              <option value="SAVINGS">SAVINGS (Standard)</option>
+              <option value="CURRENT">CURRENT (Commercial)</option>
+              <option value="BUSINESS">BUSINESS (MSME)</option>
+              <option value="SALARY">SALARY (Corporate)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newAccBalance">Initial Opening Balance (₹)</label>
+            <input type="number" id="newAccBalance" class="form-control" placeholder="5000" min="0" step="0.01" value="5000">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newAccBranch">Branch</label>
+            <select id="newAccBranch" class="form-control">
+              <option value="Central Tech Branch">Central Tech Branch</option>
+              <option value="Silicon Valley Branch">Silicon Valley Branch</option>
+              <option value="Cyber Gateway Branch">Cyber Gateway Branch</option>
+              <option value="Financial Tower Branch">Financial Tower Branch</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newAccIfsc">Bank IFSC Code</label>
+          <input type="text" id="newAccIfsc" class="form-control" value="GGBN0001234" readonly style="background: rgba(255,255,255,0.05);">
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeAddAccountModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Create Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/admin-accounts.js"></script>
+</body>
+</html>

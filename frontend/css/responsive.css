@@ -1,0 +1,73 @@
+/* ==========================================================================
+   GG BANK - RESPONSIVE STYLES (responsive.css)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 240px;
+  }
+
+  .content-area {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    z-index: 1200 !important;
+  }
+
+  .main-wrapper {
+    margin-left: 0 !important;
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex !important;
+  }
+
+  .dashboard-grid, .emi-calc-grid, .loan-review-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .greeting-text {
+    font-size: 1.05rem;
+  }
+
+  .content-area {
+    padding: 18px 12px;
+  }
+
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: var(--radius-md);
+  }
+
+  .acc-box-number {
+    font-size: 1.5rem !important;
+    letter-spacing: 2px !important;
+  }
+
+  .balance-amount {
+    font-size: 1.75rem !important;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}

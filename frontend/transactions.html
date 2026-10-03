@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Customer Transaction Ledger">
+  <title>Transaction Ledger - GG BANK</title>
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation (Requirement 4) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
+
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
+
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item active">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Profile & Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">Transactions Ledger</div>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-list-check"></i> Transaction <span>Ledger</span></h2>
+            <p class="page-description">Search, filter, inspect transaction details, and download official PDF statements.</p>
+          </div>
+          <button class="btn btn-primary" id="btnDownloadStatement">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF Statement
+          </button>
+        </div>
+
+        <div class="card">
+          <!-- Comprehensive Filter Toolbar (Requirement 6) -->
+          <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+              <div class="search-box" style="flex: 1; min-width: 280px;">
+                <input type="text" class="form-control" id="txnSearchInput" placeholder="🔍 Search description, recipient, merchant, or TXN ID...">
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <select id="txnCategoryFilter" class="form-control" style="width: auto; min-width: 140px;" aria-label="Category Filter">
+                  <option value="ALL">All Categories</option>
+                  <option value="Salary">Salary</option>
+                  <option value="Transfer">Transfer</option>
+                  <option value="Bills">Bills & Utilities</option>
+                  <option value="Food">Food & Dining</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Other">Other</option>
+                </select>
+
+                <select id="txnFlowFilter" class="form-control" style="width: auto; min-width: 140px;" aria-label="Income/Expense Filter">
+                  <option value="ALL">All Flow</option>
+                  <option value="INCOME">Income Only (+)</option>
+                  <option value="EXPENSE">Expense Only (-)</option>
+                </select>
+
+                <select id="txnStatusFilter" class="form-control" style="width: auto; min-width: 130px;" aria-label="Status Filter">
+                  <option value="ALL">All Status</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="REJECTED">Failed</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Date Range Filter Row -->
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: var(--surface-secondary); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);"><i class="fa-regular fa-calendar"></i> Date Range:</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="txnDateFrom" style="font-size: 0.78rem; color: var(--text-muted);">From:</label>
+                <input type="date" id="txnDateFrom" class="form-control" style="padding: 4px 10px; font-size: 0.82rem; width: auto;">
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="txnDateTo" style="font-size: 0.78rem; color: var(--text-muted);">To:</label>
+                <input type="date" id="txnDateTo" class="form-control" style="padding: 4px 10px; font-size: 0.82rem; width: auto;">
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btnResetFilters" style="margin-left: auto;">
+                <i class="fa-solid fa-rotate-left"></i> Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Transaction Table (Click row to open details modal) -->
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>Date & Time</th>
+                  <th>Description / Entity</th>
+                  <th>Category</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Balance After</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="fullTxnTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar (Requirement 6) -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border);">
+            <div style="font-size: 0.85rem; color: var(--text-secondary);" id="txnPaginationSummary">
+              Showing 0 transactions
+            </div>
+            <div style="display: flex; gap: 8px;" id="txnPaginationBtns">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/statement.js"></script>
+  <script src="js/transactions.js"></script>
+
+</body>
+</html>

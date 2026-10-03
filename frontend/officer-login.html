@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Banking Officer & Staff Operations Portal">
+  <title>Officer Portal Login - GG BANK</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="auth-page">
+    <div class="auth-container">
+      
+      <!-- Brand Header -->
+      <div class="auth-brand-center">
+        <div class="logo-icon" style="width:56px;height:56px;"></div>
+        <h1 class="brand-title" style="font-size: 2rem;">GG BANK</h1>
+        <p class="brand-subtitle" style="color: var(--accent-cyan);">Credit & Operations Officer Portal</p>
+        <p class="auth-header-tagline">"Authorized Banking Staff Desk"</p>
+      </div>
+
+      <!-- Officer Login Card -->
+      <div class="auth-card" style="border-color: rgba(56, 189, 248, 0.3);">
+        
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: #ffffff; text-align: center; margin-bottom: 8px;">
+          Banking Officer Sign In
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 20px;">
+          Access your credit underwriting queue and customer operations desk.
+        </p>
+
+        <form id="officerLoginForm" onsubmit="handleOfficerLoginSubmit(event)">
+          <div class="form-group">
+            <label class="form-label" for="officerEmail">Officer Email or Employee ID</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-user-tie input-icon"></i>
+              <input type="text" id="officerEmail" class="form-control" placeholder="e.g. EMP-1001 or officer@ggbank.com" required autocomplete="username">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="officerPassword">Staff Password</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="officerPassword" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+              <i class="fa-regular fa-eye input-action-icon" id="toggleOfficerPassword" onclick="toggleOfficerPass()" style="cursor: pointer;"></i>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnOfficerLoginSubmit" onclick="handleOfficerLoginSubmit(event)" style="margin-top: 14px; cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Open Officer Workspace
+          </button>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 22px;">
+            <a href="login.html" style="font-size: 0.82rem; color: var(--accent-cyan);">
+              <i class="fa-solid fa-user"></i> Customer Login
+            </a>
+            <a href="admin-login.html" style="font-size: 0.82rem; color: #ff3b57;">
+              <i class="fa-solid fa-shield-halved"></i> Super Admin Portal
+            </a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    function toggleOfficerPass() {
+      const input = document.getElementById('officerPassword');
+      const icon = document.getElementById('toggleOfficerPassword');
+      if (!input || !icon) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    let isSubmitting = false;
+
+    async function handleOfficerLoginSubmit(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (isSubmitting) return;
+
+      const emailInput = document.getElementById('officerEmail');
+      const passInput = document.getElementById('officerPassword');
+      const identifier = emailInput ? emailInput.value.trim() : '';
+      const pass = passInput ? passInput.value : '';
+      const btn = document.getElementById('btnOfficerLoginSubmit');
+
+      if (!identifier) {
+        Utils.showToast('Please enter your officer email or employee ID', 'error');
+        return;
+      }
+      if (!pass) {
+        Utils.showToast('Please enter staff authentication password', 'error');
+        return;
+      }
+
+      isSubmitting = true;
+      Utils.setLoading(btn, true, 'Authenticating Officer...');
+
+      try {
+        if (window.Auth && typeof window.Auth.loginOfficer === 'function') {
+          await window.Auth.loginOfficer(identifier, pass);
+        } else {
+          let officers = window.API ? window.API.getMock('gg_officers') : [];
+          const officer = (Array.isArray(officers) ? officers.find(o => 
+            (o.email && o.email.toLowerCase() === identifier.toLowerCase()) ||
+            (o.employeeId && o.employeeId.toLowerCase() === identifier.toLowerCase()) ||
+            (o.officerId && o.officerId.toLowerCase() === identifier.toLowerCase())
+          ) : null);
+          if (!officer) {
+            throw new Error('Officer account not found for ' + identifier);
+          }
+          if (officer.password && officer.password !== pass) {
+            throw new Error('Invalid staff password.');
+          }
+
+          const officerSession = {
+            userId: officer.officerId,
+            name: officer.name,
+            email: officer.email,
+            role: 'OFFICER',
+            designation: officer.designation,
+            department: officer.department,
+            branch: officer.branch,
+            token: 'token-officer-' + Date.now()
+          };
+
+          localStorage.setItem('gg_current_user', JSON.stringify(officerSession));
+          localStorage.setItem('gg_auth_token', officerSession.token);
+        }
+
+        Utils.showToast('Officer session authenticated!', 'success');
+        setTimeout(() => {
+          window.location.href = 'officer-dashboard.html';
+        }, 400);
+      } catch (err) {
+        Utils.showToast(err.message || 'Access Denied', 'error');
+        Utils.setLoading(btn, false);
+        isSubmitting = false;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Cash Withdrawal">
+  <title>Withdraw Funds - GG BANK</title>
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
+
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
+
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Profile & Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">Withdraw Funds</div>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-qrcode" style="color: var(--accent-cyan);"></i> Upgraded: <span>QR Scan &amp; Pay</span></h2>
+            <p class="page-description">Physical cash withdrawal has been upgraded with instant digital QR payments and cryptographic receipt verification.</p>
+          </div>
+          <a href="qr-pay.html" class="btn btn-primary">
+            <i class="fa-solid fa-arrow-right"></i> Open Scan &amp; Pay
+          </a>
+        </div>
+
+        <div class="alert alert-info" style="max-width: 620px; margin: 0 auto 20px; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); padding: 16px 20px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-qrcode" style="font-size: 1.8rem; color: var(--accent-cyan);"></i>
+            <div>
+              <strong style="color: #fff; display: block; font-size: 0.95rem;">New QR Banking Suite Live</strong>
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">Access Camera QR Scanner, My QR, and verified digital receipts.</span>
+            </div>
+          </div>
+          <a href="qr-pay.html" class="btn btn-primary btn-sm" style="white-space: nowrap;">Go to Scan &amp; Pay</a>
+        </div>
+
+        <!-- Withdraw Form Card -->
+        <div class="card" id="withdrawFormCard" style="max-width: 620px; margin: 0 auto;">
+          <form id="withdrawFundsForm">
+            
+            <!-- Real-time Balance Overview Strip (Requirement 8) -->
+            <div class="confirmation-meta-box" style="margin-bottom: 20px;">
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Current Available Balance</span>
+                <span class="confirmation-val" id="withCurrentBalance">₹65,450.00</span>
+              </div>
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Withdrawal Amount</span>
+                <span class="confirmation-val" id="withAmountPreview" style="color: var(--danger);">-₹0.00</span>
+              </div>
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Transaction Fee</span>
+                <span class="confirmation-val" style="color: var(--success);">₹0.00 (Zero Fee)</span>
+              </div>
+              <div class="confirmation-meta-row" style="border-top: 1px solid var(--border); padding-top: 8px;">
+                <span class="confirmation-label" style="font-weight: 700;">Remaining Balance</span>
+                <span class="confirmation-val" id="withNewBalancePreview" style="color: var(--accent); font-size: 1.1rem;">₹65,450.00</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="withdrawAmount">Withdrawal Amount (₹)</label>
+              <input type="number" id="withdrawAmount" class="form-control" placeholder="2000" min="10" step="1" required>
+              <div id="insufficientBalanceNotice" style="display: none; color: var(--danger); font-size: 0.85rem; margin-top: 6px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Amount exceeds current available balance.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="withdrawMethod">Withdrawal Channel</label>
+              <select id="withdrawMethod" class="form-control">
+                <option value="ATM Cash Dispense">ATM Cash Dispense (Cardless / OTP)</option>
+                <option value="Branch Counter Cashier">Branch Counter Cashier</option>
+                <option value="Self Withdrawal Cheque">Self Withdrawal Cheque</option>
+                <option value="Direct Account Debit">Direct Account Debit</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="withdrawDesc">Description / Purpose</label>
+              <input type="text" id="withdrawDesc" class="form-control" placeholder="e.g. Personal Expenses / Travel / Cash">
+            </div>
+
+            <button type="submit" class="btn btn-danger btn-block btn-lg" id="btnWithdrawSubmit" style="margin-top: 12px;">
+              <i class="fa-solid fa-arrow-right"></i> Review & Confirm Withdrawal
+            </button>
+          </form>
+        </div>
+
+        <!-- Success Screen (Requirement 8) -->
+        <div class="card confirmation-card" id="withdrawSuccessScreen" style="display: none; max-width: 500px; margin: 0 auto;">
+          <div class="confirmation-checkmark" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); border-color: var(--danger);">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <h2 style="font-size: 1.45rem; font-weight: 800; color: #ffffff;">Transaction Successful</h2>
+          <div class="confirmation-amount" id="withSuccessAmount" style="color: var(--danger);">-₹2,000.00</div>
+
+          <div class="confirmation-meta-box">
+            <div class="confirmation-meta-row">
+              <span class="confirmation-label">Transaction Reference</span>
+              <span class="confirmation-val" id="withSuccessTxnId" style="color: var(--accent);">TXN-2026-910244</span>
+            </div>
+            <div class="confirmation-meta-row">
+              <span class="confirmation-label">Debited From Account</span>
+              <span class="confirmation-val" id="withSuccessAccount">1001 8849 201</span>
+            </div>
+            <div class="confirmation-meta-row">
+              <span class="confirmation-label">New Available Balance</span>
+              <span class="confirmation-val" id="withSuccessNewBal" style="color: #ffffff;">₹63,450.00</span>
+            </div>
+          </div>
+
+          <div class="confirmation-actions">
+            <a href="transactions.html" class="btn btn-secondary">
+              <i class="fa-solid fa-list-check"></i> View in Ledger
+            </a>
+            <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">
+              <i class="fa-solid fa-circle-check"></i> Done
+            </button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Review Modal -->
+  <div class="modal-backdrop" id="withdrawConfirmModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-shield-halved"></i> Review Cash Withdrawal</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <div class="confirmation-meta-box">
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Withdrawal Amount</span>
+          <span class="confirmation-val" id="modalWithAmount" style="color: var(--danger); font-size: 1.1rem;">₹2,000.00</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Channel</span>
+          <span class="confirmation-val" id="modalWithMethod">ATM Cash Dispense</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Source Account</span>
+          <span class="confirmation-val" id="modalWithAccount">1001 8849 201</span>
+        </div>
+        <div class="confirmation-meta-row">
+          <span class="confirmation-label">Remaining Balance</span>
+          <span class="confirmation-val" id="modalWithNewBal" style="color: var(--accent);">₹63,450.00</span>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
+        <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmWithdraw">Confirm & Withdraw</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/withdraw.js"></script>
+
+</body>
+</html>

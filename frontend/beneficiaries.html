@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beneficiaries - GG BANK</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon">GG</div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <div class="nav-section-title">Main Portal</div>
+        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a></li>
+        <li class="nav-item"><a href="account.html" class="nav-link"><i class="fa-solid fa-id-card"></i> <span>My Account</span></a></li>
+        <li class="nav-item"><a href="transactions.html" class="nav-link"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a></li>
+        <li class="nav-item"><a href="transfer.html" class="nav-link"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a></li>
+        <li class="nav-item"><a href="deposit.html" class="nav-link"><i class="fa-solid fa-circle-arrow-down"></i> <span>Deposit</span></a></li>
+        <li class="nav-item"><a href="withdraw.html" class="nav-link"><i class="fa-solid fa-circle-arrow-up"></i> <span>Withdraw</span></a></li>
+        <li class="nav-item active"><a href="beneficiaries.html" class="nav-link"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a></li>
+
+        <div class="nav-section-title">Finance & Utilities</div>
+        <li class="nav-item"><a href="loans.html" class="nav-link"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a></li>
+        <li class="nav-item"><a href="budget.html" class="nav-link"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a></li>
+        <li class="nav-item"><a href="financial-insights.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span>Financial Insights</span></a></li>
+        <li class="nav-item"><a href="bill-payments.html" class="nav-link"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a></li>
+
+        <div class="nav-section-title">Settings</div>
+        <li class="nav-item"><a href="notifications.html" class="nav-link"><i class="fa-solid fa-bell"></i> <span>Notifications</span></a></li>
+        <li class="nav-item"><a href="security.html" class="nav-link"><i class="fa-solid fa-shield-halved"></i> <span>Security</span></a></li>
+        <li class="nav-item"><a href="profile.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span>Profile</span></a></li>
+        <li class="nav-item"><a href="#" onclick="Auth.logout()" class="nav-link" style="color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span></a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">Beneficiary Directory</div>
+        </div>
+        <div class="topbar-right">
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-users"></i> Saved <span>Beneficiaries</span></h2>
+            <p class="page-description">Manage payees for quick 1-click money transfers.</p>
+          </div>
+          <button class="btn btn-primary" id="btnOpenAddBenModal">
+            <i class="fa-solid fa-user-plus"></i> Add New Beneficiary
+          </button>
+        </div>
+
+        <div class="beneficiaries-grid" id="beneficiariesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+          <!-- Beneficiary cards rendered dynamically -->
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add Beneficiary Modal -->
+  <div class="modal-backdrop" id="addBenModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Beneficiary</h3>
+        <button class="modal-close-btn" data-modal-close>&times;</button>
+      </div>
+      <form id="addBeneficiaryForm">
+        <div class="form-group">
+          <label class="form-label" for="benName">Beneficiary Legal Name</label>
+          <input type="text" id="benName" class="form-control" placeholder="Sarah Connor" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="benAccount">12-Digit Account Number</label>
+          <input type="text" id="benAccount" class="form-control" placeholder="100188492020" maxlength="12" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="benIfsc">IFSC Code</label>
+          <input type="text" id="benIfsc" class="form-control" placeholder="GGBN0001234" value="GGBN0001234" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="benBank">Bank Name</label>
+          <input type="text" id="benBank" class="form-control" placeholder="GG BANK Central" value="GG BANK" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Payee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/beneficiaries.js"></script>
+
+</body>
+</html>

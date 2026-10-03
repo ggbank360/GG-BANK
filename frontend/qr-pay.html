@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scan &amp; Pay | GG BANK</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <style>
+    .qr-nav-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .qr-tab-btn {
+      flex: 1;
+      min-width: 160px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: var(--surface-secondary, rgba(15, 23, 42, 0.7));
+      border: 1px solid var(--border, rgba(56, 189, 248, 0.2));
+      color: var(--text-secondary, #94a3b8);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.25s ease;
+    }
+    .qr-tab-btn:hover {
+      border-color: var(--accent, #38bdf8);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+    .qr-tab-btn.active {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(2, 132, 199, 0.3) 100%);
+      border-color: var(--accent, #38bdf8);
+      color: #ffffff;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+    }
+
+    /* Scanner Viewfinder Box */
+    .scanner-viewfinder-card {
+      position: relative;
+      background: #000000;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid var(--border, rgba(56, 189, 248, 0.3));
+      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+      max-width: 480px;
+      margin: 0 auto 20px auto;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #qrCameraReader {
+      width: 100%;
+      min-height: 300px;
+    }
+    #qrCameraReader video {
+      border-radius: 14px;
+      object-fit: cover;
+    }
+    .scanner-overlay-laser {
+      position: absolute;
+      top: 15%;
+      left: 10%;
+      width: 80%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00f0ff, #38bdf8, transparent);
+      box-shadow: 0 0 16px #00f0ff;
+      animation: scanLaser 2.2s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 10;
+    }
+    @keyframes scanLaser {
+      0% { top: 15%; opacity: 0.3; }
+      50% { top: 85%; opacity: 1; }
+      100% { top: 15%; opacity: 0.3; }
+    }
+
+    .qr-card-display {
+      background: linear-gradient(135deg, #0b1528 0%, #0d1e3d 100%);
+      border: 1px solid var(--border, rgba(56, 189, 248, 0.3));
+      border-radius: 18px;
+      padding: 28px 24px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .qr-code-frame {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 16px;
+      display: inline-block;
+      margin: 16px auto;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      border: 4px solid var(--accent, #38bdf8);
+    }
+    .qr-code-frame img, .qr-code-frame canvas {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .demo-chip {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border, rgba(255,255,255,0.15));
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      color: var(--text-primary, #ffffff);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .demo-chip:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent, #38bdf8);
+    }
+  </style>
+</head>
+<body class="dashboard-body">
+
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
+
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
+
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Profile & Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">CU</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Customer</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">QR Code Banking &bull; Scan &amp; Pay</div>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
+          <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
+          <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        
+        <!-- Header -->
+        <div class="page-header" style="margin-bottom: 24px;">
+          <div>
+            <h2 class="page-title"><i class="fa-solid fa-qrcode" style="color: var(--accent);"></i> Scan &amp; <span>Pay</span></h2>
+            <p class="page-description">Instant QR payments, personal receiving QR codes, and digital receipt verification.</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="badge badge-success" style="font-size: 0.85rem; padding: 8px 14px;">
+              <i class="fa-solid fa-shield-check"></i> GG Secure QR 2.0
+            </span>
+          </div>
+        </div>
+
+        <!-- Real-time Account Identity Bar -->
+        <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(16, 30, 66, 0.95) 0%, rgba(11, 21, 45, 0.95) 100%); border-left: 4px solid var(--accent);">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+            <div>
+              <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700;">Active Account</div>
+              <div style="font-size: 1.25rem; font-weight: 800; color: #ffffff; margin-top: 2px;" class="customer-name-display">Sarah Connor</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 14px;">
+                <span>Account No: <strong style="color: #fff; font-family: var(--font-mono);" id="headerAccountDisplay">10018849201</strong></span>
+                <span>IFSC: <strong style="color: var(--accent); font-family: var(--font-mono);" id="headerIfscDisplay">GGBN0001234</strong></span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700;">Available Balance</div>
+              <div style="font-size: 1.85rem; font-weight: 800; color: var(--success); font-family: var(--font-mono);" id="headerBalanceDisplay">₹10,000.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Primary Mode Tabs -->
+        <div class="qr-nav-tabs">
+          <button type="button" class="qr-tab-btn active" id="tabBtnScanner" onclick="switchQrTab('scanner')">
+            <i class="fa-solid fa-camera"></i>
+            <span>1. Camera Scanner &amp; Pay</span>
+          </button>
+          <button type="button" class="qr-tab-btn" id="tabBtnMyQr" onclick="switchQrTab('myqr')">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>2. My QR (Receive Money)</span>
+          </button>
+          <button type="button" class="qr-tab-btn" id="tabBtnReceipt" onclick="switchQrTab('receipt')">
+            <i class="fa-solid fa-receipt"></i>
+            <span>3. Verify Receipt QR</span>
+          </button>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: SCAN & PAY (CAMERA + FILE + DEMO PAYEES)                 -->
+        <!-- ============================================================== -->
+        <div id="tabContentScanner" class="qr-tab-section">
+          <div class="card" style="max-width: 680px; margin: 0 auto;" id="scannerViewCard">
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 800; margin-bottom: 6px;">
+                <i class="fa-solid fa-camera-viewfinder" style="color: var(--accent);"></i> Scan Customer QR Code
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+                Align the recipient's GG BANK or UPI QR code within the viewfinder to pay instantly.
+              </p>
+            </div>
+
+            <!-- Camera Viewfinder -->
+            <div class="scanner-viewfinder-card" id="scannerContainer">
+              <div id="qrCameraReader"></div>
+              <div class="scanner-overlay-laser" id="scannerLaser"></div>
+              <div id="scannerPlaceholder" style="padding: 30px; text-align: center; color: var(--text-secondary);">
+                <i class="fa-solid fa-camera" style="font-size: 3rem; color: var(--accent); margin-bottom: 12px; display: block;"></i>
+                <div style="font-size: 0.95rem; font-weight: 600; color: #fff;">Camera is Ready</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Click "Start Camera Scanner" below to scan via webcam/phone camera.</div>
+              </div>
+            </div>
+
+            <!-- Scanner Controls -->
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary" id="btnStartScanner" onclick="startCameraScanner()">
+                <i class="fa-solid fa-play"></i> Start Camera Scanner
+              </button>
+              <button type="button" class="btn btn-secondary" id="btnStopScanner" onclick="stopCameraScanner()" style="display: none;">
+                <i class="fa-solid fa-stop"></i> Stop Camera
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('inputQrImageFile').click()">
+                <i class="fa-solid fa-file-image"></i> Upload QR Image
+              </button>
+              <input type="file" id="inputQrImageFile" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event)">
+            </div>
+
+            <!-- Personal QR Fast Switcher Banner -->
+            <div style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(2, 132, 199, 0.2) 100%); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(56, 189, 248, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--accent);">
+                  <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <div>
+                  <strong style="color: #fff; font-size: 0.95rem; display: block;">Receive Money via Your Personal QR</strong>
+                  <span style="font-size: 0.78rem; color: var(--text-secondary);">Show or download your instant account receiving QR code.</span>
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" onclick="switchQrTab('myqr')" style="white-space: nowrap;">
+                <i class="fa-solid fa-eye"></i> View My QR
+              </button>
+            </div>
+
+            <!-- Scannable Demo QR Cards (Visible On Screen) -->
+            <div style="background: var(--surface-secondary); padding: 18px 20px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="font-size: 0.82rem; text-transform: uppercase; color: var(--accent); font-weight: 800; letter-spacing: 0.5px;">
+                  <i class="fa-solid fa-qrcode"></i> Ready-to-Scan Payee QR Codes:
+                </div>
+                <span style="font-size: 0.75rem; color: var(--text-secondary);">Click any card to auto-pay or point your phone camera</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px;">
+                
+                <!-- Payee 1 -->
+                <div class="scannable-qr-card" onclick="simulateScanRecipient('10018849201', 'Gowtham NK', 'GGBN0001234')" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 14px; text-align: center; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(56, 189, 248, 0.25)'; this.style.transform='none';">
+                  <div style="background: #ffffff; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);" id="demoQrPriya"></div>
+                  <strong style="display: block; color: #fff; font-size: 0.88rem; margin-bottom: 2px;">Gowtham NK</strong>
+                  <span style="display: block; font-size: 0.74rem; font-family: var(--font-mono); color: var(--accent);">A/C •••• 9201</span>
+                  <button type="button" class="btn btn-secondary btn-sm" style="margin-top: 8px; width: 100%; font-size: 0.74rem; padding: 4px 8px;">
+                    <i class="fa-solid fa-paper-plane"></i> Pay This QR
+                  </button>
+                </div>
+
+                <!-- Payee 2 -->
+                <div class="scannable-qr-card" onclick="simulateScanRecipient('10018849202', 'Vikram Sharma', 'GGBN0001234')" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 14px; text-align: center; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(56, 189, 248, 0.25)'; this.style.transform='none';">
+                  <div style="background: #ffffff; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);" id="demoQrRahul"></div>
+                  <strong style="display: block; color: #fff; font-size: 0.88rem; margin-bottom: 2px;">Vikram Sharma</strong>
+                  <span style="display: block; font-size: 0.74rem; font-family: var(--font-mono); color: var(--accent);">A/C •••• 9202</span>
+                  <button type="button" class="btn btn-secondary btn-sm" style="margin-top: 8px; width: 100%; font-size: 0.74rem; padding: 4px 8px;">
+                    <i class="fa-solid fa-paper-plane"></i> Pay This QR
+                  </button>
+                </div>
+
+                <!-- Payee 3 -->
+                <div class="scannable-qr-card" onclick="simulateScanRecipient('10018849203', 'FreshMart Grocery', 'GGBN0001234', 850)" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 14px; text-align: center; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(56, 189, 248, 0.25)'; this.style.transform='none';">
+                  <div style="background: #ffffff; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);" id="demoQrStore"></div>
+                  <strong style="display: block; color: #fff; font-size: 0.88rem; margin-bottom: 2px;">FreshMart Store</strong>
+                  <span style="display: block; font-size: 0.74rem; font-family: var(--font-mono); color: #10b981; font-weight: 700;">₹850.00 Pre-set</span>
+                  <button type="button" class="btn btn-success btn-sm" style="margin-top: 8px; width: 100%; font-size: 0.74rem; padding: 4px 8px;">
+                    <i class="fa-solid fa-check"></i> Pay ₹850
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Payment Form Card (Shown when QR is scanned) -->
+          <div class="card" id="qrPaymentFormCard" style="display: none; max-width: 580px; margin: 0 auto;">
+            <div class="card-header" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 18px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Validated Payee</h3>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 2px 0 0 0;">Recipient verified with GG BANK Core Banking System.</p>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="cancelPaymentForm()">
+                <i class="fa-solid fa-xmark"></i> Cancel
+              </button>
+            </div>
+
+            <!-- Recipient Identity Card -->
+            <div style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(2, 132, 199, 0.15) 100%); border: 1px solid var(--accent); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px;">
+              <div style="width: 54px; height: 54px; border-radius: 12px; background: linear-gradient(135deg, #0072ff 0%, #00f0ff 100%); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; color: #fff;" id="payeeAvatar">
+                VN
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="color: #ffffff; font-size: 1.15rem;" id="payeeName">Vikram Sharma</strong>
+                  <span class="badge badge-success" style="font-size: 0.7rem;"><i class="fa-solid fa-shield-check"></i> Verified</span>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px; font-family: var(--font-mono);">
+                  A/C: <strong style="color: var(--accent);" id="payeeAccount">1001 8849 202</strong> &bull; IFSC: <span id="payeeIfsc">GGBN0001234</span>
+                </div>
+              </div>
+            </div>
+
+            <form id="qrPaymentForm">
+              <input type="hidden" id="qrTargetAccount">
+              <input type="hidden" id="qrIdentifierInput">
+
+              <div class="form-group">
+                <label class="form-label" for="qrPayAmount">Payment Amount (₹) *</label>
+                <div style="position: relative;">
+                  <span style="position: absolute; left: 14px; top: 12px; font-weight: 700; color: var(--text-secondary); font-size: 1.1rem;">₹</span>
+                  <input type="number" id="qrPayAmount" class="form-control" placeholder="1000" min="1" step="1" required style="padding-left: 32px; font-size: 1.25rem; font-weight: 800; font-family: var(--font-mono);">
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px;">
+                  <span>Available Balance: <strong style="color: var(--success);" id="formAvailableBalance">₹10,000.00</strong></span>
+                  <span id="insufficientBalanceAlert" style="color: var(--danger); font-weight: 700; display: none;">Insufficient balance!</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="qrPayNote">Payment Note / Reference</label>
+                <input type="text" id="qrPayNote" class="form-control" placeholder="e.g. Lunch split / Services / Shopping">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="qrPayPin">Transaction PIN (4-Digit) *</label>
+                <input type="password" id="qrPayPin" class="form-control" placeholder="••••" maxlength="4" required style="font-size: 1.2rem; letter-spacing: 4px; font-family: var(--font-mono);">
+                <small style="color: var(--text-secondary); font-size: 0.75rem;">Enter your 4-digit transaction PIN</small>
+              </div>
+
+              <button type="submit" class="btn btn-success btn-block btn-lg" id="btnExecuteQrPayment" style="margin-top: 14px;">
+                <i class="fa-solid fa-lock"></i> Authorize &amp; Pay Now
+              </button>
+            </form>
+          </div>
+
+          <!-- Payment Success Screen with Receipt QR -->
+          <div class="card confirmation-card" id="qrPaymentSuccessCard" style="display: none; max-width: 540px; margin: 0 auto; text-align: center;">
+            <div class="confirmation-checkmark" style="background: rgba(16, 185, 129, 0.2); color: var(--success); width: 68px; height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 2rem;">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 style="font-size: 1.45rem; font-weight: 800; color: #ffffff;">Payment Successful!</h2>
+            <div class="confirmation-amount" id="successPaidAmount" style="color: var(--success); font-size: 2rem; font-weight: 900; margin: 8px 0;">₹1,000.00</div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">
+              Debited from your GG BANK account. Official Core Banking digital receipt generated.
+            </p>
+
+            <!-- Live Generated Transaction Receipt QR -->
+            <div style="background: var(--surface-secondary); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
+              <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 8px;">
+                <i class="fa-solid fa-qrcode"></i> Cryptographic Receipt QR
+              </div>
+              <div class="qr-code-frame" id="receiptQrCodeContainer" style="margin: 8px auto;"></div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 6px;">
+                Scan with any QR scanner to verify authentic ledger transaction seal.
+              </div>
+            </div>
+
+            <!-- Receipt Meta -->
+            <div class="confirmation-meta-box" style="text-align: left; margin-bottom: 20px;">
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Transaction ID</span>
+                <span class="confirmation-val" id="successTxnId" style="color: var(--accent); font-family: var(--font-mono);">TXN-2026-892104</span>
+              </div>
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Paid To</span>
+                <span class="confirmation-val" id="successPaidTo">Vikram Sharma (1001 8849 202)</span>
+              </div>
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Digital CBS Seal</span>
+                <span class="confirmation-val" id="successSeal" style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--success);">HASH-SHA256-VERIFIED</span>
+              </div>
+              <div class="confirmation-meta-row">
+                <span class="confirmation-label">Updated Balance</span>
+                <span class="confirmation-val" id="successNewBal" style="font-weight: 700; color: #fff;">₹9,000.00</span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary" onclick="resetQrScannerFlow()">
+                <i class="fa-solid fa-qrcode"></i> Scan Another QR
+              </button>
+              <a href="transactions.html" class="btn btn-primary">
+                <i class="fa-solid fa-receipt"></i> View in Passbook
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: INDIVIDUAL CUSTOMER QR GENERATOR (RECEIVE PAYMENTS)     -->
+        <!-- ============================================================== -->
+        <div id="tabContentMyQr" class="qr-tab-section" style="display: none;">
+          <div style="max-width: 580px; margin: 0 auto;">
+
+            <!-- Customer Selection Controls -->
+            <div class="card" style="margin-bottom: 20px; background: var(--surface-secondary); border: 1px solid var(--border);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                    <i class="fa-solid fa-users"></i>
+                  </div>
+                  <div>
+                    <h3 style="font-size: 1rem; color: #fff; margin: 0;">Generate QR for Customer</h3>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 2px 0 0 0;">Create an official receiving QR code for any individual customer.</p>
+                  </div>
+                </div>
+                <span class="badge badge-success" style="font-size: 0.72rem;">Individual CBS Engine</span>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label class="form-label" for="customerQrSelector" style="font-size: 0.82rem;">Select Individual Customer Account</label>
+                <select id="customerQrSelector" class="form-control" onchange="onCustomerQrSelectionChange()">
+                  <option value="current">Current User (Gowtham NK - 10018849201)</option>
+                  <option value="10018849202" data-name="Sarah Connor" data-ifsc="GGBN0001234">Sarah Connor &bull; 10018849202 (Savings)</option>
+                  <option value="10018849203" data-name="Vikram Sharma" data-ifsc="GGBN0001234">Vikram Sharma &bull; 10018849203 (Current)</option>
+                  <option value="10018849204" data-name="Priya Patel" data-ifsc="GGBN0001234">Priya Patel &bull; 10018849204 (Savings)</option>
+                  <option value="10018849205" data-name="Michael David" data-ifsc="GGBN0001234">Michael David &bull; 10018849205 (Salary)</option>
+                  <option value="10018849206" data-name="Anita Roy" data-ifsc="GGBN0001234">Anita Roy &bull; 10018849206 (Savings)</option>
+                  <option value="10018849207" data-name="FreshMart Store" data-ifsc="GGBN0001234">FreshMart Store &bull; 10018849207 (Merchant)</option>
+                  <option value="custom">+ Enter Custom Customer &amp; Account...</option>
+                </select>
+              </div>
+
+              <!-- Custom Customer Input Fields (Visible when "custom" is selected) -->
+              <div id="customCustomerFormFields" style="display: none; background: rgba(0,0,0,0.25); border-radius: 10px; padding: 14px; margin-top: 10px; border: 1px dashed var(--accent);">
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label class="form-label" for="customCustomerNameInput" style="font-size: 0.8rem;">Customer Legal Name *</label>
+                  <input type="text" id="customCustomerNameInput" class="form-control" placeholder="e.g. Johnathan Doe" oninput="applyCustomCustomerQr()">
+                </div>
+                <div class="form-row" style="margin-bottom: 0;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="customCustomerAccountInput" style="font-size: 0.8rem;">Account Number (11 Digits) *</label>
+                    <input type="text" id="customCustomerAccountInput" class="form-control" placeholder="e.g. 10019988771" maxlength="11" oninput="applyCustomCustomerQr()">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="customCustomerIfscInput" style="font-size: 0.8rem;">IFSC Code</label>
+                    <input type="text" id="customCustomerIfscInput" class="form-control" placeholder="GGBN0001234" value="GGBN0001234" oninput="applyCustomCustomerQr()">
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Official Customer QR Card Display -->
+            <div class="qr-card-display" id="printableQrCard">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #0072ff, #00f0ff); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; color: #fff;">GG</div>
+                  <span style="font-weight: 800; font-size: 0.95rem; letter-spacing: 0.5px; color: #fff;">GG BANK PAY</span>
+                </div>
+                <span class="badge badge-success" style="font-size: 0.7rem;"><i class="fa-solid fa-shield-check"></i> Instant Settlement</span>
+              </div>
+
+              <!-- Customer Profile Header -->
+              <div style="display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 12px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #0072ff 0%, #00f0ff 100%); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; color: #fff;" id="myQrAvatarDisplay">
+                  GN
+                </div>
+                <div style="text-align: left;">
+                  <h3 style="font-size: 1.25rem; color: #fff; margin: 0; font-weight: 800;" id="myQrCustomerNameDisplay">Gowtham NK</h3>
+                  <div style="font-size: 0.8rem; color: var(--accent); font-family: var(--font-mono); margin-top: 2px;" id="myQrUpiDisplay">10018849201@ggbank</div>
+                </div>
+              </div>
+
+              <!-- Main Scannable QR Frame -->
+              <div class="qr-code-frame" id="myQrCodeContainer" style="background: #ffffff; padding: 16px; border-radius: 16px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 4px solid var(--accent);"></div>
+
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;">
+                A/C: <strong style="color: #fff; font-family: var(--font-mono); font-size: 0.95rem;" id="myQrAccountDisplay">1001 8849 201</strong> &bull; IFSC: <strong style="color: var(--accent); font-family: var(--font-mono);" id="myQrIfscDisplay">GGBN0001234</strong>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;" id="myQrAmountBanner">
+                Scan to pay any amount via GG BANK, Google Pay, PhonePe, Paytm, or BHIM UPI
+              </div>
+
+              <!-- Amount Customization (Optional Specific Request) -->
+              <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); text-align: left;">
+                <label class="form-label" for="customQrAmountInput" style="font-size: 0.82rem;">Request Specific Amount (Optional)</label>
+                <div style="display: flex; gap: 8px;">
+                  <div style="position: relative; flex: 1;">
+                    <span style="position: absolute; left: 12px; top: 9px; color: var(--text-secondary); font-weight: 700;">₹</span>
+                    <input type="number" id="customQrAmountInput" class="form-control" placeholder="Leave empty for any amount" min="1" style="padding-left: 28px;" oninput="onCustomAmountChange()">
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="clearCustomQrAmount()">Clear</button>
+                </div>
+
+                <!-- Quick Amount Presets -->
+                <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                  <button type="button" class="demo-chip" onclick="setPresetAmount(100)">+ ₹100</button>
+                  <button type="button" class="demo-chip" onclick="setPresetAmount(500)">+ ₹500</button>
+                  <button type="button" class="demo-chip" onclick="setPresetAmount(1000)">+ ₹1,000</button>
+                  <button type="button" class="demo-chip" onclick="setPresetAmount(2000)">+ ₹2,000</button>
+                  <button type="button" class="demo-chip" onclick="setPresetAmount(5000)">+ ₹5,000</button>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div style="display: flex; gap: 10px; justify-content: center; margin-top: 22px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-primary" onclick="downloadPersonalQr()">
+                  <i class="fa-solid fa-download"></i> Download QR Image
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="printCustomerQrCard()">
+                  <i class="fa-solid fa-print"></i> Print QR Card
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="copyPersonalUpi()">
+                  <i class="fa-regular fa-copy"></i> Copy UPI ID
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: VERIFY RECEIPT QR CODE                                  -->
+        <!-- ============================================================== -->
+        <div id="tabContentReceipt" class="qr-tab-section" style="display: none;">
+          <div class="card" style="max-width: 640px; margin: 0 auto;">
+            <div class="card-header" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-receipt" style="color: var(--accent);"></i> Authenticate Transaction Receipt QR</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0 0;">
+                  Scan or paste any GG BANK digital receipt QR payload to verify cryptographic authenticity.
+                </p>
+              </div>
+              <span class="badge badge-info">Ledger Audit</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inputReceiptQrData">Receipt QR Payload / Transaction ID</label>
+              <textarea id="inputReceiptQrData" class="form-control" rows="3" placeholder='Paste receipt QR JSON or Transaction ID (e.g. TXN-2026-892104)...'></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+              <button type="button" class="btn btn-primary" onclick="verifyReceiptQrPayload()">
+                <i class="fa-solid fa-shield-check"></i> Verify Against Ledger
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="loadSampleReceiptVerification()">
+                <i class="fa-solid fa-vial"></i> Load Sample Receipt
+              </button>
+            </div>
+
+            <!-- Receipt Verification Output -->
+            <div id="receiptVerificationResult" style="display: none;"></div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- QR Libraries (Local Offline Bundles) -->
+  <script src="js/lib/qrcode.min.js"></script>
+  <script src="js/lib/html5-qrcode.min.js"></script>
+
+  <!-- Core Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/qr-pay.js"></script>
+
+</body>
+</html>

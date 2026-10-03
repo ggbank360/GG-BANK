@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Core System Settings & Bank Configuration">
+  <title>System Settings - GG BANK Admin</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar admin-sidebar" id="adminSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="topbar"></header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              Admin Portal &bull; System Governance
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-gears"></i> Core Banking <span>System Settings</span></h2>
+            <p class="page-description">Configure institutional metadata, IFSC clearing codes, session timeouts, and security policies.</p>
+          </div>
+        </div>
+
+        <form id="adminSettingsForm" style="max-width: 900px; display: flex; flex-direction: column; gap: 24px;">
+          
+          <!-- Card 1: Bank Parameters -->
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color-subtle); padding-bottom: 10px;">
+              <i class="fa-solid fa-building-columns" style="color: #3b82f6;"></i> Institutional Banking Identity
+            </h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label class="form-label" for="settingBankName">Bank Name / Institution</label>
+                <input type="text" id="settingBankName" class="form-control" value="GG BANK" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="settingBranch">Headquarters Branch</label>
+                <input type="text" id="settingBranch" class="form-control" value="Central Tech Branch" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="settingIfsc">Default IFSC Routing Code</label>
+                <input type="text" id="settingIfsc" class="form-control" value="GGBN0001234" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="settingCurrency">Operating Base Currency</label>
+                <input type="text" id="settingCurrency" class="form-control" value="INR (₹)" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Security & Session Rules -->
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color-subtle); padding-bottom: 10px;">
+              <i class="fa-solid fa-shield-halved" style="color: var(--danger);"></i> Security Policies & Session Governance
+            </h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label class="form-label" for="settingTimeout">Admin Session Idle Timeout (Minutes)</label>
+                <input type="number" id="settingTimeout" class="form-control" value="15" min="5" max="120" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="settingMaxAttempts">Max Consecutive Failed Login Attempts</label>
+                <input type="number" id="settingMaxAttempts" class="form-control" value="5" min="3" max="10" required>
+              </div>
+            </div>
+
+            <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-primary); font-size: 0.92rem;">
+                <input type="checkbox" id="setting2FA" checked style="width: 18px; height: 18px; accent-color: var(--accent-cyan);">
+                <span>Enforce Multi-Factor Authentication (2FA) for High-Value Approvals</span>
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-primary); font-size: 0.92rem;">
+                <input type="checkbox" id="settingEmailNotif" checked style="width: 18px; height: 18px; accent-color: var(--accent-cyan);">
+                <span>Broadcast Automated Email Receipts on Customer Transactions</span>
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-primary); font-size: 0.92rem;">
+                <input type="checkbox" id="settingSmsAlerts" checked style="width: 18px; height: 18px; accent-color: var(--accent-cyan);">
+                <span>Dispatch High-Security SMS Alerts on Account Freezes / Status Changes</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="submit" class="btn btn-primary btn-lg" id="btnSaveAdminSettings">
+              <i class="fa-solid fa-floppy-disk"></i> Save System Configuration
+            </button>
+          </div>
+
+        </form>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/admin-settings.js"></script>
+</body>
+</html>

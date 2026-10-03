@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Customer Digital Banking Portal">
+  <title>Customer Dashboard - GG BANK</title>
+
+  <!-- Google Fonts & Styles -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js & jsPDF Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- ================= LEFT SIDEBAR NAVIGATION ================= -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle">Smart Digital Banking</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item active">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
+
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
+
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Profile & Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar customer-avatar-display">GN</div>
+          <div class="user-details">
+            <span class="user-name customer-name-display">Gowtham NK</span>
+            <span class="user-role">Customer Portal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= MAIN WRAPPER ================= -->
+    <div class="main-wrapper">
+      
+      <!-- Top Navigation Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text" id="userGreetingHeading">
+            Good morning, <span class="customer-name-display">Customer</span> 👋
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Status Pill -->
+          <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; color: var(--success);" id="dbStatusBadge">
+            <i class="fa-solid fa-shield-check"></i> <span>Secure Online</span>
+          </div>
+
+          <!-- Theme Toggle Button -->
+          <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
+
+          <!-- Notification Bell -->
+          <button class="icon-btn" onclick="switchView('view-notifications')" title="Notifications">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notification-indicator"></span>
+          </button>
+
+          <!-- Topbar Logout Button -->
+          <button class="btn btn-secondary btn-sm" onclick="logout(event)" style="color: var(--danger);" title="Logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+          </button>
+
+          <!-- Profile Avatar Shortcut -->
+          <div class="user-avatar customer-avatar-display" onclick="switchView('view-profile')" style="cursor: pointer;">
+            GN
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Views Container -->
+      <main class="content-area">
+
+        <!-- ================= 1. DASHBOARD VIEW ================= -->
+        <section class="view-section active-view" id="view-dashboard">
+          
+          <div class="dashboard-grid">
+            <!-- Modern Fintech Balance Card (Requirement 5) -->
+            <div class="fintech-balance-card">
+              <div class="card-top-header">
+                <div class="card-brand-badge">
+                  <div class="card-chip"></div>
+                  <span>GG BANK</span>
+                </div>
+                <button class="toggle-balance-btn" id="btnToggleBalance" title="Toggle Balance Visibility">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+
+              <div class="balance-card-body">
+                <div class="balance-heading-small">TOTAL BALANCE</div>
+                <div class="balance-hero-amount" id="cardBalanceDisplay">₹65,450.00</div>
+                <div class="available-balance-sub">
+                  <span>Available Balance:</span>
+                  <strong id="cardAvailableBalance" style="color: #ffffff; font-family: var(--font-mono);">₹65,450.00</strong>
+                </div>
+
+                <!-- Active UPI ID Badge -->
+                <div class="card-upi-box" style="margin-top: 14px; background: rgba(56, 189, 248, 0.08); border: 1px dashed rgba(56, 189, 248, 0.4); border-radius: var(--radius-md); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                    <i class="fa-solid fa-at" style="color: var(--accent-cyan); font-size: 1rem;"></i>
+                    <div style="min-width: 0;">
+                      <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Linked UPI ID</div>
+                      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <span id="dashboardUpiIdDisplay" style="font-family: var(--font-mono); font-weight: 700; color: #fff; font-size: 0.88rem;">gowtham@ggbank</span>
+                        <span class="badge" id="dashboardUpiStatusBadge" style="background: rgba(16, 185, 129, 0.2); color: var(--success); font-size: 0.65rem; padding: 2px 6px;">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-xs" onclick="openCustomizeUpiModal()" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: var(--accent-cyan); font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap;">
+                    <i class="fa-solid fa-pen-to-square"></i> Customize
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-footer-row">
+                <div>
+                  <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px;">Account</div>
+                  <span class="card-account-pill" id="cardAccountNumberDisplay">Savings •••• 9201</span>
+                </div>
+                <div class="card-primary-actions">
+                  <a href="transfer.html" class="btn-send-funds" id="btnQuickSendMoney" style="padding: 10px 18px; font-size: 0.9rem;">
+                    <i class="fa-solid fa-paper-plane"></i> Send Money / Transfer
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Overview Subgrid -->
+            <div class="stats-subgrid">
+              <div class="stat-box">
+                <div class="stat-box-icon icon-deposit"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                <div>
+                  <div class="stat-box-title">Total Credit</div>
+                  <div class="stat-box-value" id="statTotalDeposit">₹72,850.00</div>
+                </div>
+              </div>
+
+              <div class="stat-box">
+                <div class="stat-box-icon icon-withdrawal"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                <div>
+                  <div class="stat-box-title">Total Debit</div>
+                  <div class="stat-box-value" id="statTotalWithdrawal">₹7,400.00</div>
+                </div>
+              </div>
+
+              <div class="stat-box" style="grid-column: 1/-1;">
+                <div class="stat-box-icon icon-savings"><i class="fa-solid fa-piggy-bank"></i></div>
+                <div>
+                  <div class="stat-box-title">Monthly Net Savings</div>
+                  <div class="stat-box-value" id="statMonthlySavings" style="color: var(--accent);">₹65,450.00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="fintech-quick-grid">
+            <a href="transfer.html" class="quick-action-card">
+              <div class="quick-action-icon-wrap"><i class="fa-solid fa-paper-plane"></i></div>
+              <span class="quick-action-title">Send</span>
+            </a>
+            <a href="qr-pay.html?tab=myqr" class="quick-action-card">
+              <div class="quick-action-icon-wrap"><i class="fa-solid fa-qrcode"></i></div>
+              <span class="quick-action-title">My QR</span>
+            </a>
+            <a href="bill-payments.html" class="quick-action-card">
+              <div class="quick-action-icon-wrap"><i class="fa-solid fa-bolt"></i></div>
+              <span class="quick-action-title">Pay Bill</span>
+            </a>
+            <a href="transactions.html" class="quick-action-card">
+              <div class="quick-action-icon-wrap"><i class="fa-solid fa-list-check"></i></div>
+              <span class="quick-action-title">Ledger</span>
+            </a>
+            <a href="qr-pay.html" class="quick-action-card">
+              <div class="quick-action-icon-wrap" style="color: var(--accent-cyan);"><i class="fa-solid fa-camera"></i></div>
+              <span class="quick-action-title">Scan &amp; Pay</span>
+            </a>
+            <a href="financial-insights.html" class="quick-action-card">
+              <div class="quick-action-icon-wrap"><i class="fa-solid fa-ellipsis"></i></div>
+              <span class="quick-action-title">More</span>
+            </a>
+          </div>
+
+          <!-- Recent Transactions & Trend Grid -->
+          <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 24px; margin-top: 24px;">
+            <div class="card" style="padding: 0; overflow: hidden;">
+              <div class="card-header" style="padding: 18px 20px; border-bottom: 1px solid var(--border);">
+                <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-clock-rotate-left"></i> Recent Transactions</h3>
+                <a href="transactions.html" class="btn btn-secondary btn-sm">View All Transactions</a>
+              </div>
+              <div id="recentTransactionsList">
+                <!-- Dynamically rendered by dashboard.js with icon, merchant, category, date/time, amount (+/-), status -->
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-chart-line"></i> Cashflow Trend</h3>
+              </div>
+              <div style="height: 260px; position: relative;">
+                <canvas id="dashboardTrendChart"></canvas>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ================= 2. MY ACCOUNT VIEW ================= -->
+        <section class="view-section" id="view-account">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-id-card"></i> Account <span>Details</span></h2>
+              <p class="page-description">Official details and credentials of your GG BANK account.</p>
+            </div>
+          </div>
+
+          <div class="card" style="max-width: 800px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;">
+              <div>
+                <div class="form-label">Customer Name</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);" id="accViewName">-</div>
+              </div>
+              <div>
+                <div class="form-label">Customer ID</div>
+                <div style="font-family: var(--font-mono); color: var(--accent-cyan);" id="accViewCustId">-</div>
+              </div>
+              <div>
+                <div class="form-label">Account Number</div>
+                <div style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700;" id="accViewNumber">-</div>
+              </div>
+              <div>
+                <div class="form-label">Account Type</div>
+                <div><span class="badge badge-info" id="accViewType">SAVINGS</span></div>
+              </div>
+              <div>
+                <div class="form-label">Bank IFSC Code</div>
+                <div style="font-family: var(--font-mono);" id="accViewIfsc">GGBN0001234</div>
+              </div>
+              <div>
+                <div class="form-label">Branch</div>
+                <div id="accViewBranch">Central Tech Branch</div>
+              </div>
+              <div>
+                <div class="form-label">Account Status</div>
+                <div><span class="badge badge-success" id="accViewStatus">ACTIVE</span></div>
+              </div>
+              <div>
+                <div class="form-label">Current Balance</div>
+                <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent-cyan); font-family: var(--font-mono);" id="accViewBalance">₹0.00</div>
+              </div>
+              <div>
+                <div class="form-label">Account Created Date</div>
+                <div id="accViewCreated">-</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 3. TRANSACTIONS LEDGER VIEW ================= -->
+        <section class="view-section" id="view-transactions">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-list-check"></i> Transaction <span>Ledger</span></h2>
+              <p class="page-description">Complete records of all deposits, withdrawals, transfers, and bill payments.</p>
+            </div>
+            <button class="btn btn-primary" id="btnDownloadStatement">
+              <i class="fa-solid fa-file-pdf"></i> Download PDF Statement
+            </button>
+          </div>
+
+          <div class="card">
+            <!-- Filter Toolbar -->
+            <div class="filter-toolbar">
+              <div class="search-box">
+                <input type="text" class="form-control" id="txnSearchInput" placeholder="🔍 Search transaction ID or description...">
+              </div>
+              <div class="filter-pills">
+                <div class="filter-pill active" data-filter="ALL">All</div>
+                <div class="filter-pill" data-filter="DEPOSIT">Deposits</div>
+                <div class="filter-pill" data-filter="WITHDRAWAL">Withdrawals</div>
+                <div class="filter-pill" data-filter="TRANSFER">Transfers</div>
+                <div class="filter-pill" data-filter="BILL_PAYMENT">Bill Payments</div>
+                <div class="filter-pill" data-filter="LOAN_DISBURSEMENT">Loans</div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Transaction ID</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                  </tr>
+                </thead>
+                <tbody id="fullTxnTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 4. TRANSFER MODULE VIEW ================= -->
+        <section class="view-section" id="view-transfer">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-paper-plane"></i> Fund <span>Transfer</span></h2>
+              <p class="page-description">Fast, atomic, and secure double-entry money transfer engine.</p>
+            </div>
+          </div>
+
+          <div class="card" style="max-width: 680px;">
+            <form id="transferForm">
+              
+              <div class="form-group">
+                <label class="form-label" for="transferBeneficiarySelect">Select from Saved Beneficiaries</label>
+                <select id="transferBeneficiarySelect" class="form-control">
+                  <option value="">-- Choose Saved Beneficiary or Enter Manually --</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="transferBenName">Beneficiary Name</label>
+                <input type="text" id="transferBenName" class="form-control" placeholder="Recipient Legal Name" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="transferAccNumber">Account Number (11 Digits)</label>
+                  <input type="text" id="transferAccNumber" class="form-control" placeholder="11-digit Account Number" maxlength="11" pattern="\d{11}" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="transferConfirmAccNumber">Confirm Account Number (11 Digits)</label>
+                  <input type="text" id="transferConfirmAccNumber" class="form-control" placeholder="Re-enter 11-digit Account Number" maxlength="11" pattern="\d{11}" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="transferIfsc">IFSC Code</label>
+                  <input type="text" id="transferIfsc" class="form-control" placeholder="e.g. GGBN0001234" value="GGBN0001234" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="transferAmount">Transfer Amount (₹)</label>
+                  <input type="number" id="transferAmount" class="form-control" placeholder="5000" min="1" step="0.01" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="transferDesc">Payment Purpose / Description</label>
+                <input type="text" id="transferDesc" class="form-control" placeholder="e.g. Rent, College Fees, Collab Work">
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
+                <i class="fa-solid fa-lock"></i> Review & Transfer
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ================= 5. WITHDRAWAL MODULE VIEW ================= -->
+        <section class="view-section" id="view-withdraw">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-circle-arrow-up"></i> Cash <span>Withdrawal</span></h2>
+              <p class="page-description">Withdraw funds directly with real-time balance validation.</p>
+            </div>
+          </div>
+
+          <div class="card" style="max-width: 600px;">
+            <form id="withdrawForm">
+              <div class="form-group">
+                <label class="form-label" for="withdrawAmount">Withdrawal Amount (₹)</label>
+                <input type="number" id="withdrawAmount" class="form-control" placeholder="2000" min="10" step="1" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="withdrawDesc">Purpose</label>
+                <input type="text" id="withdrawDesc" class="form-control" placeholder="e.g. ATM Cash Out / Personal Expenses">
+              </div>
+
+              <button type="submit" class="btn btn-danger btn-block btn-lg" style="margin-top: 10px;">
+                <i class="fa-solid fa-money-bill-transfer"></i> Process Withdrawal
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ================= 7. BENEFICIARIES MODULE VIEW ================= -->
+        <section class="view-section" id="view-beneficiaries">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-users"></i> Saved <span>Beneficiaries</span></h2>
+              <p class="page-description">Manage trusted payee contacts for 1-click money transfers.</p>
+            </div>
+            <button class="btn btn-primary" onclick="document.getElementById('addBenModal').classList.add('active')">
+              <i class="fa-solid fa-user-plus"></i> Add New Beneficiary
+            </button>
+          </div>
+
+          <div class="budget-grid" id="beneficiariesGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- ================= 8. LOANS MODULE VIEW ================= -->
+        <section class="view-section" id="view-loans">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-hand-holding-dollar"></i> Loans & <span>Credit</span></h2>
+              <p class="page-description">Apply for personal, education, home, and business loans with instant EMI estimates.</p>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;">
+            
+            <!-- Application Form -->
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom: 20px;"><i class="fa-solid fa-file-contract"></i> Loan Application</h3>
+              
+              <form id="loanApplicationForm">
+                <div class="form-group">
+                  <label class="form-label" for="loanTypeSelect">Choose Loan Product Category</label>
+                  <select id="loanTypeSelect" class="form-control" required>
+                    <option value="Personal Loan" data-rate="10.5">Personal Loan (10.50% p.a.)</option>
+                    <option value="Home Loan" data-rate="8.2">Home & Property Purchase Loan (8.20% p.a.)</option>
+                    <option value="Vehicle Loan" data-rate="8.7">Vehicle & Auto Loan (8.70% p.a.)</option>
+                    <option value="Education Loan" data-rate="7.8">Higher Education & Global Studies Loan (7.80% p.a.)</option>
+                    <option value="Business Loan" data-rate="10.9">Business Expansion & Working Capital (10.90% p.a.)</option>
+                    <option value="Gold Loan" data-rate="7.2">Gold & Sovereign Asset Loan (7.20% p.a.)</option>
+                    <option value="Medical Emergency Loan" data-rate="9.0">Medical & Healthcare Emergency Loan (9.00% p.a.)</option>
+                    <option value="Agriculture Loan" data-rate="6.5">Agriculture & Rural Development (6.50% p.a.)</option>
+                    <option value="Green Energy Loan" data-rate="6.8">Green Solar & Renewable Energy Loan (6.80% p.a.)</option>
+                    <option value="Home Renovation Loan" data-rate="9.5">Home Renovation & Furnishing (9.50% p.a.)</option>
+                    <option value="Machinery Loan" data-rate="9.9">Commercial Machinery & Tech Equipment (9.90% p.a.)</option>
+                    <option value="Startup Innovation Loan" data-rate="11.5">Startup & Entrepreneurial Innovation (11.50% p.a.)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="loanApplicantProfile">Applicant Employment Profile</label>
+                  <select id="loanApplicantProfile" class="form-control">
+                    <option value="Salaried (Corporate / Private)">Salaried (Corporate / Private Sector)</option>
+                    <option value="Salaried (Government / PSU)">Salaried (Government / PSU / Defence)</option>
+                    <option value="Self-Employed Professional">Self-Employed Professional (Doctor / Lawyer / CA / Tech)</option>
+                    <option value="Business Owner">Business Owner / MSME Trader</option>
+                    <option value="Freelancer / Consultant">Freelancer / Creator / Consultant</option>
+                    <option value="Student / Scholar">Student / Academic Scholar</option>
+                    <option value="Retired / Pensioner">Retired / Senior Citizen</option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="loanAmountInput">Requested Amount (₹)</label>
+                    <input type="number" id="loanAmountInput" class="form-control" placeholder="100000" min="10000" step="5000" required value="100000">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="loanTenureInput">Tenure (Months)</label>
+                    <select id="loanTenureInput" class="form-control">
+                      <option value="6">6 Months (Half Year)</option>
+                      <option value="12">12 Months (1 Year)</option>
+                      <option value="18">18 Months (1.5 Years)</option>
+                      <option value="24" selected>24 Months (2 Years)</option>
+                      <option value="36">36 Months (3 Years)</option>
+                      <option value="48">48 Months (4 Years)</option>
+                      <option value="60">60 Months (5 Years)</option>
+                      <option value="84">84 Months (7 Years)</option>
+                      <option value="120">120 Months (10 Years)</option>
+                      <option value="180">180 Months (15 Years)</option>
+                      <option value="240">240 Months (20 Years)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="loanPurposeInput">Purpose of Loan</label>
+                  <input type="text" id="loanPurposeInput" class="form-control" placeholder="e.g. Higher Education / Home Renovation / Working Capital" value="Higher Education & Lab Setup" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
+                  <i class="fa-solid fa-paper-plane"></i> Submit Instant Application
+                </button>
+              </form>
+            </div>
+
+            <!-- User Loan History -->
+            <div>
+              <h3 class="card-title" style="margin-bottom: 20px;"><i class="fa-solid fa-clock-rotate-left"></i> My Applications</h3>
+              <div id="loansHistoryGrid" style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ================= 9. EMI CALCULATOR VIEW ================= -->
+        <section class="view-section" id="view-calculator">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-calculator"></i> EMI <span>Calculator</span></h2>
+              <p class="page-description">Simulate your loan repayments and interest structure in real-time.</p>
+            </div>
+          </div>
+
+          <div class="card emi-calc-grid">
+            <div>
+              <div class="form-group">
+                <div class="slider-header">
+                  <span class="form-label">Principal Loan Amount</span>
+                  <span style="font-weight: 700; color: var(--accent-cyan);" id="emiDisplayPrincipal">₹100,000</span>
+                </div>
+                <input type="range" class="slider-input" id="emiSliderPrincipal" min="10000" max="2000000" step="10000" value="100000">
+              </div>
+
+              <div class="form-group" style="margin-top: 24px;">
+                <div class="slider-header">
+                  <span class="form-label">Interest Rate (% p.a.)</span>
+                  <span style="font-weight: 700; color: var(--accent-cyan);" id="emiDisplayRate">10.5%</span>
+                </div>
+                <input type="range" class="slider-input" id="emiSliderRate" min="5" max="24" step="0.25" value="10.5">
+              </div>
+
+              <div class="form-group" style="margin-top: 24px;">
+                <div class="slider-header">
+                  <span class="form-label">Loan Tenure (Months)</span>
+                  <span style="font-weight: 700; color: var(--accent-cyan);" id="emiDisplayTenure">24 Months</span>
+                </div>
+                <input type="range" class="slider-input" id="emiSliderTenure" min="6" max="120" step="6" value="24">
+              </div>
+            </div>
+
+            <div class="emi-result-box">
+              <div style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Estimated Monthly EMI</div>
+              <div class="emi-highlight-amount" id="emiResultMonthly">₹4,637</div>
+              
+              <div style="width: 100%; border-top: 1px solid var(--border-color-subtle); padding-top: 16px; display: flex; justify-content: space-around; font-size: 0.88rem;">
+                <div>
+                  <div style="color: var(--text-secondary);">Total Interest</div>
+                  <div style="font-weight: 700; color: #ffffff;" id="emiResultInterest">₹11,288</div>
+                </div>
+                <div>
+                  <div style="color: var(--text-secondary);">Total Payment</div>
+                  <div style="font-weight: 700; color: var(--accent-cyan);" id="emiResultTotal">₹111,288</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 10. BUDGET VIEW ================= -->
+        <section class="view-section" id="view-budget">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-wallet"></i> Monthly <span>Budget</span></h2>
+              <p class="page-description">Set categorical spending limits and monitor 80% and 100% threshold warnings.</p>
+            </div>
+            <button class="btn btn-primary" onclick="document.getElementById('setBudgetModal').classList.add('active')">
+              <i class="fa-solid fa-sliders"></i> Set Category Budget
+            </button>
+          </div>
+
+          <div class="budget-grid" id="budgetCardsGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- ================= 12. BILL PAYMENTS VIEW ================= -->
+        <section class="view-section" id="view-bills">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-receipt"></i> Bill <span>Payments</span></h2>
+              <p class="page-description">Simulated instant payments for Electricity, Water, Mobile, Internet, and Education.</p>
+            </div>
+          </div>
+
+          <div class="card" style="max-width: 650px;">
+            <form id="billPaymentForm">
+              <div class="form-group">
+                <label class="form-label" for="billCategorySelect">Utility / Bill Category</label>
+                <select id="billCategorySelect" class="form-control">
+                  <option value="Electricity">Electricity (BESCOM, TNEB, Tata Power)</option>
+                  <option value="Water">Water Supply & Sewerage Board</option>
+                  <option value="Mobile">Mobile Recharge / Postpaid (Jio, Airtel, Vi)</option>
+                  <option value="Internet">Broadband & Fiber Internet</option>
+                  <option value="Insurance">Life & Health Insurance Premium</option>
+                  <option value="Education">University & School Tuition Fee</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="billProviderSelect">Service Provider</label>
+                <select id="billProviderSelect" class="form-control">
+                  <option value="BESCOM Power Supply">BESCOM Power Supply</option>
+                  <option value="Jio Fiber Broadband">Jio Fiber Broadband</option>
+                  <option value="Airtel Postpaid Mobile">Airtel Postpaid Mobile</option>
+                  <option value="City Water Authority">City Water Authority</option>
+                  <option value="HDFC Life Insurance">HDFC Life Insurance</option>
+                  <option value="Global Tech University">Global Tech University</option>
+                </select>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="billConsumerNumber">Consumer / Policy ID</label>
+                  <input type="text" id="billConsumerNumber" class="form-control" placeholder="e.g. 9840192831" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="billAmount">Bill Amount (₹)</label>
+                  <input type="number" id="billAmount" class="form-control" placeholder="1550" min="1" step="0.5" required>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
+                <i class="fa-solid fa-credit-card"></i> Pay Bill Now
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ================= 13. NOTIFICATIONS VIEW ================= -->
+        <section class="view-section" id="view-notifications">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-bell"></i> Notification <span>Center</span></h2>
+              <p class="page-description">Alerts on deposits, transfers, loan statuses, and budget warnings.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="markAllNotificationsRead()">
+              <i class="fa-solid fa-check-double"></i> Mark All as Read
+            </button>
+          </div>
+
+          <div style="max-width: 800px;" id="notificationsList">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- ================= 14. SECURITY VIEW ================= -->
+        <section class="view-section" id="view-security">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-shield-halved"></i> Security <span>Center</span></h2>
+              <p class="page-description">Manage password, session security, and 2-Factor Authentication verification.</p>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom: 16px;"><i class="fa-solid fa-key"></i> Update Password</h3>
+              <form id="changePasswordForm">
+                <div class="form-group">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">New Password</label>
+                  <input type="password" class="form-control" placeholder="Min. 8 characters" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-control" placeholder="Re-enter new password" required>
+                </div>
+                <button type="button" class="btn btn-primary btn-block" onclick="Toast.success('Password updated successfully!')">Save New Password</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom: 16px;"><i class="fa-solid fa-user-shield"></i> 2-Factor OTP Verification</h3>
+              <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+                Manage step-up multi-factor verification for high-value banking operations.
+              </p>
+              <button class="btn btn-secondary btn-block" onclick="triggerOtpFlow()">
+                <i class="fa-solid fa-mobile-screen-button"></i> Trigger 2FA OTP Verification
+              </button>
+              
+              <div style="margin-top: 24px; border-top: 1px solid var(--border-color-subtle); padding-top: 16px;">
+                <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Recent Login Activity</div>
+                <div style="font-size: 0.88rem; color: var(--text-primary); margin-top: 6px;">
+                  Active Session • Chrome / Windows 11 • IP: 192.168.1.42
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 15. PROFILE VIEW ================= -->
+        <section class="view-section" id="view-profile">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title"><i class="fa-solid fa-user-gear"></i> Customer <span>Profile</span></h2>
+              <p class="page-description">Review and maintain your registered personal credentials.</p>
+            </div>
+          </div>
+
+          <div class="card" style="max-width: 720px;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="profName" class="form-control" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="profEmail" class="form-control" readonly>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="text" id="profPhone" class="form-control" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="text" id="profDob" class="form-control" readonly>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Registered Residential Address</label>
+              <input type="text" id="profAddress" class="form-control" readonly>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Transfer Confirmation Modal -->
+  <div class="modal-backdrop" id="transferConfirmModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirm Money Transfer</h3>
+        <button class="modal-close-btn" data-modal-close>&times;</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-secondary);">
+        Please verify the recipient information before final transaction authorization.
+      </p>
+
+      <div class="confirm-details-list">
+        <div class="confirm-item">
+          <span class="label">Transfer To:</span>
+          <span class="val" id="modalConfirmTo">Johnathan Doe</span>
+        </div>
+        <div class="confirm-item">
+          <span class="label">Recipient Account:</span>
+          <span class="val" id="modalConfirmAcc">•••• •••• 2020</span>
+        </div>
+        <div class="confirm-item">
+          <span class="label">Transfer Amount:</span>
+          <span class="val" id="modalConfirmAmount">₹5,000.00</span>
+        </div>
+        <div class="confirm-item">
+          <span class="label">Transaction Fee:</span>
+          <span class="val" style="color: var(--success);">₹0.00 (Free)</span>
+        </div>
+        <div class="confirm-item total-item">
+          <span class="label" style="font-weight: 700;">Total Debit:</span>
+          <span class="val" id="modalConfirmTotal">₹5,000.00</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnExecuteTransfer">
+          <i class="fa-solid fa-check"></i> Confirm & Transfer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Beneficiary Modal -->
+  <div class="modal-backdrop" id="addBenModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Beneficiary</h3>
+        <button class="modal-close-btn" data-modal-close>&times;</button>
+      </div>
+      <form id="addBeneficiaryForm">
+        <div class="form-group">
+          <label class="form-label" for="benName">Payee Legal Name</label>
+          <input type="text" id="benName" class="form-control" placeholder="Sarah Connor" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="benAccount">Account Number</label>
+          <input type="text" id="benAccount" class="form-control" placeholder="10018849202" maxlength="11" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="benIfsc">IFSC Code</label>
+            <input type="text" id="benIfsc" class="form-control" placeholder="GGBN0001234" value="GGBN0001234" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="benBank">Bank Name</label>
+            <input type="text" id="benBank" class="form-control" placeholder="GG BANK" value="GG BANK" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Payee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Set Monthly Budget Modal -->
+  <div class="modal-backdrop" id="setBudgetModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Configure Category Budget</h3>
+        <button class="modal-close-btn" data-modal-close>&times;</button>
+      </div>
+      <form id="setBudgetForm">
+        <div class="form-group">
+          <label class="form-label" for="budgetCategorySelect">Budget Category</label>
+          <select id="budgetCategorySelect" class="form-control">
+            <option value="Food">Food & Dining</option>
+            <option value="Shopping">Shopping & Lifestyle</option>
+            <option value="Transport">Transport & Fuel</option>
+            <option value="Bills">Bills & Utilities</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Healthcare">Healthcare & Pharmacy</option>
+            <option value="Other">Other Expenses</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="budgetLimitInput">Monthly Spending Limit (₹)</label>
+          <input type="number" id="budgetLimitInput" class="form-control" placeholder="5000" min="100" step="100" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loan Repayment Modal -->
+  <div class="modal-backdrop" id="loanRepayModal">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-money-bill-transfer" style="color: var(--success);"></i> Loan Repayment & EMI Settlement</h3>
+        <button class="modal-close-btn" onclick="closeDashboardLoanRepayModal()">&times;</button>
+      </div>
+      <form id="loanRepayForm" onsubmit="submitDashboardLoanRepay(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+        <input type="hidden" id="repayLoanId">
+
+        <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border-left: 3px solid var(--accent-cyan);">
+          <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;">Facility Reference</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #fff; font-family: var(--font-mono); margin-top: 2px;" id="repayLoanTitle">Personal Loan</div>
+          <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.85rem;">
+            <span>Outstanding Balance: <strong id="repayOutstandingVal" style="color: var(--danger); font-family: var(--font-mono);">₹0</strong></span>
+            <span>Monthly EMI: <strong id="repayEmiVal" style="color: var(--accent-cyan); font-family: var(--font-mono);">₹0</strong></span>
+          </div>
+          <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary); background: rgba(56, 189, 248, 0.08); padding: 6px 10px; border-radius: 4px;" id="repayOfficerInfo">
+            <!-- Assigned officer info -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="repayOptionSelect">Payment Mode</label>
+          <select id="repayOptionSelect" class="form-control" onchange="onDashboardRepayOptionChange()">
+            <option value="EMI" selected>Regular Monthly EMI Installment</option>
+            <option value="CUSTOM">Custom Repayment Amount</option>
+            <option value="FULL">Full Balance Pre-Closure (Zero Penalty)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="repayAmountInput">Repayment Amount (₹)</label>
+          <input type="number" id="repayAmountInput" class="form-control" min="100" step="1" required style="font-family: var(--font-mono); font-size: 1.2rem; font-weight: 700; color: var(--success);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Payment Source</label>
+          <div style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-wallet"></i> Primary Savings Account</span>
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--success);" id="repayAvailableBal">₹--</span>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" class="btn btn-secondary" onclick="closeDashboardLoanRepayModal()">Cancel</button>
+          <button type="submit" class="btn btn-success" id="btnConfirmRepay"><i class="fa-solid fa-lock"></i> Authorize Repayment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2FA OTP Modal -->
+  <div class="modal-backdrop" id="otpModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">2-Factor Authentication</h3>
+        <button class="modal-close-btn" data-modal-close>&times;</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px;">
+        Please enter the 4-digit verification code sent to your device.
+      </p>
+      <div class="form-group">
+        <input type="text" id="otpInputField" class="form-control" placeholder="8849" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 6px; font-family: var(--font-mono);">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="verifyOtpAndProceed()">Verify & Authorize</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customize UPI ID Modal -->
+  <div class="modal-backdrop" id="customizeUpiModal">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-at" style="color: var(--accent-cyan);"></i> Customize Banking UPI ID</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('customizeUpiModal').classList.remove('active')">&times;</button>
+      </div>
+      <form id="customizeUpiForm" onsubmit="handleCustomUpiSubmit(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 14px;">
+        <div style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5;">
+          Personalize your instant payment handle. Your customized handle must be globally unique and will be activated upon approval by the Bank Officer.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Current Active UPI ID</label>
+          <input type="text" id="modalCurrentUpiId" class="form-control" readonly style="background: rgba(255,255,255,0.05); color: #94a3b8; font-family: var(--font-mono);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="customUpiHandleInput">Desired New UPI Handle</label>
+          <div style="display: flex; align-items: center;">
+            <input type="text" id="customUpiHandleInput" class="form-control" placeholder="e.g. gowtham_nk" required style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-family: var(--font-mono);" minlength="3" maxlength="25">
+            <span style="background: rgba(56, 189, 248, 0.15); border: 1px solid var(--border); border-left: none; padding: 0 14px; height: 42px; display: flex; align-items: center; color: var(--accent-cyan); font-weight: 700; font-family: var(--font-mono); border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm);">@ggbank</span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Min 3 characters, lowercase letters and numbers. Must be unique.</div>
+        </div>
+
+        <!-- Pending Request Banner if already submitted -->
+        <div id="modalPendingUpiBanner" style="display: none; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.82rem; color: var(--warning);">
+          <i class="fa-solid fa-clock"></i> You already have a pending request for <strong id="modalPendingHandleText" style="color: #fff;"></strong> awaiting Bank Officer approval.
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border);">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('customizeUpiModal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitCustomUpi"><i class="fa-solid fa-paper-plane"></i> Submit for Officer Approval</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase Client SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+
+  <!-- Application Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/statement.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/dashboard.js"></script>
+
+  <script>
+    function logout(e) {
+      if (e) e.preventDefault();
+      if (window.Auth && window.Auth.logout) {
+        window.Auth.logout();
+      } else {
+        localStorage.clear();
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+
+</body>
+</html>

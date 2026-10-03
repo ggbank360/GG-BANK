@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Admin Executive Dashboard">
+  <title>Admin Dashboard - GG BANK</title>
+
+  <!-- Google Fonts & Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js & jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Admin Sidebar (Rendered by admin-common.js) -->
+    <aside class="sidebar admin-sidebar" id="adminSidebar"></aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar (Rendered by admin-common.js) -->
+      <header class="topbar"></header>
+
+      <!-- Content Area -->
+      <main class="content-area">
+        
+        <!-- Page Header & Breadcrumb -->
+        <div class="page-header" style="margin-bottom: 24px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              Admin Portal &bull; Overview
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-gauge-high"></i> Admin <span>Dashboard</span></h2>
+            <p class="page-description">Overview of customer accounts, transactions, balances, and loan approvals.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-success" onclick="AdminCommon.openDirectDepositModal()">
+              <i class="fa-solid fa-circle-plus"></i> Deposit Funds
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards Grid (8 Cards) -->
+        <div class="admin-stats-grid" id="adminKpiGrid">
+          <!-- Card 1: Total Customers -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon kpi-customers">
+              <i class="fa-solid fa-user-group"></i>
+            </div>
+            <div class="admin-stat-info">
+              <span class="admin-stat-label">Total Customers</span>
+              <span class="admin-stat-value" id="kpiTotalCustomers">--</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Total Accounts -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon kpi-accounts">
+              <i class="fa-solid fa-vault"></i>
+            </div>
+            <div class="admin-stat-info">
+              <span class="admin-stat-label">Total Accounts</span>
+              <span class="admin-stat-value" id="kpiTotalAccounts">--</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Total Balance -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(0, 240, 255, 0.18); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.3);">
+              <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <div class="admin-stat-info">
+              <span class="admin-stat-label">Total Bank Balance</span>
+              <span class="admin-stat-value" id="kpiTotalBalance">--</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Total Deposits -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon kpi-deposits">
+              <i class="fa-solid fa-circle-arrow-down"></i>
+            </div>
+            <div class="admin-stat-info">
+              <span class="admin-stat-label">Total Deposits</span>
+              <span class="admin-stat-value" id="kpiTotalDeposits">--</span>
+            </div>
+          </div>
+
+          <!-- Card 5: Total Withdrawals -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon kpi-withdrawals">
+              <i class="fa-solid fa-circle-arrow-up"></i>
+            </div>
+            <div class="admin-stat-info">
+              <span class="admin-stat-label">Total Withdrawals</span>
+              <span class="admin-stat-value" id="kpiTotalWithdrawals">--</span>
+            </div>
+          </div>
+
+          <!-- Card 6: Total Transfers -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon kpi-transfers">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            </div>
+            <div class="admin-stat-info">
+              <span class="admin-stat-label">Total Transfers</span>
+              <span class="admin-stat-value" id="kpiTotalTransfers">--</span>
+            </div>
+          </div>
+
+          <!-- Card 7: Pending Loans -->
+          <div class="admin-stat-card" style="border-left: 4px solid var(--warning);">
+            <div class="admin-stat-icon kpi-loans">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <div class="admin-stat-info">
+              <span class="admin-stat-label">Pending Loans</span>
+              <span class="admin-stat-value" id="kpiPendingLoans" style="color: var(--warning);">--</span>
+            </div>
+          </div>
+
+          <!-- Card 8: Blocked Accounts -->
+          <div class="admin-stat-card" style="border-left: 4px solid var(--danger);">
+            <div class="admin-stat-icon" style="background: rgba(239, 68, 68, 0.18); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3);">
+              <i class="fa-solid fa-ban"></i>
+            </div>
+            <div class="admin-stat-info">
+              <span class="admin-stat-label">Blocked Accounts</span>
+              <span class="admin-stat-value" id="kpiBlockedAccounts" style="color: var(--danger);">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operational Center & Global Records Management (Aligned, No Graphs) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 28px;">
+          
+          <!-- Direct Treasury Operation Card -->
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 class="card-title"><i class="fa-solid fa-bolt" style="color: var(--accent-cyan);"></i> Rapid Admin Operations</h3>
+                <span class="badge badge-info">Direct Exec</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+                Directly provision 11-digit customer accounts or execute bank treasury liquidity deposits.
+              </p>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <a href="accounts.html" class="btn btn-primary btn-sm" style="justify-content: center;">
+                  <i class="fa-solid fa-folder-plus"></i> Add Account
+                </a>
+                <a href="customers.html" class="btn btn-secondary btn-sm" style="justify-content: center;">
+                  <i class="fa-solid fa-user-plus"></i> Add Customer
+                </a>
+                <a href="admin-deposits.html" class="btn btn-secondary btn-sm" style="justify-content: center;">
+                  <i class="fa-solid fa-circle-arrow-down"></i> Deposit Funds
+                </a>
+                <a href="admin-loans.html" class="btn btn-secondary btn-sm" style="justify-content: center;">
+                  <i class="fa-solid fa-hand-holding-dollar"></i> Review Loans
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vault Liquidity Matrix -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="card-title"><i class="fa-solid fa-building-columns" style="color: var(--success);"></i> System Liquidity Matrix</h3>
+              <span class="badge badge-success">Online 99.99%</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color-subtle);">
+                <span style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-id-card-clip" style="color: var(--accent-cyan); margin-right: 8px;"></i> Account Scheme</span>
+                <strong style="font-family: var(--font-mono); color: #ffffff;">11-Digit Standard (GGBN)</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color-subtle);">
+                <span style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-shield-halved" style="color: var(--success); margin-right: 8px;"></i> Central IFSC</span>
+                <strong style="font-family: var(--font-mono); color: var(--accent-cyan);">GGBN0001234</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color-subtle);">
+                <span style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-database" style="color: #b388ff; margin-right: 8px;"></i> Engine Mode</span>
+                <strong style="font-size: 0.85rem; color: #ffffff;">Dual Stack (Spring + Mock)</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Global Records Wipe & Reset Control Card -->
+          <div class="card" style="border-left: 4px solid var(--danger); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 class="card-title" style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Master Record Controls</h3>
+                <span class="badge badge-danger">Admin Level</span>
+              </div>
+              <p style="font-size: 0.83rem; color: var(--text-secondary); margin-bottom: 14px;">
+                Wipe all database records (accounts, customers, transactions, loans) or restore fresh default records.
+              </p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-secondary btn-sm" onclick="handleClearAllRecords()" style="flex: 1; color: var(--danger); border-color: rgba(239, 68, 68, 0.4);">
+                <i class="fa-solid fa-trash-can"></i> Remove All Records
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="handleResetDefaultData()" style="flex: 1;">
+                <i class="fa-solid fa-rotate-left"></i> Reset Demo Data
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Recent Activity Feed (Limited Preview) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+          <!-- Recent Transactions Preview -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="card-title"><i class="fa-solid fa-money-bill-transfer" style="color: var(--accent-cyan);"></i> Recent Transactions</h3>
+              <a href="admin-transactions.html" class="btn btn-secondary btn-sm">View All &rarr;</a>
+            </div>
+            <div id="dashRecentTxnContainer" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Pending Loan Review Action Feed -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="card-title"><i class="fa-solid fa-clock" style="color: var(--warning);"></i> Action Required: Pending Loans</h3>
+              <a href="admin-loans.html" class="btn btn-secondary btn-sm">Review All &rarr;</a>
+            </div>
+            <div id="dashPendingLoansContainer" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/admin-dashboard.js"></script>
+</body>
+</html>

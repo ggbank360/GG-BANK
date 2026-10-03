@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Banking Officer Operations Desk">
+  <title>Officer Workspace - GG BANK</title>
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ─── Officer Dashboard Specific Styles ─── */
+
+    /* 10-KPI Grid */
+    .officer-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .officer-kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.22s, box-shadow 0.22s;
+    }
+    .officer-kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    .officer-kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--kpi-color, var(--accent-cyan));
+    }
+
+    .officer-kpi-icon {
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      background: var(--kpi-bg, rgba(56, 189, 248, 0.12));
+      color: var(--kpi-color, var(--accent-cyan));
+      flex-shrink: 0;
+    }
+
+    .officer-kpi-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .officer-kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .officer-kpi-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--kpi-color, #fff);
+      font-family: var(--font-mono);
+      line-height: 1.1;
+    }
+    .officer-kpi-sub {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Assigned Loans Section */
+    .assigned-loan-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      position: relative;
+      border-left: 4px solid var(--warning);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .assigned-loan-card:hover {
+      transform: translateX(2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .assigned-loan-card.status-active { border-left-color: var(--success); }
+    .assigned-loan-card.status-pending { border-left-color: var(--warning); }
+    .assigned-loan-card.status-review { border-left-color: var(--accent-cyan); }
+    .assigned-loan-card.status-closed { border-left-color: var(--text-muted); }
+
+    .loan-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      gap: 10px;
+    }
+
+    .loan-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .loan-meta-item { }
+    .loan-meta-item .lmi-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .loan-meta-item .lmi-val {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Alerts Panel */
+    .alert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .alert-item.unread::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: -1px;
+      transform: translateY(-50%);
+      width: 3px; height: 60%;
+      background: var(--accent-cyan);
+      border-radius: 2px;
+    }
+    .alert-dot {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* Tabs */
+    .section-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color-subtle);
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .section-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-color-subtle);
+      background: transparent;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    .section-tab.active {
+      background: var(--accent-cyan);
+      color: #070d1e;
+      border-color: var(--accent-cyan);
+    }
+    .section-tab .tab-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      margin-left: 4px;
+    }
+    .section-tab.active .tab-badge {
+      background: rgba(0,0,0,0.2);
+    }
+
+    /* Pulse animation for alerts */
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(56,189,248,0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(56,189,248,0); }
+      100% { box-shadow: 0 0 0 0 rgba(56,189,248,0); }
+    }
+    .pulse-badge {
+      animation: pulseGlow 2s infinite;
+    }
+
+    /* Count-up animation */
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .officer-kpi-value {
+      animation: countUp 0.5s ease-out both;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Officer Sidebar -->
+    <aside class="sidebar admin-sidebar">
+      <div class="sidebar-header">
+        <a href="officer-dashboard.html" class="brand-logo">
+          <div class="logo-icon"></div>
+          <div class="brand-info">
+            <span class="brand-title">GG BANK</span>
+            <span class="brand-subtitle" style="color: var(--accent-cyan); font-weight: 700;">Officer Desk</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="nav-menu">
+        <div class="nav-section-title">Officer Workspace</div>
+        <li class="nav-item active" id="navItemDashboard"><a href="javascript:void(0)" class="nav-link" onclick="switchOfficerSection('overview')"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
+        <li class="nav-item" id="navItemLoans"><a href="javascript:void(0)" class="nav-link" onclick="switchOfficerSection('assignedLoansSection')"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Assigned Loans</span> <span class="badge-count" id="navAssignedLoanBadge" style="display:none;">0</span></a></li>
+        <li class="nav-item" id="navItemKyc"><a href="javascript:void(0)" class="nav-link" onclick="switchOfficerSection('kycQueueSection')"><i class="fa-solid fa-id-card"></i> <span>KYC Queue</span></a></li>
+        <li class="nav-item" id="navItemUpi"><a href="javascript:void(0)" class="nav-link" onclick="switchOfficerSection('upiApprovalsSection')"><i class="fa-solid fa-at" style="color: var(--accent-cyan);"></i> <span>UPI Approvals</span> <span class="badge-count" id="navUpiBadge" style="display:none;">0</span></a></li>
+        <li class="nav-item" id="navItemCustomers"><a href="javascript:void(0)" class="nav-link" onclick="switchOfficerSection('customersSection')"><i class="fa-solid fa-users"></i> <span>Customers</span></a></li>
+        <li class="nav-item" id="navItemTxn"><a href="javascript:void(0)" class="nav-link" onclick="switchOfficerSection('transactionsSection')"><i class="fa-solid fa-money-bill-transfer"></i> <span>Transactions</span></a></li>
+        <li class="nav-item" id="navItemAlerts"><a href="javascript:void(0)" class="nav-link" onclick="switchOfficerSection('alertsSection')"><i class="fa-solid fa-bell"></i> <span>Alerts</span> <span class="badge-count" id="navAlertBadge" style="display:none;">0</span></a></li>
+
+        <div class="nav-section-title" style="margin-top: 16px;">Portals</div>
+        <li class="nav-item"><a href="admin-dashboard.html" class="nav-link"><i class="fa-solid fa-shield-halved"></i> <span>Admin Console</span></a></li>
+        <li class="nav-item"><a href="#" onclick="logoutOfficer(event)" class="nav-link" style="color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Sign Out</span></a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card" style="border-color: rgba(56, 189, 248, 0.3);">
+          <div class="user-avatar" style="background: var(--accent-cyan); color: #070d1e; font-weight: 800;" id="officerAvatarInitials">OF</div>
+          <div class="user-details">
+            <span class="user-name" id="officerSidebarName">Officer</span>
+            <span class="user-role" style="color: var(--accent-cyan);" id="officerSidebarRole">Credit Officer</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting-text">
+            Officer Operational Desk &bull; <span id="officerTopbarGreeting">Welcome</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <span class="badge badge-info pulse-badge" id="officerBranchBadge"><i class="fa-solid fa-building"></i> Central Tech Branch</span>
+          <span id="officerLiveClock" style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);"></span>
+          <button class="btn btn-secondary btn-sm" onclick="loadOfficerData()">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="logoutOfficer(event)">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+          </button>
+        </div>
+      </header>
+
+      <main class="content-area">
+        
+        <!-- Page Header -->
+        <div class="page-header" style="margin-bottom: 24px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              <i class="fa-solid fa-circle" style="color: #10b981; font-size: 0.55rem; margin-right: 4px; animation: pulse 2s infinite;"></i>
+              Officer Operational Desk &bull; Live Operations
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-user-tie"></i> Banking Officer <span>Dashboard</span></h2>
+            <p class="page-description" id="officerPageDesc">Manage your assigned cases, KYC verifications, and customer operations.</p>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="loadOfficerData()" style="display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-arrows-rotate"></i> Refresh Queue
+            </button>
+            <button class="btn btn-success" onclick="AdminCommon.openDirectDepositModal()">
+              <i class="fa-solid fa-circle-plus"></i> Treasury Deposit
+            </button>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- 10-KPI Overview Cards                                          -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div class="officer-kpi-grid" id="officerKpiGrid">
+
+          <!-- 1. Total Customers Assigned -->
+          <div class="officer-kpi-card" style="--kpi-color: #38bdf8; --kpi-bg: rgba(56,189,248,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Customers Assigned</div>
+              <div class="officer-kpi-value" id="kpi1TotalCustomers">0</div>
+              <div class="officer-kpi-sub">Total in portfolio</div>
+            </div>
+          </div>
+
+          <!-- 2. New Account Applications -->
+          <div class="officer-kpi-card" style="--kpi-color: #a78bfa; --kpi-bg: rgba(167,139,250,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-user-plus"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">New Applications</div>
+              <div class="officer-kpi-value" id="kpi2NewApplications">0</div>
+              <div class="officer-kpi-sub">Pending account open</div>
+            </div>
+          </div>
+
+          <!-- 3. Pending KYC -->
+          <div class="officer-kpi-card" style="--kpi-color: #f59e0b; --kpi-bg: rgba(245,158,11,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-id-card"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Pending KYC</div>
+              <div class="officer-kpi-value" id="kpi3PendingKyc">0</div>
+              <div class="officer-kpi-sub">Verification required</div>
+            </div>
+          </div>
+
+          <!-- 4. Pending Loans -->
+          <div class="officer-kpi-card" style="--kpi-color: #ef4444; --kpi-bg: rgba(239,68,68,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Pending Loans</div>
+              <div class="officer-kpi-value" id="kpi4PendingLoans">0</div>
+              <div class="officer-kpi-sub">Assigned to you</div>
+            </div>
+          </div>
+
+          <!-- 5. Pending Transactions -->
+          <div class="officer-kpi-card" style="--kpi-color: #fb923c; --kpi-bg: rgba(251,146,60,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Pending Txns</div>
+              <div class="officer-kpi-value" id="kpi5PendingTxns">0</div>
+              <div class="officer-kpi-sub">Requiring review</div>
+            </div>
+          </div>
+
+          <!-- 6. Today's Deposits -->
+          <div class="officer-kpi-card" style="--kpi-color: #10b981; --kpi-bg: rgba(16,185,129,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Today's Deposits</div>
+              <div class="officer-kpi-value" id="kpi6TodayDeposits" style="font-size: 1.05rem;">₹0</div>
+              <div class="officer-kpi-sub" id="kpi6DepositCount">0 transactions</div>
+            </div>
+          </div>
+
+          <!-- 7. Today's Withdrawals -->
+          <div class="officer-kpi-card" style="--kpi-color: #f43f5e; --kpi-bg: rgba(244,63,94,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Today's Withdrawals</div>
+              <div class="officer-kpi-value" id="kpi7TodayWithdrawals" style="font-size: 1.05rem;">₹0</div>
+              <div class="officer-kpi-sub" id="kpi7WithdrawalCount">0 transactions</div>
+            </div>
+          </div>
+
+          <!-- 8. Today's Transfers -->
+          <div class="officer-kpi-card" style="--kpi-color: #6366f1; --kpi-bg: rgba(99,102,241,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-right-left"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Today's Transfers</div>
+              <div class="officer-kpi-value" id="kpi8TodayTransfers" style="font-size: 1.05rem;">₹0</div>
+              <div class="officer-kpi-sub" id="kpi8TransferCount">0 transactions</div>
+            </div>
+          </div>
+
+          <!-- 9. Pending Service Requests -->
+          <div class="officer-kpi-card" style="--kpi-color: #06b6d4; --kpi-bg: rgba(6,182,212,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-headset"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Service Requests</div>
+              <div class="officer-kpi-value" id="kpi9ServiceRequests">0</div>
+              <div class="officer-kpi-sub">Pending resolution</div>
+            </div>
+          </div>
+
+          <!-- 10. Alerts / Notifications -->
+          <div class="officer-kpi-card" style="--kpi-color: #e879f9; --kpi-bg: rgba(232,121,249,0.1);">
+            <div class="officer-kpi-icon"><i class="fa-solid fa-bell"></i></div>
+            <div class="officer-kpi-info">
+              <div class="officer-kpi-label">Unread Alerts</div>
+              <div class="officer-kpi-value" id="kpi10Alerts">0</div>
+              <div class="officer-kpi-sub">System notifications</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- Section Tabs                                                    -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div class="section-tabs">
+          <button class="section-tab active" id="tabBtnAssignedLoans" onclick="switchOfficerSection('assignedLoansSection')">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Assigned Loans <span class="tab-badge" id="tabAssignedCount">0</span>
+          </button>
+          <button class="section-tab" id="tabBtnKycQueue" onclick="switchOfficerSection('kycQueueSection')">
+            <i class="fa-solid fa-id-card"></i> KYC Queue <span class="tab-badge" id="tabKycCount">0</span>
+          </button>
+          <button class="section-tab" id="tabBtnUpiApprovals" onclick="switchOfficerSection('upiApprovalsSection')">
+            <i class="fa-solid fa-at"></i> UPI Approvals <span class="tab-badge" id="tabUpiReqCount">0</span>
+          </button>
+          <button class="section-tab" id="tabBtnCustomers" onclick="switchOfficerSection('customersSection')">
+            <i class="fa-solid fa-users"></i> Customers <span class="tab-badge" id="tabCustomerCount">0</span>
+          </button>
+          <button class="section-tab" id="tabBtnTransactions" onclick="switchOfficerSection('transactionsSection')">
+            <i class="fa-solid fa-money-bill-transfer"></i> Recent Transactions
+          </button>
+          <button class="section-tab" id="tabBtnProfileRequests" onclick="switchOfficerSection('profileRequestsSection')">
+            <i class="fa-solid fa-user-pen"></i> Profile Change Requests <span class="tab-badge" id="tabProfileReqCount">0</span>
+          </button>
+          <button class="section-tab" id="tabBtnAlerts" onclick="switchOfficerSection('alertsSection')">
+            <i class="fa-solid fa-bell"></i> Alerts <span class="tab-badge" id="tabAlertCount">0</span>
+          </button>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- Section 1: Assigned Loans (from Admin approval)               -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="assignedLoansSection" class="dashboard-section">
+          <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="card-title">
+                <i class="fa-solid fa-hand-holding-dollar" style="color: var(--warning);"></i>
+                Assigned Loan Cases
+              </h3>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="badge badge-warning" id="assignedLoansBadge">0 Cases</span>
+                <select id="assignedLoanFilter" class="form-control" style="width: 140px; font-size: 0.8rem;" onchange="filterAssignedLoans()">
+                  <option value="ALL">All Status</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="UNDER_REVIEW">Under Review</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="CLOSED">Closed</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Assigned Loan Cards -->
+            <div id="assignedLoansContainer">
+              <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-cyan);"></i>
+                <div style="margin-top: 10px;">Loading assigned cases...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- Section 2: Customer KYC Verification Queue                    -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="kycQueueSection" class="dashboard-section" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="card-title">
+                <i class="fa-solid fa-id-card" style="color: #3b82f6;"></i> Customer KYC Verification Desk
+              </h3>
+              <span class="badge badge-info" id="kycQueueBadge">0 Applications</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Customer ID</th>
+                    <th>Full Name</th>
+                    <th>Account Number</th>
+                    <th>Submitted KYC Documents</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="officerKycQueueBody">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- Section 3: Recent Transactions                                 -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="transactionsSection" class="dashboard-section" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="card-title">
+                <i class="fa-solid fa-money-bill-transfer" style="color: var(--accent-cyan);"></i> Recent Bank Transactions
+              </h3>
+              <a href="admin-transactions.html" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-external-link-alt"></i> Full View
+              </a>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Transaction ID</th>
+                    <th>Type</th>
+                    <th>From / To</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="officerTxnBody">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- Section 4: Alerts & Notifications                              -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="alertsSection" class="dashboard-section" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="card-title">
+                <i class="fa-solid fa-bell" style="color: #e879f9;"></i> System Alerts & Notifications
+              </h3>
+              <button class="btn btn-secondary btn-sm" onclick="markAllAlertsRead()">
+                <i class="fa-solid fa-check-double"></i> Mark All Read
+              </button>
+            </div>
+            <div id="officerAlertsContainer">
+              <!-- Dynamic Rows -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- Section 5: Customer Directory Desk                           -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="customersSection" class="dashboard-section" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+              <h3 class="card-title">
+                <i class="fa-solid fa-users" style="color: var(--accent-cyan);"></i> Assigned Customer Directory
+              </h3>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <span class="badge badge-info" id="officerCustomerBadge">0 Customers</span>
+                <input type="text" id="officerCustomerSearch" class="form-control" placeholder="Search customer or account..." style="width: 220px; font-size: 0.8rem;" oninput="filterOfficerCustomers()">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Account No</th>
+                    <th>Account Type</th>
+                    <th>Balance</th>
+                    <th>KYC Status</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="officerCustomersBody">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- Section 6: Customer Profile Edit Requests                      -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="profileRequestsSection" class="dashboard-section" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;">
+                  <i class="fa-solid fa-user-pen" style="color: var(--accent);"></i> Customer Profile Edit Requests
+                </h3>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 4px 0 0 0;">
+                  Review customer-submitted personal edits and attached proof documents (PAN, Aadhaar, Income Proof, Bank Statement). Approve or reject with instant customer notification.
+                </p>
+              </div>
+              <span class="badge badge-warning" id="profileRequestsBadge">0 Pending</span>
+            </div>
+
+            <div id="profileRequestsContainer" style="display: flex; flex-direction: column; gap: 16px;">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- Section: Custom UPI ID Approvals Desk                          -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="upiApprovalsSection" class="dashboard-section" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;">
+                  <i class="fa-solid fa-at" style="color: var(--accent-cyan);"></i> Custom UPI ID Approval Desk
+                </h3>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 4px 0 0 0;">
+                  Supervise customer requested custom handles. Approving activates the handle immediately for instant transfers.
+                </p>
+              </div>
+              <span class="badge badge-warning" id="officerUpiBadgeCount">0 Pending</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ref ID</th>
+                    <th>Customer Name</th>
+                    <th>Account No</th>
+                    <th>Current UPI ID</th>
+                    <th>Requested Handle</th>
+                    <th>Date Requested</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Officer Action</th>
+                  </tr>
+                </thead>
+                <tbody id="officerUpiRequestsBody">
+                  <!-- Dynamic UPI Requests -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- KYC Document Viewer Modal                                           -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="kycDocViewerModal">
+    <div class="modal-card" style="max-width: 820px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div>
+          <h3 class="modal-title" id="kycViewerTitle" style="font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> Customer KYC Documents
+          </h3>
+          <div id="kycDocCustomerHeader" style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 2px;">
+            Applicant: <strong id="kycDocHolderName">Customer</strong>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('kycDocViewerModal').classList.remove('active')">&times;</button>
+      </div>
+
+      <div style="display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color-subtle); padding-bottom: 10px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary btn-sm" id="kycTabAll" onclick="switchOfficerKYCDoc('ALL')">
+          <i class="fa-solid fa-table-cells-large"></i> All Documents
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabAadhaar" onclick="switchOfficerKYCDoc('AADHAAR')">
+          <i class="fa-solid fa-fingerprint"></i> Aadhaar
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabPan" onclick="switchOfficerKYCDoc('PAN')">
+          <i class="fa-solid fa-id-card"></i> PAN
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabPhoto" onclick="switchOfficerKYCDoc('PHOTO')">
+          <i class="fa-solid fa-user-circle"></i> Photo
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabSignature" onclick="switchOfficerKYCDoc('SIGNATURE')">
+          <i class="fa-solid fa-signature"></i> Signature
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="kycTabNominee" onclick="switchOfficerKYCDoc('NOMINEE')">
+          <i class="fa-solid fa-users"></i> Nominee
+        </button>
+      </div>
+
+      <div id="kycViewerBody" style="text-align: center; min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; border: 1px solid var(--border-color-subtle);">
+        <!-- Dynamic Document Preview -->
+      </div>
+
+      <div id="kycDocMetaBox" style="background: var(--bg-surface); padding: 12px 14px; border-radius: var(--radius-sm); font-size: 0.82rem; margin-bottom: 16px; border-left: 3px solid var(--accent-cyan); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <span style="color: var(--text-muted);">Document Number:</span> <strong id="kycModalDocNumber" style="font-family: var(--font-mono); color: #fff;">--</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted);">Verification Status:</span> <span class="badge badge-success" id="kycModalDocStatus">VERIFIED</span>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('kycDocViewerModal').classList.remove('active')">
+          Close
+        </button>
+        <div style="display: flex; gap: 8px;" id="kycModalActionBtns">
+          <!-- Dynamic Approve/Reject buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Loan Details Modal                                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="officerLoanDetailModal">
+    <div class="modal-card" style="max-width: 560px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-contract" style="color: var(--warning);"></i> Assigned Loan Dossier</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('officerLoanDetailModal').classList.remove('active')">&times;</button>
+      </div>
+      <div id="officerLoanDetailBody" style="padding: 16px 0; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('officerLoanDetailModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/lib/qrcode.min.js"></script>
+  <script src="js/lib/html5-qrcode.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/officer-dashboard.js"></script>
+
+  <script>
+    // Live clock
+    function updateClock() {
+      const el = document.getElementById('officerLiveClock');
+      if (el) el.textContent = new Date().toLocaleTimeString('en-IN');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Unified Section Switching
+    function showSection(sectionId, tabEl) {
+      if (typeof window.switchOfficerSection === 'function') {
+        window.switchOfficerSection(sectionId);
+      } else {
+        document.querySelectorAll('.dashboard-section').forEach(s => s.style.display = 'none');
+        const el = document.getElementById(sectionId);
+        if (el) el.style.display = 'block';
+      }
+    }
+
+    function scrollToSection(sectionId) {
+      showSection(sectionId);
+    }
+  </script>
+</body>
+</html>

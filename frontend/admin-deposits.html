@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GG BANK - Deposit Surveillance & Treasury Credits">
+  <title>Deposit Management - GG BANK Admin</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar admin-sidebar" id="adminSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="topbar"></header>
+
+      <main class="content-area">
+        <div class="page-header">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+              Admin Portal &bull; Deposit Management
+            </div>
+            <h2 class="page-title"><i class="fa-solid fa-circle-dollar-to-slot"></i> Deposit <span>Surveillance & Treasury</span></h2>
+            <p class="page-description">Monitoring all cash credits, wire settlements, and direct treasury account funding.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-success" onclick="AdminCommon.openDirectDepositModal()">
+              <i class="fa-solid fa-circle-plus"></i> Treasury Deposit
+            </button>
+            <button class="btn btn-secondary" onclick="exportDepositsCsv()">
+              <i class="fa-solid fa-file-csv"></i> Export Deposits
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="filter-toolbar" style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <div class="search-box" style="flex: 1; min-width: 280px;">
+              <input type="text" class="form-control" id="depositSearchInput" placeholder="🔍 Search Deposit ID, beneficiary account number, channel...">
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select id="depositDateFilter" class="form-control" style="width: 140px;">
+                <option value="ALL">All Time</option>
+                <option value="TODAY">Today</option>
+                <option value="WEEK">This Week</option>
+                <option value="MONTH">This Month</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deposit Table Card -->
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Deposit ID</th>
+                  <th>Beneficiary Account</th>
+                  <th>Credit Amount</th>
+                  <th>Payment Channel</th>
+                  <th>Date & Time</th>
+                  <th>Balance After</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminDepositTableBody">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color-subtle);">
+            <div style="font-size: 0.85rem; color: var(--text-secondary);" id="depositCountSummary">
+              Showing 0 deposits
+            </div>
+            <div style="display: flex; gap: 8px;" id="depositPaginationBtns">
+              <!-- Pagination buttons -->
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Deposit Details Modal -->
+  <div class="modal-backdrop" id="depositDetailsModal">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Deposit Credit Receipt</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('depositDetailsModal').classList.remove('active')">&times;</button>
+      </div>
+      <div id="depositModalBody" style="padding: 16px 0; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('depositDetailsModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/admin-deposits.js"></script>
+</body>
+</html>
