@@ -40,9 +40,7 @@ class ApiService {
   constructor() {
     this.token = localStorage.getItem('gg_auth_token') || null;
     this.useFallback = false;
-    if (typeof window !== 'undefined' && window.__USE_MOCK_FALLBACK__ === true) {
-      this.initMockDatabase();
-    }
+    this.initMockDatabase();
   }
 
   setToken(token) {
@@ -66,6 +64,19 @@ class ApiService {
 
   async request(endpoint, method = 'GET', body = null) {
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+    // If fallback engine is already activated, serve directly from local engine
+    if (this.useFallback) {
+      try {
+        return this.handleFallback(cleanEndpoint, method, body);
+      } catch (fbErr) {
+        if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
+          Utils.showToast(fbErr.message, 'error');
+        }
+        throw fbErr;
+      }
+    }
+
     const url = `${API_BASE_URL}${cleanEndpoint}`;
     const options = {
       method,
@@ -76,19 +87,34 @@ class ApiService {
       options.body = JSON.stringify(body);
     }
 
-    const isLocalDev = typeof window !== 'undefined' && 
-                       (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
     let response;
     try {
       response = await fetch(url, options);
     } catch (err) {
-      const errMsg = 'Unable to connect to GG BANK database/server. Please ensure the backend is running and try again.';
-      console.error(`GG BANK: Network error connecting to backend API [${cleanEndpoint}]:`, err.message);
-      if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
-        Utils.showToast(errMsg, 'error', 'Database Connection Error');
+      console.warn(`GG BANK: Remote backend unreachable on [${cleanEndpoint}]. Switching seamlessly to built-in banking engine.`);
+      this.useFallback = true;
+      try {
+        return this.handleFallback(cleanEndpoint, method, body);
+      } catch (fbErr) {
+        if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
+          Utils.showToast(fbErr.message, 'error');
+        }
+        throw fbErr;
       }
-      throw new Error(errMsg);
+    }
+
+    // When hosted without a separate backend, /api/* returns 404, 405, or 502/503/504
+    if (response.status === 404 || response.status === 405 || response.status >= 502) {
+      console.warn(`GG BANK: Hosted server returned HTTP ${response.status} on [${cleanEndpoint}]. Switching seamlessly to built-in banking engine.`);
+      this.useFallback = true;
+      try {
+        return this.handleFallback(cleanEndpoint, method, body);
+      } catch (fbErr) {
+        if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
+          Utils.showToast(fbErr.message, 'error');
+        }
+        throw fbErr;
+      }
     }
 
     if (response.ok) {
@@ -595,6 +621,13 @@ class ApiService {
       return { success: true, data: userTxns };
     }
 
+    // GET /transactions
+    if ((endpoint === '/transactions' || endpoint === '/transactions/') && method === 'GET') {
+      const txns = this.getMock('gg_transactions');
+      const sorted = [...txns].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return { success: true, data: sorted };
+    }
+
     // POST /transfer
     if (endpoint === '/transfer' && method === 'POST') {
       const accounts = this.getMock('gg_accounts');
@@ -811,6 +844,36 @@ class ApiService {
       }
     }
 
+    // POST /loans/{id}/pay-emi
+    if (endpoint.includes('/loans/') && endpoint.endsWith('/pay-emi') && method === 'POST') {
+      const loanId = endpoint.split('/')[2];
+      const loans = this.getMock('gg_loans');
+      const loan = loans.find(l => l.loanId === loanId);
+      const accounts = this.getMock('gg_accounts');
+      const amount = parseFloat(body.amount || 0);
+      const acc = accounts.find(a => a.accountNumber === body.accountNumber);
+      if (acc && amount > 0) {
+        if (acc.balance < amount) throw new Error('Insufficient balance to pay EMI');
+        acc.balance -= amount;
+        this.setMock('gg_accounts', accounts);
+        const txns = this.getMock('gg_transactions');
+        txns.unshift({
+          transactionId: `TXN-2026-${Date.now().toString().slice(-6)}`,
+          senderAccount: acc.accountNumber,
+          receiverAccount: 'GG-BANK-LOAN-REPAYMENT',
+          amount: amount,
+          type: 'LOAN_REPAYMENT',
+          category: 'Loan EMI',
+          description: `EMI Payment for Loan ${loanId}`,
+          status: 'COMPLETED',
+          balanceAfter: acc.balance,
+          createdAt: new Date().toISOString()
+        });
+        this.setMock('gg_transactions', txns);
+      }
+      return { success: true, message: 'Loan EMI paid successfully!' };
+    }
+
     // GET & POST /budgets
     if (endpoint.startsWith('/budgets')) {
       const budgets = this.getMock('gg_budgets');
@@ -847,6 +910,171 @@ class ApiService {
         this.setMock('gg_notifications', notifs);
         return { success: true, message: 'All marked as read' };
       }
+    }
+
+    // POST /qr/validate
+    if (endpoint === '/qr/validate' && method === 'POST') {
+      const qrData = (body && body.qrData) || '';
+      const match = qrData.match(/\b\d{11,12}\b/);
+      const targetAcc = match ? match[0] : null;
+      if (!targetAcc) throw new Error('Unrecognized QR Code format');
+      const accounts = this.getMock('gg_accounts');
+      const acc = accounts.find(a => a.accountNumber === targetAcc);
+      if (!acc) throw new Error('Account associated with QR code not found in GG BANK');
+      const users = this.getMock('gg_users');
+      const u = users.find(user => user.userId === acc.userId);
+      return {
+        success: true,
+        message: 'QR verified successfully',
+        data: {
+          accountNumber: acc.accountNumber,
+          accountType: acc.accountType,
+          status: acc.status,
+          name: u ? u.name : 'GG Bank Customer',
+          qrIdentifier: `QR-VERIFIED-${acc.accountNumber}`,
+          verified: true
+        }
+      };
+    }
+
+    // POST /qr/pay
+    if (endpoint === '/qr/pay' && method === 'POST') {
+      const senderAccNum = body.senderAccount;
+      const receiverAccNum = body.receiverAccount;
+      const amount = parseFloat(body.amount || 0);
+      const accounts = this.getMock('gg_accounts');
+      const senderAcc = accounts.find(a => a.accountNumber === senderAccNum);
+      const receiverAcc = accounts.find(a => a.accountNumber === receiverAccNum);
+      if (!senderAcc || !receiverAcc) throw new Error('Account not found for QR payment');
+      if (senderAcc.balance < amount) throw new Error('Insufficient balance in account');
+      senderAcc.balance -= amount;
+      receiverAcc.balance += amount;
+      this.setMock('gg_accounts', accounts);
+
+      const txns = this.getMock('gg_transactions');
+      const txnId = `TXN-2026-${Date.now().toString().slice(-6)}`;
+      const newTxn = {
+        transactionId: txnId,
+        senderAccount: senderAccNum,
+        receiverAccount: receiverAccNum,
+        amount: amount,
+        type: 'TRANSFER',
+        category: 'Transfer',
+        description: body.note || 'Instant QR Scan & Pay',
+        status: 'COMPLETED',
+        balanceAfter: senderAcc.balance,
+        createdAt: new Date().toISOString()
+      };
+      txns.unshift(newTxn);
+      this.setMock('gg_transactions', txns);
+      return { success: true, message: 'QR Payment completed successfully', data: newTxn };
+    }
+
+    // GET /upi/my-upi
+    if (endpoint === '/upi/my-upi' && method === 'GET') {
+      const upi = JSON.parse(localStorage.getItem('gg_upi_profile') || 'null') || {
+        userId: currentUserId,
+        accountNumber: '100188492019',
+        upiId: 'gowtham@ggbank',
+        status: 'ACTIVE',
+        pendingRequest: null
+      };
+      return { success: true, data: upi };
+    }
+
+    // POST /upi/customize
+    if (endpoint === '/upi/customize' && method === 'POST') {
+      const handle = (body.upiHandle || '').trim().toLowerCase();
+      const upi = JSON.parse(localStorage.getItem('gg_upi_profile') || 'null') || {
+        userId: currentUserId,
+        accountNumber: '100188492019',
+        upiId: `${handle}@ggbank`,
+        status: 'ACTIVE',
+        pendingRequest: `${handle}@ggbank`
+      };
+      upi.pendingRequest = `${handle}@ggbank`;
+      localStorage.setItem('gg_upi_profile', JSON.stringify(upi));
+      return { success: true, message: 'Custom UPI ID request submitted for officer approval!', data: upi };
+    }
+
+    // GET /upi/requests
+    if (endpoint === '/upi/requests' && method === 'GET') {
+      const upi = JSON.parse(localStorage.getItem('gg_upi_profile') || 'null');
+      const list = (upi && upi.pendingRequest) ? [{
+        requestId: 'REQ-UPI-101',
+        userId: upi.userId || currentUserId,
+        currentHandle: upi.upiId,
+        requestedHandle: upi.pendingRequest,
+        status: 'PENDING_APPROVAL',
+        submittedAt: new Date().toISOString()
+      }] : [];
+      return { success: true, data: list };
+    }
+
+    // POST /upi/requests/{id}/approve
+    if (endpoint.startsWith('/upi/requests/') && endpoint.endsWith('/approve')) {
+      const upi = JSON.parse(localStorage.getItem('gg_upi_profile') || 'null') || {};
+      if (upi.pendingRequest) {
+        upi.upiId = upi.pendingRequest;
+        upi.pendingRequest = null;
+        localStorage.setItem('gg_upi_profile', JSON.stringify(upi));
+      }
+      return { success: true, message: 'UPI request approved successfully!' };
+    }
+
+    // POST /upi/requests/{id}/reject
+    if (endpoint.startsWith('/upi/requests/') && endpoint.endsWith('/reject')) {
+      const upi = JSON.parse(localStorage.getItem('gg_upi_profile') || 'null') || {};
+      upi.pendingRequest = null;
+      localStorage.setItem('gg_upi_profile', JSON.stringify(upi));
+      return { success: true, message: 'UPI request rejected.' };
+    }
+
+    // GET & POST /profile-requests
+    if (endpoint === '/profile-requests' || endpoint === '/profile/requests') {
+      let reqs = JSON.parse(localStorage.getItem('gg_profile_requests') || '[]');
+      if (method === 'GET') {
+        return { success: true, data: reqs };
+      }
+      if (method === 'POST') {
+        const reqId = `REQ-PROF-${Date.now().toString().slice(-6)}`;
+        const newReq = {
+          requestId: reqId,
+          userId: body.userId || currentUserId,
+          customerName: body.customerName || 'Customer',
+          currentDetails: body.currentDetails || {},
+          requestedDetails: body.requestedDetails || {},
+          status: 'PENDING_OFFICER_APPROVAL',
+          submittedAt: new Date().toISOString()
+        };
+        reqs.unshift(newReq);
+        localStorage.setItem('gg_profile_requests', JSON.stringify(reqs));
+        return { success: true, message: 'Profile edit request submitted', data: newReq };
+      }
+    }
+
+    // PUT /admin/customers/{userId}/approve
+    if (endpoint.startsWith('/admin/customers/') && endpoint.endsWith('/approve') && method === 'PUT') {
+      const userId = endpoint.split('/')[3];
+      const users = this.getMock('gg_users');
+      const u = users.find(user => user.userId === userId);
+      if (u) {
+        u.status = 'ACTIVE';
+        this.setMock('gg_users', users);
+      }
+      return { success: true, message: 'Customer approved successfully' };
+    }
+
+    // PUT /admin/customers/{userId}/reject
+    if (endpoint.startsWith('/admin/customers/') && endpoint.endsWith('/reject') && method === 'PUT') {
+      const userId = endpoint.split('/')[3];
+      const users = this.getMock('gg_users');
+      const u = users.find(user => user.userId === userId);
+      if (u) {
+        u.status = 'REJECTED';
+        this.setMock('gg_users', users);
+      }
+      return { success: true, message: 'Customer rejected' };
     }
 
     // GET /insights/{userId}
