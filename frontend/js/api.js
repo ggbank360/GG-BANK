@@ -40,7 +40,9 @@ class ApiService {
   constructor() {
     this.token = localStorage.getItem('gg_auth_token') || null;
     this.useFallback = false;
-    this.initMockDatabase();
+    if (typeof window !== 'undefined' && window.__USE_MOCK_FALLBACK__ === true) {
+      this.initMockDatabase();
+    }
   }
 
   setToken(token) {
@@ -81,50 +83,25 @@ class ApiService {
     try {
       response = await fetch(url, options);
     } catch (err) {
-      if (!isLocalDev) {
-        // User-friendly production notice
-        const userNotice = 'Unable to connect to the GG BANK server. Please try again later.';
-        console.warn('GG BANK: Production Backend Connection Note:', err.message);
-        if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
-          Utils.showToast(userNotice, 'warning', 'Connection Notice');
-        }
-      } else {
-        console.warn(`GG BANK: Local Backend notice for ${cleanEndpoint}:`, err.message);
+      const errMsg = 'Unable to connect to GG BANK database/server. Please ensure the backend is running and try again.';
+      console.error(`GG BANK: Network error connecting to backend API [${cleanEndpoint}]:`, err.message);
+      if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
+        Utils.showToast(errMsg, 'error', 'Database Connection Error');
       }
-
-      // Safe academic / local fallback so the demo application never crashes
-      return this.handleFallback(cleanEndpoint, method, body);
+      throw new Error(errMsg);
     }
 
     if (response.ok) {
-      const jsonRes = await response.json();
-      // Keep local store in sync on user registration
-      if (cleanEndpoint === '/users/register' && jsonRes && jsonRes.data) {
-        if (jsonRes.data.user) {
-          const uList = this.getMock('gg_users');
-          if (!uList.some(u => u.userId === jsonRes.data.user.userId)) {
-            uList.push(jsonRes.data.user);
-            this.setMock('gg_users', uList);
-          }
-        }
-        if (jsonRes.data.account) {
-          const aList = this.getMock('gg_accounts');
-          if (!aList.some(a => a.accountNumber === jsonRes.data.account.accountNumber)) {
-            aList.push(jsonRes.data.account);
-            this.setMock('gg_accounts', aList);
-          }
-        }
-      }
-      return jsonRes;
+      return await response.json();
     }
 
-    if (response.status === 404) {
-      console.warn(`GG BANK: Host returned 404 for ${cleanEndpoint}. Utilizing fallback store.`);
-      return this.handleFallback(cleanEndpoint, method, body);
+    const errorData = await response.json().catch(() => ({ message: `Server returned HTTP ${response.status} error` }));
+    const errorMsg = errorData.message || errorData.error || `Request failed with status ${response.status}`;
+    console.error(`GG BANK: Server error on [${cleanEndpoint}]:`, errorMsg);
+    if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
+      Utils.showToast(errorMsg, 'error', 'Database Error');
     }
-
-    const errorData = await response.json().catch(() => ({ message: 'Server returned an error' }));
-    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    throw new Error(errorMsg);
   }
 
   /* ---------------- MOCK DATABASE & FALLBACK ENGINE ---------------- */

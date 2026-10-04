@@ -423,8 +423,8 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                 self._send_success([dict(r) for r in c.fetchall()])
                 return
 
-            # 9. /notifications
-            if path == "/notifications":
+            # 9. /notifications and /admin/notifications
+            if path in ("/notifications", "/admin/notifications"):
                 c.execute("SELECT * FROM notifications ORDER BY createdAt DESC")
                 self._send_success([dict(r) for r in c.fetchall()])
                 return
@@ -1150,6 +1150,11 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
 
             # 14. /admin/clear-all-data
             if path == "/admin/clear-all-data":
+                auth_header = self.headers.get("Authorization", "")
+                if not auth_header or not ("admin" in auth_header.lower() or "bearer" in auth_header.lower()):
+                    self._send_error("Forbidden: Administrative authorization required to clear database records", 403)
+                    return
+
                 c.execute("DELETE FROM transactions")
                 c.execute("DELETE FROM loans")
                 c.execute("DELETE FROM beneficiaries")
@@ -1164,6 +1169,11 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
 
             # 15. /admin/reset-default-data
             if path == "/admin/reset-default-data":
+                auth_header = self.headers.get("Authorization", "")
+                if not auth_header or not ("admin" in auth_header.lower() or "bearer" in auth_header.lower()):
+                    self._send_error("Forbidden: Administrative authorization required to reset database records", 403)
+                    return
+
                 c.execute("DELETE FROM users")
                 c.execute("DELETE FROM accounts")
                 c.execute("DELETE FROM transactions")

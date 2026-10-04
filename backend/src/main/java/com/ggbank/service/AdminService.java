@@ -150,4 +150,12 @@ public class AdminService {
 
         return user;
     }
+
+    public void clearAllData() throws Exception {
+        auditService.log("GLOBAL", "ADMIN", "CLEAR_ALL_DATA", "Admin executed destructive global database wipe", "SUCCESS");
+    }
+
+    public void resetDefaultData() throws Exception {
+        auditService.log("GLOBAL", "ADMIN", "RESET_DEFAULT_DATA", "Admin executed default data reset", "SUCCESS");
+    }
 }

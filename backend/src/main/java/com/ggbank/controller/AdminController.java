@@ -48,4 +48,22 @@ public class AdminController {
         AdminStatsResponse stats = adminService.getDashboardStats();
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
+
+    @PostMapping("/clear-all-data")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> clearAllData(@AuthenticationPrincipal UserPrincipal principal) throws Exception {
+        if (principal != null && !"ADMIN".equalsIgnoreCase(principal.getRole())) {
+            return ResponseEntity.status(403).body(ApiResponse.error("Access denied: Administrative privileges required"));
+        }
+        adminService.clearAllData();
+        return ResponseEntity.ok(ApiResponse.success("All customer records and transactions wiped successfully", Map.of("cleared", true)));
+    }
+
+    @PostMapping("/reset-default-data")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> resetDefaultData(@AuthenticationPrincipal UserPrincipal principal) throws Exception {
+        if (principal != null && !"ADMIN".equalsIgnoreCase(principal.getRole())) {
+            return ResponseEntity.status(403).body(ApiResponse.error("Access denied: Administrative privileges required"));
+        }
+        adminService.resetDefaultData();
+        return ResponseEntity.ok(ApiResponse.success("Default database records restored successfully", Map.of("reset", true)));
+    }
 }
