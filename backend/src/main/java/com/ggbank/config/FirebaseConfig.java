@@ -30,15 +30,41 @@ public class FirebaseConfig {
             return FirebaseApp.getInstance();
         }
 
-        try {
-            ClassPathResource resource = new ClassPathResource(configPath);
-            if (resource.exists()) {
-                InputStream serviceAccount = resource.getInputStream();
+        // 1. Try FIREBASE_CONFIG_JSON environment variable directly (for Cloud Deployments)
+        String envJson = System.getenv("FIREBASE_CONFIG_JSON");
+        if (envJson != null && !envJson.trim().isEmpty()) {
+            try {
+                InputStream serviceAccount = new java.io.ByteArrayInputStream(envJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                         .build();
 
-                log.info("GG BANK: Initializing Firebase Admin SDK with service account credentials.");
+                log.info("GG BANK: Initializing Firebase Admin SDK from FIREBASE_CONFIG_JSON environment variable.");
+                return FirebaseApp.initializeApp(options);
+            } catch (Exception e) {
+                log.warn("GG BANK: Failed initializing Firebase from FIREBASE_CONFIG_JSON: {}", e.getMessage());
+            }
+        }
+
+        // 2. Try file system path or Classpath resource
+        try {
+            InputStream serviceAccount = null;
+            java.io.File file = new java.io.File(configPath);
+            if (file.exists() && file.isFile()) {
+                serviceAccount = new java.io.FileInputStream(file);
+            } else {
+                ClassPathResource resource = new ClassPathResource(configPath);
+                if (resource.exists()) {
+                    serviceAccount = resource.getInputStream();
+                }
+            }
+
+            if (serviceAccount != null) {
+                FirebaseOptions options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .build();
+
+                log.info("GG BANK: Initializing Firebase Admin SDK with service account credentials from {}.", configPath);
                 return FirebaseApp.initializeApp(options);
             }
         } catch (Exception e) {

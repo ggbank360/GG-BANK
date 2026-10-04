@@ -1,10 +1,45 @@
 /**
- * GG BANK - API & Backend Connector
- * Communicates with Java Spring Boot REST API (http://localhost:8080/api)
- * Includes smart fallback data engine for seamless academic demo presentation.
+ * GG BANK - Centralized API & Environment Configuration
+ * Supports Local Development (http://localhost:8080) and Production (Vercel -> Deployed Backend)
  */
+const resolveApiBaseUrl = () => {
+  // 1. Check Vite / bundler environment variable if available
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta && import.meta.env && import.meta.env.VITE_API_BASE_URL) {
+      return import.meta.env.VITE_API_BASE_URL;
+    }
+  } catch (_) {}
 
-const API_BASE_URL = 'http://localhost:8080/api';
+  // 2. Check window-injected environment variable (for Vercel deployment)
+  if (typeof window !== 'undefined') {
+    if (window.VITE_API_BASE_URL) return window.VITE_API_BASE_URL;
+    if (window.__API_BASE_URL__) return window.__API_BASE_URL__;
+    if (window.ENV && window.ENV.VITE_API_BASE_URL) return window.ENV.VITE_API_BASE_URL;
+
+    // Check runtime localStorage override (e.g. for testing custom backend URL)
+    const savedUrl = localStorage.getItem('gg_api_base_url');
+    if (savedUrl) return savedUrl;
+
+    // 3. Dynamic Hostname Detection
+    const hostname = window.location.hostname;
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || window.location.protocol === 'file:';
+
+    if (isLocal) {
+      return 'http://localhost:8080';
+    } else {
+      // Running on Vercel or public domain (e.g. https://ggbank.vercel.app)
+      // When deployed, we do NOT call loopback localhost.
+      // Defaults to relative '/api' proxy or window.GG_BACKEND_URL
+      return window.GG_BACKEND_URL || '';
+    }
+  }
+
+  return 'http://localhost:8080';
+};
+
+const rawBaseUrl = resolveApiBaseUrl().trim().replace(/\/+$/, '');
+const API_BASE_URL = rawBaseUrl ? (rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl}/api`) : '/api';
+window.API_BASE_URL = API_BASE_URL;
 
 class ApiService {
   constructor() {
@@ -33,7 +68,8 @@ class ApiService {
   }
 
   async request(endpoint, method = 'GET', body = null) {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${API_BASE_URL}${cleanEndpoint}`;
     const options = {
       method,
       headers: this.getHeaders()
@@ -43,17 +79,48 @@ class ApiService {
       options.body = JSON.stringify(body);
     }
 
+    const isLocalDev = typeof window !== 'undefined' && 
+                       (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
     let response;
     try {
       response = await fetch(url, options);
     } catch (err) {
-      // Use the academic engine only when the backend cannot be reached.
-      console.warn(`GG BANK: Connecting via Academic Local Engine for ${endpoint}:`, err.message);
-      return this.handleFallback(endpoint, method, body);
+      if (!isLocalDev) {
+        // User-friendly production notice
+        const userNotice = 'Unable to connect to the GG BANK server. Please try again later.';
+        console.warn('GG BANK: Production Backend Connection Note:', err.message);
+        if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
+          Utils.showToast(userNotice, 'warning', 'Connection Notice');
+        }
+      } else {
+        console.warn(`GG BANK: Local Backend notice for ${cleanEndpoint}:`, err.message);
+      }
+
+      // Safe academic / local fallback so the demo application never crashes
+      return this.handleFallback(cleanEndpoint, method, body);
     }
 
     if (response.ok) {
-      return await response.json();
+      const jsonRes = await response.json();
+      // Keep local store in sync on user registration
+      if (cleanEndpoint === '/users/register' && jsonRes && jsonRes.data) {
+        if (jsonRes.data.user) {
+          const uList = this.getMock('gg_users');
+          if (!uList.some(u => u.userId === jsonRes.data.user.userId)) {
+            uList.push(jsonRes.data.user);
+            this.setMock('gg_users', uList);
+          }
+        }
+        if (jsonRes.data.account) {
+          const aList = this.getMock('gg_accounts');
+          if (!aList.some(a => a.accountNumber === jsonRes.data.account.accountNumber)) {
+            aList.push(jsonRes.data.account);
+            this.setMock('gg_accounts', aList);
+          }
+        }
+      }
+      return jsonRes;
     }
 
     const errorData = await response.json().catch(() => ({ message: 'Server returned an error' }));

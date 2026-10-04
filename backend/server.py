@@ -295,10 +295,33 @@ def init_db():
 
 class GgBankApiHandler(BaseHTTPRequestHandler):
     def _set_cors(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = self.headers.get("Origin", "")
+        allowed_origins = [
+            "https://ggbank.vercel.app",
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:5500",
+            "http://127.0.0.1:5500",
+            "http://127.0.0.1:3000",
+            "http://localhost:8080"
+        ]
+        custom_env = os.environ.get("ALLOWED_ORIGINS")
+        if custom_env:
+            for o in custom_env.split(","):
+                if o.strip():
+                    allowed_origins.append(o.strip())
+
+        if origin in allowed_origins or (origin and origin.endswith(".vercel.app")):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Access-Control-Allow-Credentials", "true")
+        else:
+            self.send_header("Access-Control-Allow-Origin", "*")
+
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Origin, Accept, Access-Control-Request-Method, Access-Control-Request-Headers")
+        self.send_header("Access-Control-Expose-Headers", "Origin, Content-Type, Accept, Authorization")
         self.send_header("Access-Control-Max-Age", "86400")
+
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -1272,7 +1295,7 @@ def run_server(port=8080):
         httpd.server_close()
 
 if __name__ == "__main__":
-    port = 8080
+    port = int(os.environ.get("PORT", 8080))
     if len(sys.argv) > 1:
         try:
             port = int(sys.argv[1])
