@@ -6,6 +6,7 @@ public class AdminStatsResponse {
 
     private long totalCustomers;
     private long totalAccounts;
+    private BigDecimal totalBalance;
     private BigDecimal totalDeposits;
     private BigDecimal totalWithdrawals;
     private BigDecimal totalTransfers;
@@ -14,6 +15,7 @@ public class AdminStatsResponse {
     private long blockedAccounts;
 
     public AdminStatsResponse() {
+        this.totalBalance = BigDecimal.ZERO;
         this.totalDeposits = BigDecimal.ZERO;
         this.totalWithdrawals = BigDecimal.ZERO;
         this.totalTransfers = BigDecimal.ZERO;
@@ -24,6 +26,9 @@ public class AdminStatsResponse {
 
     public long getTotalAccounts() { return totalAccounts; }
     public void setTotalAccounts(long totalAccounts) { this.totalAccounts = totalAccounts; }
+
+    public BigDecimal getTotalBalance() { return totalBalance; }
+    public void setTotalBalance(BigDecimal totalBalance) { this.totalBalance = totalBalance; }
 
     public BigDecimal getTotalDeposits() { return totalDeposits; }
     public void setTotalDeposits(BigDecimal totalDeposits) { this.totalDeposits = totalDeposits; }

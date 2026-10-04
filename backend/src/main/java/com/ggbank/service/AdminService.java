@@ -51,11 +51,19 @@ public class AdminService {
         long blockedAccounts = accounts.stream().filter(a -> "BLOCKED".equalsIgnoreCase(a.getStatus())).count();
         long pendingLoans = loans.stream().filter(l -> "PENDING".equalsIgnoreCase(l.getStatus())).count();
 
+        BigDecimal totalBalance = BigDecimal.ZERO;
+        for (Account a : accounts) {
+            if (a.getBalance() != null) {
+                totalBalance = totalBalance.add(a.getBalance());
+            }
+        }
+
         BigDecimal totalDeposits = BigDecimal.ZERO;
         BigDecimal totalWithdrawals = BigDecimal.ZERO;
         BigDecimal totalTransfers = BigDecimal.ZERO;
 
         for (Transaction t : transactions) {
+            if (t.getAmount() == null) continue;
             if ("DEPOSIT".equalsIgnoreCase(t.getType())) {
                 totalDeposits = totalDeposits.add(t.getAmount());
             } else if ("WITHDRAWAL".equalsIgnoreCase(t.getType())) {
@@ -68,6 +76,7 @@ public class AdminService {
         AdminStatsResponse response = new AdminStatsResponse();
         response.setTotalCustomers(totalCustomers);
         response.setTotalAccounts(totalAccounts);
+        response.setTotalBalance(totalBalance);
         response.setActiveAccounts(activeAccounts);
         response.setBlockedAccounts(blockedAccounts);
         response.setPendingLoans(pendingLoans);

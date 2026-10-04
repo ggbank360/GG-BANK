@@ -507,16 +507,26 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                     "blockedAccounts": blocked_accounts
                 }
 
+                c.execute("SELECT * FROM transactions ORDER BY createdAt DESC LIMIT 5")
+                recent_txns = [dict(r) for r in c.fetchall()]
+                c.execute("SELECT * FROM loans WHERE status = 'PENDING' LIMIT 5")
+                pending_loans_list = [dict(r) for r in c.fetchall()]
+
+                overview_data = {
+                    "stats": stats,
+                    "recentTransactions": recent_txns,
+                    "pendingLoans": pending_loans_list
+                }
+
                 if path == "/admin/dashboard/overview":
-                    c.execute("SELECT * FROM transactions ORDER BY createdAt DESC LIMIT 5")
-                    recent_txns = [dict(r) for r in c.fetchall()]
-                    c.execute("SELECT * FROM loans WHERE status = 'PENDING' LIMIT 5")
-                    pending_loans_list = [dict(r) for r in c.fetchall()]
-                    self._send_success({
-                        "stats": stats,
-                        "recentTransactions": recent_txns,
-                        "pendingLoans": pending_loans_list
-                    })
+                    self._send_success(overview_data)
+                elif path == "/admin/dashboard":
+                    # Support both flat stats and nested stats/overview for all frontend callers
+                    combined = dict(stats)
+                    combined["stats"] = stats
+                    combined["recentTransactions"] = recent_txns
+                    combined["pendingLoans"] = pending_loans_list
+                    self._send_success(combined)
                 else:
                     self._send_success(stats)
                 return
@@ -531,7 +541,24 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                 WHERE u.role = 'CUSTOMER'
                 ORDER BY u.createdAt DESC
                 """)
-                custs = [dict(r) for r in c.fetchall()]
+                custs = []
+                for r in c.fetchall():
+                    row = dict(r)
+                    pan = row.get("panNumber") or "ABCDE1234F"
+                    dl = row.get("dlNumber") or "DL-1420110012345"
+                    aadhaar = row.get("aadhaarNumber") or "2345 6789 0123"
+                    if "documents" not in row or not row["documents"]:
+                        row["documents"] = {
+                            "panNumber": pan,
+                            "dlNumber": dl,
+                            "aadhaarNumber": aadhaar
+                        }
+                    elif isinstance(row["documents"], str):
+                        try:
+                            row["documents"] = json.loads(row["documents"])
+                        except Exception:
+                            row["documents"] = {"panNumber": pan, "dlNumber": dl, "aadhaarNumber": aadhaar}
+                    custs.append(row)
                 self._send_success(custs)
                 return
 

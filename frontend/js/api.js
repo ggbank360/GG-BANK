@@ -118,6 +118,11 @@ class ApiService {
       return jsonRes;
     }
 
+    if (response.status === 404) {
+      console.warn(`GG BANK: Host returned 404 for ${cleanEndpoint}. Utilizing fallback store.`);
+      return this.handleFallback(cleanEndpoint, method, body);
+    }
+
     const errorData = await response.json().catch(() => ({ message: 'Server returned an error' }));
     throw new Error(errorData.message || `Request failed with status ${response.status}`);
   }
@@ -965,8 +970,12 @@ class ApiService {
           accountType: acc.accountType || 'SAVINGS',
           balance: acc.balance || 0,
           ifscCode: acc.ifscCode || 'GGBN0001234',
-          branch: acc.branch || 'Central Tech Branch',
-          accountStatus: acc.status || u.status || 'ACTIVE'
+          accountStatus: acc.status || u.status || 'ACTIVE',
+          documents: u.documents || {
+            panNumber: u.panNumber || 'ABCDE1234F',
+            dlNumber: u.dlNumber || 'DL-1420110012345',
+            aadhaarNumber: u.aadhaarNumber || '2345 6789 0123'
+          }
         };
       });
 

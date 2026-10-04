@@ -69,6 +69,7 @@ public class AdminDashboardService {
         AdminStatsResponse response = new AdminStatsResponse();
         response.setTotalCustomers(totalCustomers);
         response.setTotalAccounts(totalAccounts);
+        response.setTotalBalance(totalBalance);
         response.setActiveAccounts(activeAccounts);
         response.setBlockedAccounts(blockedAccounts);
         response.setPendingLoans(pendingLoans);
