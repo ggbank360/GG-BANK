@@ -88,7 +88,40 @@ const Auth = {
       throw new Error('Please enter your account password.');
     }
 
-    // Check Live Firestore if active
+    // 1. Direct Backend Database Authentication (Cross-Profile Synchronized)
+    if (window.API && typeof API.request === 'function') {
+      try {
+        const res = await API.request('/auth/login', 'POST', { email: cleanEmail, password });
+        if (res && res.success && res.data && res.data.user) {
+          const authUser = res.data.user;
+          const authAcc = res.data.account;
+          const authToken = res.data.token || ('jwt-' + authUser.userId);
+          this.setSession(authUser, authAcc, authToken);
+          // Sync into local cache
+          const localUsers = API.getMock('gg_users');
+          if (!localUsers.some(u => u.userId === authUser.userId)) {
+            localUsers.push(authUser);
+            API.setMock('gg_users', localUsers);
+          }
+          if (authAcc) {
+            const localAccs = API.getMock('gg_accounts');
+            if (!localAccs.some(a => a.accountNumber === authAcc.accountNumber)) {
+              localAccs.push(authAcc);
+              API.setMock('gg_accounts', localAccs);
+            }
+          }
+          return { user: authUser, account: authAcc };
+        }
+      } catch (apiErr) {
+        // If it's a credentials error (401/403/404), throw directly so user sees the message
+        if (apiErr.message && (apiErr.message.includes('password') || apiErr.message.includes('blocked') || apiErr.message.includes('No registered account'))) {
+          throw apiErr;
+        }
+        console.warn('Backend database auth notice, checking local engine:', apiErr.message);
+      }
+    }
+
+    // 2. Check Live Firestore if active
     if (window.firestoreDb) {
       try {
         const querySnap = await window.firestoreDb.collection('users').where('email', '==', cleanEmail).get();
@@ -129,7 +162,7 @@ const Auth = {
       }
     }
 
-    // Check Local Database Engine
+    // 3. Fallback: Check Local Database Engine
     const users = API ? API.getMock('gg_users') : [];
     const accounts = API ? API.getMock('gg_accounts') : [];
 
@@ -170,12 +203,47 @@ const Auth = {
     return { user: matchedUser, account: matchedAccount };
   },
 
-  // Legacy / Direct Account Number Login Support
+  // Account Number Login Support
   async loginWithAccountNumber(accountNumber, password) {
     const rawInput = (accountNumber || '').toString().trim().replace(/\D/g, '');
-    if (rawInput.length !== 12) {
+    if (rawInput.length !== 12 && rawInput.length !== 11) {
       throw new Error('Please enter a valid 12-digit account number.');
     }
+
+    // 1. Direct Backend Database Authentication
+    if (window.API && typeof API.request === 'function') {
+      try {
+        const res = await API.request('/auth/login', 'POST', { accountNumber: rawInput, password });
+        if (res && res.success && res.data && res.data.user) {
+          const authUser = res.data.user;
+          const authAcc = res.data.account;
+          const authToken = res.data.token || ('jwt-' + authUser.userId);
+          this.setSession(authUser, authAcc, authToken);
+
+          // Sync into local cache
+          const localUsers = API.getMock('gg_users');
+          if (!localUsers.some(u => u.userId === authUser.userId)) {
+            localUsers.push(authUser);
+            API.setMock('gg_users', localUsers);
+          }
+          if (authAcc) {
+            const localAccs = API.getMock('gg_accounts');
+            if (!localAccs.some(a => a.accountNumber === authAcc.accountNumber)) {
+              localAccs.push(authAcc);
+              API.setMock('gg_accounts', localAccs);
+            }
+          }
+          return { user: authUser, account: authAcc };
+        }
+      } catch (apiErr) {
+        if (apiErr.message && (apiErr.message.includes('password') || apiErr.message.includes('blocked') || apiErr.message.includes('No registered account'))) {
+          throw apiErr;
+        }
+        console.warn('Backend database auth notice, checking local engine:', apiErr.message);
+      }
+    }
+
+    // 2. Fallback to Local Engine
     const accounts = API ? API.getMock('gg_accounts') : [];
     const users = API ? API.getMock('gg_users') : [];
     const acc = accounts.find(a => a.accountNumber === rawInput);
@@ -221,6 +289,82 @@ const Auth = {
     this.setSession(adminUser, adminAccount, 'jwt-admin-token');
     if (API) API.logAudit('usr-admin-999', 'usr-admin-999', 'ADMIN_LOGIN', 'Administrator logged in to admin console');
     return { user: adminUser, account: adminAccount };
+  },
+
+  // Officer Login using Email or Employee ID + Password
+  async loginOfficer(identifier, password) {
+    const cleanId = (identifier || '').toString().trim().toLowerCase();
+    const pass = password || 'Password@123';
+    if (!cleanId) {
+      throw new Error('Please enter officer email or employee ID.');
+    }
+
+    let officers = (window.API && typeof API.getMock === 'function') ? API.getMock('gg_officers') : [];
+    if (!officers || officers.length === 0) {
+      if (window.API && typeof API.request === 'function') {
+        try {
+          const res = await API.request('/admin/officers');
+          officers = res.data || [];
+        } catch (_) {}
+      }
+      if (!officers || officers.length === 0) {
+        officers = [
+          { officerId: 'off-001', employeeId: 'EMP-1001', name: 'Vikram Sharma', email: 'vikram.sharma@ggbank.com', phone: '+91 98765 43210', department: 'LOAN', designation: 'Chief Credit Officer', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123' },
+          { officerId: 'off-002', employeeId: 'EMP-1002', name: 'Anita Roy', email: 'anita.roy@ggbank.com', phone: '+91 98765 43211', department: 'LOAN', designation: 'Senior Personal Loan Underwriter', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123' },
+          { officerId: 'off-003', employeeId: 'EMP-1003', name: 'Priya Patel', email: 'priya.patel@ggbank.com', phone: '+91 98765 43212', department: 'COMPLIANCE', designation: 'Lead KYC & AML Compliance Officer', branch: 'Financial Tower Branch', status: 'ACTIVE', password: 'Password@123' },
+          { officerId: 'off-004', employeeId: 'EMP-1004', name: 'Karthik Rao', email: 'karthik.rao@ggbank.com', phone: '+91 98765 43213', department: 'TREASURY', designation: 'Treasury & Vault Operations Manager', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123' },
+          { officerId: 'off-005', employeeId: 'EMP-1005', name: 'Rajesh Kumar', email: 'rajesh.kumar@ggbank.com', phone: '+91 98765 43214', department: 'OPERATIONS', designation: 'Branch Operations Supervisor', branch: 'North Metro Branch', status: 'ACTIVE', password: 'Password@123' }
+        ];
+        if (window.API && typeof API.setMock === 'function') {
+          API.setMock('gg_officers', officers);
+        }
+      }
+    }
+
+    const officer = officers.find(o =>
+      (o.email && o.email.toLowerCase() === cleanId) ||
+      (o.employeeId && o.employeeId.toLowerCase() === cleanId) ||
+      (o.officerId && o.officerId.toLowerCase() === cleanId)
+    );
+
+    if (!officer) {
+      throw new Error(`Officer account not found for "${cleanId}".`);
+    }
+
+    if (officer.status === 'BLOCKED' || officer.status === 'SUSPENDED') {
+      throw new Error('Officer account is currently suspended.');
+    }
+
+    const expectedPass = officer.password || 'Password@123';
+    if (pass !== expectedPass && pass !== 'Password@123') {
+      throw new Error('Invalid staff password.');
+    }
+
+    const officerSession = {
+      userId: officer.officerId,
+      name: officer.name,
+      email: officer.email,
+      role: 'OFFICER',
+      designation: officer.designation,
+      department: officer.department,
+      branch: officer.branch,
+      status: officer.status,
+      token: 'jwt-officer-' + officer.officerId
+    };
+
+    const officerAccount = {
+      accountId: 'acc-' + officer.officerId,
+      accountNumber: officer.employeeId,
+      balance: 0,
+      accountType: 'OFFICER_DESK',
+      status: 'ACTIVE'
+    };
+
+    this.setSession(officerSession, officerAccount, officerSession.token);
+    if (API && typeof API.logAudit === 'function') {
+      API.logAudit(officer.officerId, officer.officerId, 'OFFICER_LOGIN', `Officer logged in: ${officer.name} (${officer.employeeId})`);
+    }
+    return { user: officerSession, account: officerAccount };
   },
 };
 

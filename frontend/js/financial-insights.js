@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const type = (tx.type || 'DEBIT').toUpperCase();
       const cat = tx.category || 'Other';
 
-      if (type === 'CREDIT') {
+      const isCredit = type === 'CREDIT' || type === 'DEPOSIT' || type === 'LOAN_DISBURSEMENT';
+
+      if (isCredit) {
         totalIncome += amt;
       } else {
         totalExpenses += amt;

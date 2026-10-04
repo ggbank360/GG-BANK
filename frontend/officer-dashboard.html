@@ -120,7 +120,15 @@
       gap: 10px;
       margin-bottom: 14px;
     }
-    .loan-meta-item { }
+    .loan-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 6px 10px;
+      background: var(--bg-surface);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color-subtle);
+    }
     .loan-meta-item .lmi-label {
       font-size: 0.68rem;
       color: var(--text-muted);
@@ -297,6 +305,9 @@
             <p class="page-description" id="officerPageDesc">Manage your assigned cases, KYC verifications, and customer operations.</p>
           </div>
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" id="openOfficerQrScannerModal" onclick="openOfficerQrScannerModal()" style="display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-qrcode"></i> Scan QR
+            </button>
             <button class="btn btn-primary" onclick="loadOfficerData()" style="display: flex; align-items: center; gap: 8px;">
               <i class="fa-solid fa-arrows-rotate"></i> Refresh Queue
             </button>
@@ -727,11 +738,27 @@
         <h3 class="modal-title"><i class="fa-solid fa-file-contract" style="color: var(--warning);"></i> Assigned Loan Dossier</h3>
         <button class="modal-close-btn" onclick="document.getElementById('officerLoanDetailModal').classList.remove('active')">&times;</button>
       </div>
-      <div id="officerLoanDetailBody" style="padding: 16px 0; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
-        <!-- Filled dynamically -->
-      </div>
       <div class="modal-footer" style="display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
         <button type="button" class="btn btn-secondary" onclick="document.getElementById('officerLoanDetailModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Officer QR Scanner Modal                                             -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="officerQrScannerModal">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-qrcode" style="color: var(--accent-cyan);"></i> Officer QR Scanner</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('officerQrScannerModal').classList.remove('active')">&times;</button>
+      </div>
+      <div style="padding: 16px; text-align: center;">
+        <div id="officerQrReader" style="width: 100%; min-height: 250px; background: #000; border-radius: var(--radius-sm); margin-bottom: 12px;"></div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Point camera to customer account or receipt QR code</p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('officerQrScannerModal').classList.remove('active')">Close</button>
       </div>
     </div>
   </div>

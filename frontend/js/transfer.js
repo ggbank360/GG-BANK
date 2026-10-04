@@ -73,8 +73,8 @@ function setupTransferForm() {
       const amount = parseFloat(document.getElementById('transferAmount').value);
       const desc = document.getElementById('transferDesc').value.trim();
 
-      if (accNum.length !== 12) {
-        Utils.showToast('Recipient account number must contain exactly 12 digits.', 'error', 'Validation Error');
+      if (accNum.length !== 11 && accNum.length !== 12) {
+        Utils.showToast('Recipient account number must contain 11 or 12 digits.', 'error', 'Validation Error');
         accInput.focus();
         return;
       }
