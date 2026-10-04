@@ -27,6 +27,80 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def seed_initial_data(c):
+    print("[DATABASE] Seeding initial banking records into SQLite...")
+    now = datetime.utcnow().isoformat() + "Z"
+
+    # Demo Users
+    users_data = [
+        ("usr-gowtham-101", "Gowtham NK", "gowtham@ggbank.com", "Password@123", "9876543210", "2003-05-14", "Male", "42 Cyber City, Tech Park, Bangalore", "Software Engineer", "CUSTOMER", "ACTIVE", "SARAH7890K", "123456789012", None, now),
+        ("usr-sarah-102", "Sarah Connor", "sarah@ggbank.com", "Password@123", "9123456780", "2001-11-20", "Female", "77 Silicon Boulevard, Chennai", "Product Designer", "CUSTOMER", "ACTIVE", "CONNR1234P", "987654321098", None, now),
+        ("usr-admin-999", "GG Bank Administrator", "admin@ggbank.com", "Password@123", "9000000000", "1995-01-01", "Other", "GG BANK Headquarters, Financial Tower", "System Admin", "ADMIN", "ACTIVE", "ADMIN0000A", "111122223333", None, now)
+    ]
+    c.executemany("INSERT INTO users VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", users_data)
+
+    # Demo Accounts
+    accounts_data = [
+        ("acc-gowtham-101", "usr-gowtham-101", "100188492019", "SAVINGS", 65450.00, "GGBN0001234", "Central Tech Branch", "ACTIVE", now),
+        ("acc-sarah-102", "usr-sarah-102", "100188492020", "SAVINGS", 32000.00, "GGBN0001234", "Central Tech Branch", "ACTIVE", now),
+        ("acc-admin-treasury", "usr-admin-999", "GG-BANK-TREASURY-01", "TREASURY", 999999999.00, "GGBN0001234", "Central Tech Branch", "ACTIVE", now)
+    ]
+    c.executemany("INSERT INTO accounts VALUES (?,?,?,?,?,?,?,?,?)", accounts_data)
+
+    # Demo Transactions
+    txns_data = [
+        ("TXN-2026-908101", "EXTERNAL-DEP", "100188492019", 50000.00, "DEPOSIT", "Salary", "Monthly Salary Credit", "COMPLETED", 50000.00, now),
+        ("TXN-2026-908102", "100188492019", "100188492020", 5000.00, "TRANSFER", "Transfer", "Project Collab Payment", "COMPLETED", 45000.00, now),
+        ("TXN-2026-908103", "100188492019", "BESCOM-ELEC", 1550.00, "BILL_PAYMENT", "Bills", "Electricity Bill - BESCOM", "COMPLETED", 43450.00, now),
+        ("TXN-2026-908104", "100188492019", "SELF-CASH", 2000.00, "WITHDRAWAL", "Cash", "ATM Cash Withdrawal", "COMPLETED", 41450.00, now),
+        ("TXN-2026-908105", "UPI-GPAY-IN", "100188492019", 24000.00, "DEPOSIT", "Deposit", "Freelance Consulting", "COMPLETED", 65450.00, now)
+    ]
+    c.executemany("INSERT INTO transactions VALUES (?,?,?,?,?,?,?,?,?,?)", txns_data)
+
+    # Demo Officers
+    officers_data = [
+        ("off-001", "EMP-1001", "Vikram Sharma", "vikram.sharma@ggbank.com", "+91 98765 43210", "LOAN", "Chief Credit Officer", "Central Tech Branch", "ACTIVE", 12, "Password@123", now),
+        ("off-002", "EMP-1002", "Anita Roy", "anita.roy@ggbank.com", "+91 98765 43211", "LOAN", "Senior Personal Loan Underwriter", "Central Tech Branch", "ACTIVE", 8, "Password@123", now),
+        ("off-003", "EMP-1003", "Priya Patel", "priya.patel@ggbank.com", "+91 98765 43212", "COMPLIANCE", "Lead KYC & AML Compliance Officer", "Financial Tower Branch", "ACTIVE", 19, "Password@123", now),
+        ("off-004", "EMP-1004", "Karthik Rao", "karthik.rao@ggbank.com", "+91 98765 43213", "TREASURY", "Treasury & Vault Operations Manager", "Central Tech Branch", "ACTIVE", 5, "Password@123", now),
+        ("off-005", "EMP-1005", "Rajesh Kumar", "rajesh.kumar@ggbank.com", "+91 98765 43214", "OPERATIONS", "Branch Operations Supervisor", "North Metro Branch", "ACTIVE", 2, "Password@123", now)
+    ]
+    c.executemany("INSERT INTO officers VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", officers_data)
+
+    # Demo Loans
+    c.execute("""
+    INSERT INTO loans VALUES (
+        'LOAN-849102', 'usr-gowtham-101', '100188492019', 'Personal Loan',
+        100000.00, 65000.00, 24, 10.5, 4637.00, 11288.00, 111288.00,
+        'Home renovation and tech setup', 'PENDING', 'Pending initial documents verification', ?, NULL
+    )
+    """, (now,))
+
+    # Demo Budgets
+    budgets_data = [
+        ("b-1", "usr-gowtham-101", "Food", 5000.0, 4250.0, "2026-09"),
+        ("b-2", "usr-gowtham-101", "Shopping", 10000.0, 3400.0, "2026-09"),
+        ("b-3", "usr-gowtham-101", "Bills", 4000.0, 1550.0, "2026-09"),
+        ("b-4", "usr-gowtham-101", "Transport", 3000.0, 1200.0, "2026-09"),
+        ("b-5", "usr-gowtham-101", "Entertainment", 3500.0, 900.0, "2026-09")
+    ]
+    c.executemany("INSERT INTO budgets VALUES (?,?,?,?,?,?)", budgets_data)
+
+    # Demo Notifications
+    notifs_data = [
+        ("notif-1", "usr-gowtham-101", "Deposit Received", "₹22,850.00 has been credited to your account 100188492019.", "TRANSACTION", 0, now),
+        ("notif-2", "usr-gowtham-101", "Budget Alert", "You have used 85% of your monthly Food budget.", "BUDGET", 0, now)
+    ]
+    c.executemany("INSERT INTO notifications VALUES (?,?,?,?,?,?,?)", notifs_data)
+
+    # Demo UPI
+    c.execute("INSERT INTO upi_profiles VALUES ('usr-gowtham-101', '100188492019', 'gowtham@ggbank', '1234', 'ACTIVE', NULL)")
+
+    # Demo Audit Logs
+    c.execute("INSERT INTO audit_logs VALUES ('LOG-1001', 'usr-gowtham-101', NULL, 'USER_REGISTRATION', 'New customer account created for Gowtham NK', ?, 'SUCCESS')", (now,))
+    c.execute("INSERT INTO audit_logs VALUES ('LOG-1002', 'usr-admin-999', 'usr-admin-999', 'SYSTEM_INITIALIZED', 'GG BANK Database initialized and primed', ?, 'SUCCESS')", (now,))
+    print("[DATABASE] SQLite Database primed successfully with demo records.")
+
 def init_db():
     conn = get_db()
     c = conn.cursor()
@@ -211,84 +285,11 @@ def init_db():
 
     conn.commit()
 
-    # Seed initial demo data if users table is empty
     c.execute("SELECT COUNT(*) FROM users")
     count = c.fetchone()[0]
     if count == 0:
-        print("[DATABASE] Seeding initial banking records into SQLite...")
-        now = datetime.utcnow().isoformat() + "Z"
-
-        # Demo Users
-        users_data = [
-            ("usr-gowtham-101", "Gowtham NK", "gowtham@ggbank.com", "Password@123", "9876543210", "2003-05-14", "Male", "42 Cyber City, Tech Park, Bangalore", "Software Engineer", "CUSTOMER", "ACTIVE", "SARAH7890K", "123456789012", None, now),
-            ("usr-sarah-102", "Sarah Connor", "sarah@ggbank.com", "Password@123", "9123456780", "2001-11-20", "Female", "77 Silicon Boulevard, Chennai", "Product Designer", "CUSTOMER", "ACTIVE", "CONNR1234P", "987654321098", None, now),
-            ("usr-admin-999", "GG Bank Administrator", "admin@ggbank.com", "Password@123", "9000000000", "1995-01-01", "Other", "GG BANK Headquarters, Financial Tower", "System Admin", "ADMIN", "ACTIVE", "ADMIN0000A", "111122223333", None, now)
-        ]
-        c.executemany("INSERT INTO users VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", users_data)
-
-        # Demo Accounts
-        accounts_data = [
-            ("acc-gowtham-101", "usr-gowtham-101", "100188492019", "SAVINGS", 65450.00, "GGBN0001234", "Central Tech Branch", "ACTIVE", now),
-            ("acc-sarah-102", "usr-sarah-102", "100188492020", "SAVINGS", 32000.00, "GGBN0001234", "Central Tech Branch", "ACTIVE", now),
-            ("acc-admin-treasury", "usr-admin-999", "GG-BANK-TREASURY-01", "TREASURY", 999999999.00, "GGBN0001234", "Central Tech Branch", "ACTIVE", now)
-        ]
-        c.executemany("INSERT INTO accounts VALUES (?,?,?,?,?,?,?,?,?)", accounts_data)
-
-        # Demo Transactions
-        txns_data = [
-            ("TXN-2026-908101", "EXTERNAL-DEP", "100188492019", 50000.00, "DEPOSIT", "Salary", "Monthly Salary Credit", "COMPLETED", 50000.00, now),
-            ("TXN-2026-908102", "100188492019", "100188492020", 5000.00, "TRANSFER", "Transfer", "Project Collab Payment", "COMPLETED", 45000.00, now),
-            ("TXN-2026-908103", "100188492019", "BESCOM-ELEC", 1550.00, "BILL_PAYMENT", "Bills", "Electricity Bill - BESCOM", "COMPLETED", 43450.00, now),
-            ("TXN-2026-908104", "100188492019", "SELF-CASH", 2000.00, "WITHDRAWAL", "Cash", "ATM Cash Withdrawal", "COMPLETED", 41450.00, now),
-            ("TXN-2026-908105", "UPI-GPAY-IN", "100188492019", 24000.00, "DEPOSIT", "Deposit", "Freelance Consulting", "COMPLETED", 65450.00, now)
-        ]
-        c.executemany("INSERT INTO transactions VALUES (?,?,?,?,?,?,?,?,?,?)", txns_data)
-
-        # Demo Officers
-        officers_data = [
-            ("off-001", "EMP-1001", "Vikram Sharma", "vikram.sharma@ggbank.com", "+91 98765 43210", "LOAN", "Chief Credit Officer", "Central Tech Branch", "ACTIVE", 12, "Password@123", now),
-            ("off-002", "EMP-1002", "Anita Roy", "anita.roy@ggbank.com", "+91 98765 43211", "LOAN", "Senior Personal Loan Underwriter", "Central Tech Branch", "ACTIVE", 8, "Password@123", now),
-            ("off-003", "EMP-1003", "Priya Patel", "priya.patel@ggbank.com", "+91 98765 43212", "COMPLIANCE", "Lead KYC & AML Compliance Officer", "Financial Tower Branch", "ACTIVE", 19, "Password@123", now),
-            ("off-004", "EMP-1004", "Karthik Rao", "karthik.rao@ggbank.com", "+91 98765 43213", "TREASURY", "Treasury & Vault Operations Manager", "Central Tech Branch", "ACTIVE", 5, "Password@123", now),
-            ("off-005", "EMP-1005", "Rajesh Kumar", "rajesh.kumar@ggbank.com", "+91 98765 43214", "OPERATIONS", "Branch Operations Supervisor", "North Metro Branch", "ACTIVE", 2, "Password@123", now)
-        ]
-        c.executemany("INSERT INTO officers VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", officers_data)
-
-        # Demo Loans
-        c.execute("""
-        INSERT INTO loans VALUES (
-            'LOAN-849102', 'usr-gowtham-101', '100188492019', 'Personal Loan',
-            100000.00, 65000.00, 24, 10.5, 4637.00, 11288.00, 111288.00,
-            'Home renovation and tech setup', 'PENDING', 'Pending initial documents verification', ?, NULL
-        )
-        """, (now,))
-
-        # Demo Budgets
-        budgets_data = [
-            ("b-1", "usr-gowtham-101", "Food", 5000.0, 4250.0, "2026-09"),
-            ("b-2", "usr-gowtham-101", "Shopping", 10000.0, 3400.0, "2026-09"),
-            ("b-3", "usr-gowtham-101", "Bills", 4000.0, 1550.0, "2026-09"),
-            ("b-4", "usr-gowtham-101", "Transport", 3000.0, 1200.0, "2026-09"),
-            ("b-5", "usr-gowtham-101", "Entertainment", 3500.0, 900.0, "2026-09")
-        ]
-        c.executemany("INSERT INTO budgets VALUES (?,?,?,?,?,?)", budgets_data)
-
-        # Demo Notifications
-        notifs_data = [
-            ("notif-1", "usr-gowtham-101", "Deposit Received", "₹22,850.00 has been credited to your account 100188492019.", "TRANSACTION", 0, now),
-            ("notif-2", "usr-gowtham-101", "Budget Alert", "You have used 85% of your monthly Food budget.", "BUDGET", 0, now)
-        ]
-        c.executemany("INSERT INTO notifications VALUES (?,?,?,?,?,?,?)", notifs_data)
-
-        # Demo UPI
-        c.execute("INSERT INTO upi_profiles VALUES ('usr-gowtham-101', '100188492019', 'gowtham@ggbank', '1234', 'ACTIVE', NULL)")
-
-        # Demo Audit Logs
-        c.execute("INSERT INTO audit_logs VALUES ('LOG-1001', 'usr-gowtham-101', NULL, 'USER_REGISTRATION', 'New customer account created for Gowtham NK', ?, 'SUCCESS')", (now,))
-        c.execute("INSERT INTO audit_logs VALUES ('LOG-1002', 'usr-admin-999', 'usr-admin-999', 'SYSTEM_INITIALIZED', 'GG BANK Database initialized and primed', ?, 'SUCCESS')", (now,))
-
+        seed_initial_data(c)
         conn.commit()
-        print("[DATABASE] SQLite Database primed successfully with 3 users, 3 accounts, 5 transactions, 5 officers.")
 
     conn.close()
 
@@ -1118,6 +1119,38 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                 conn.commit()
                 c.execute("SELECT * FROM officers WHERE officerId = ?", (off_id,))
                 self._send_success(dict(c.fetchone()), "Officer registered successfully")
+                return
+
+            # 14. /admin/clear-all-data
+            if path == "/admin/clear-all-data":
+                c.execute("DELETE FROM transactions")
+                c.execute("DELETE FROM loans")
+                c.execute("DELETE FROM beneficiaries")
+                c.execute("DELETE FROM budgets")
+                c.execute("DELETE FROM profile_requests")
+                c.execute("DELETE FROM notifications")
+                c.execute("DELETE FROM users WHERE role != 'ADMIN'")
+                c.execute("DELETE FROM accounts WHERE accountType != 'TREASURY'")
+                conn.commit()
+                self._send_success({"cleared": True}, "All customer records and transactions wiped successfully")
+                return
+
+            # 15. /admin/reset-default-data
+            if path == "/admin/reset-default-data":
+                c.execute("DELETE FROM users")
+                c.execute("DELETE FROM accounts")
+                c.execute("DELETE FROM transactions")
+                c.execute("DELETE FROM beneficiaries")
+                c.execute("DELETE FROM budgets")
+                c.execute("DELETE FROM loans")
+                c.execute("DELETE FROM notifications")
+                c.execute("DELETE FROM audit_logs")
+                c.execute("DELETE FROM officers")
+                c.execute("DELETE FROM upi_profiles")
+                c.execute("DELETE FROM profile_requests")
+                seed_initial_data(c)
+                conn.commit()
+                self._send_success({"reset": True}, "Default clean records restored successfully")
                 return
 
             self._send_error(f"Endpoint POST {path} not found", 404)

@@ -54,7 +54,7 @@
         <!-- KPI Cards Grid (8 Cards) -->
         <div class="admin-stats-grid" id="adminKpiGrid">
           <!-- Card 1: Total Customers -->
-          <div class="admin-stat-card">
+          <div class="admin-stat-card" style="border-left: 4px solid #3b82f6;">
             <div class="admin-stat-icon kpi-customers">
               <i class="fa-solid fa-user-group"></i>
             </div>
@@ -65,7 +65,7 @@
           </div>
 
           <!-- Card 2: Total Accounts -->
-          <div class="admin-stat-card">
+          <div class="admin-stat-card" style="border-left: 4px solid var(--accent-cyan);">
             <div class="admin-stat-icon kpi-accounts">
               <i class="fa-solid fa-vault"></i>
             </div>
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Card 3: Total Balance -->
-          <div class="admin-stat-card">
+          <div class="admin-stat-card" style="border-left: 4px solid #00f0ff;">
             <div class="admin-stat-icon" style="background: rgba(0, 240, 255, 0.18); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.3);">
               <i class="fa-solid fa-scale-balanced"></i>
             </div>
@@ -87,7 +87,7 @@
           </div>
 
           <!-- Card 4: Total Deposits -->
-          <div class="admin-stat-card">
+          <div class="admin-stat-card" style="border-left: 4px solid var(--success);">
             <div class="admin-stat-icon kpi-deposits">
               <i class="fa-solid fa-circle-arrow-down"></i>
             </div>
@@ -98,7 +98,7 @@
           </div>
 
           <!-- Card 5: Total Withdrawals -->
-          <div class="admin-stat-card">
+          <div class="admin-stat-card" style="border-left: 4px solid var(--danger);">
             <div class="admin-stat-icon kpi-withdrawals">
               <i class="fa-solid fa-circle-arrow-up"></i>
             </div>
@@ -109,7 +109,7 @@
           </div>
 
           <!-- Card 6: Total Transfers -->
-          <div class="admin-stat-card">
+          <div class="admin-stat-card" style="border-left: 4px solid #a78bfa;">
             <div class="admin-stat-icon kpi-transfers">
               <i class="fa-solid fa-arrow-right-arrow-left"></i>
             </div>
@@ -206,10 +206,10 @@
               </p>
             </div>
             <div style="display: flex; gap: 10px;">
-              <button class="btn btn-secondary btn-sm" onclick="handleClearAllRecords()" style="flex: 1; color: var(--danger); border-color: rgba(239, 68, 68, 0.4);">
+              <button class="btn btn-secondary btn-sm" onclick="handleClearAllRecords()" id="btnClearAllRecords" style="flex: 1; color: var(--danger); border-color: rgba(239, 68, 68, 0.4);">
                 <i class="fa-solid fa-trash-can"></i> Remove All Records
               </button>
-              <button class="btn btn-primary btn-sm" onclick="handleResetDefaultData()" style="flex: 1;">
+              <button class="btn btn-primary btn-sm" onclick="handleResetDefaultData()" id="btnResetDefaultData" style="flex: 1;">
                 <i class="fa-solid fa-rotate-left"></i> Reset Demo Data
               </button>
             </div>

@@ -1521,6 +1521,35 @@ class ApiService {
       return { success: true, message: 'Officer removed successfully!' };
     }
 
+    if (endpoint === '/admin/clear-all-data' && method === 'POST') {
+      const users = this.getMock('gg_users').filter(u => u.role === 'ADMIN');
+      const accounts = this.getMock('gg_accounts').filter(a => a.accountType === 'TREASURY');
+      this.setMock('gg_users', users);
+      this.setMock('gg_accounts', accounts);
+      this.setMock('gg_transactions', []);
+      this.setMock('gg_loans', []);
+      this.setMock('gg_beneficiaries', []);
+      this.setMock('gg_budgets', []);
+      this.setMock('gg_profile_requests', []);
+      this.logAudit('usr-admin-999', 'usr-admin-999', 'CLEAR_ALL_DATA', 'Wiped all customer records, transactions and loans from database.');
+      return { success: true, message: 'All database records have been wiped successfully!' };
+    }
+
+    if (endpoint === '/admin/reset-default-data' && method === 'POST') {
+      localStorage.removeItem('gg_mock_db_initialized');
+      localStorage.removeItem('gg_users');
+      localStorage.removeItem('gg_accounts');
+      localStorage.removeItem('gg_transactions');
+      localStorage.removeItem('gg_loans');
+      localStorage.removeItem('gg_beneficiaries');
+      localStorage.removeItem('gg_budgets');
+      localStorage.removeItem('gg_notifications');
+      localStorage.removeItem('gg_officers');
+      this.initMockDatabase();
+      this.logAudit('usr-admin-999', 'usr-admin-999', 'RESET_DEFAULT_DATA', 'Restored clean default seed records into database.');
+      return { success: true, message: 'Default clean records restored successfully!' };
+    }
+
     return { success: true, data: [] };
   }
 }

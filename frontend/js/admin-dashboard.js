@@ -40,12 +40,33 @@ async function loadDashboardData() {
 function updateKpis(stats) {
   const setVal = (id, val) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = val;
+    if (el) {
+      el.textContent = val;
+      el.title = String(val);
+    }
   };
 
   setVal('kpiTotalCustomers', stats.totalCustomers || 0);
   setVal('kpiTotalAccounts', stats.totalAccounts || 0);
-  setVal('kpiTotalBalance', `₹${(stats.totalBalance || 0).toLocaleString('en-IN')}`);
+
+  const totalBal = stats.totalBalance || 0;
+  const balEl = document.getElementById('kpiTotalBalance');
+  if (balEl) {
+    const formatted = `₹${totalBal.toLocaleString('en-IN')}`;
+    balEl.textContent = formatted;
+    balEl.title = `Total System Liquidity: ${formatted}`;
+    if (formatted.length > 13) {
+      balEl.style.fontSize = 'clamp(0.95rem, 1.12vw, 1.25rem)';
+      balEl.style.letterSpacing = '-0.5px';
+    } else if (formatted.length > 10) {
+      balEl.style.fontSize = 'clamp(1.1rem, 1.25vw, 1.38rem)';
+      balEl.style.letterSpacing = '-0.3px';
+    } else {
+      balEl.style.fontSize = '';
+      balEl.style.letterSpacing = '';
+    }
+  }
+
   setVal('kpiTotalDeposits', `₹${(stats.totalDeposits || 0).toLocaleString('en-IN')}`);
   setVal('kpiTotalWithdrawals', `₹${(stats.totalWithdrawals || 0).toLocaleString('en-IN')}`);
   setVal('kpiTotalTransfers', `₹${(stats.totalTransfers || 0).toLocaleString('en-IN')}`);
@@ -58,12 +79,22 @@ async function handleClearAllRecords() {
   if (!confirm('CRITICAL ACTION: Are you sure you want to remove ALL accounts, customers, transactions, and loans from the database?')) {
     return;
   }
+  const btn = document.getElementById('btnClearAllRecords');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Clearing...';
+  }
   try {
-    await API.request('/admin/clear-all-data', 'POST');
-    Utils.showToast('All database records have been wiped successfully.', 'success');
+    const res = await API.request('/admin/clear-all-data', 'POST');
+    Utils.showToast(res.message || 'All database records have been wiped successfully.', 'success');
     await loadDashboardData();
   } catch (err) {
-    Utils.showToast(err.message, 'error');
+    Utils.showToast(err.message || 'Failed to clear records.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove All Records';
+    }
   }
 }
 
@@ -72,12 +103,22 @@ async function handleResetDefaultData() {
   if (!confirm('Restore default clean seed accounts, customers, and sample records?')) {
     return;
   }
+  const btn = document.getElementById('btnResetDefaultData');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Resetting...';
+  }
   try {
-    await API.request('/admin/reset-default-data', 'POST');
-    Utils.showToast('Default clean records restored successfully.', 'success');
+    const res = await API.request('/admin/reset-default-data', 'POST');
+    Utils.showToast(res.message || 'Default clean records restored successfully.', 'success');
     await loadDashboardData();
   } catch (err) {
-    Utils.showToast(err.message, 'error');
+    Utils.showToast(err.message || 'Failed to reset demo data.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Reset Demo Data';
+    }
   }
 }
 
