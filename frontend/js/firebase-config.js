@@ -1,8 +1,9 @@
 /**
  * GG BANK - Firebase Client Configuration & Database Sync Engine
- * Project: gg-bank-fc100
+ * Project: ggbank-d6735
  */
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBcJ9LyBWyqDZjY5bxlui_m_Bq3qx1nxJI",
   authDomain: "ggbank-d6735.firebaseapp.com",
@@ -14,38 +15,46 @@ const firebaseConfig = {
   measurementId: "G-1GP5RLN83B"
 };
 
-// Initialize Firebase SDK
+// Initialize Firebase SDK instances
 let firebaseApp = null;
 let firebaseAuth = null;
 let firestoreDb = null;
 let firebaseAnalytics = null;
 let isFirebaseLive = false;
 
-try {
-  if (typeof firebase !== 'undefined') {
-    if (!firebase.apps.length) {
-      firebaseApp = firebase.initializeApp(firebaseConfig);
-    } else {
-      firebaseApp = firebase.app();
-    }
-    
-    if (firebase.auth) {
-      firebaseAuth = firebase.auth();
-    }
-    
-    if (firebase.firestore) {
-      firestoreDb = firebase.firestore();
-      isFirebaseLive = true;
-    }
+function initFirebase() {
+  try {
+    if (typeof firebase !== 'undefined') {
+      if (!firebase.apps.length) {
+        firebaseApp = firebase.initializeApp(firebaseConfig);
+      } else {
+        firebaseApp = firebase.app();
+      }
+      
+      if (firebase.auth) {
+        firebaseAuth = firebase.auth();
+      }
+      
+      if (firebase.firestore) {
+        firestoreDb = firebase.firestore();
+        isFirebaseLive = true;
+      }
 
-    if (firebase.analytics) {
-      firebaseAnalytics = firebase.analytics();
+      if (firebase.analytics) {
+        firebaseAnalytics = firebase.analytics();
+      }
+      console.log("🔥 GG BANK: Connected to Firebase Project [ggbank-d6735]");
     }
-    console.log("🔥 GG BANK: Connected to Firebase Project [gg-bank-fc100]");
+  } catch (error) {
+    console.warn("GG BANK: Firebase connection notice:", error.message);
   }
-} catch (error) {
-  console.warn("GG BANK: Firebase connection notice:", error.message);
 }
+
+initFirebase();
+
+// Compatibility references requested by user
+const app = firebaseApp;
+const analytics = firebaseAnalytics;
 
 // Direct Firestore Database Helpers with Auto-Sync
 async function saveToFirestore(collection, docId, data) {
@@ -93,7 +102,7 @@ async function testFirebaseConnection() {
     const testRef = firestoreDb.collection('system_health').doc('ping');
     await testRef.set({
       appName: 'GG BANK',
-      projectId: 'gg-bank-fc100',
+      projectId: 'ggbank-d6735',
       timestamp: new Date().toISOString(),
       status: 'ONLINE'
     }, { merge: true });
@@ -103,7 +112,7 @@ async function testFirebaseConnection() {
       status: 'LIVE_FIRESTORE',
       connected: true,
       latencyMs: latency,
-      projectId: 'gg-bank-fc100',
+      projectId: 'ggbank-d6735',
       message: `Successfully connected to Cloud Firestore (Latency: ${latency}ms)!`
     };
   } catch (err) {
@@ -165,22 +174,24 @@ async function inspectDatabaseCollections() {
 
   return {
     isOnline: !!firestoreDb,
-    projectId: 'gg-bank-fc100',
+    projectId: 'ggbank-d6735',
     totalStoredRecords: totalDocs,
     collections: results,
     timestamp: new Date().toISOString()
   };
 }
 
+// Global window assignments for both legacy and modular patterns
 window.firebaseConfig = firebaseConfig;
 window.firebaseApp = firebaseApp;
+window.app = firebaseApp;
 window.firebaseAuth = firebaseAuth;
 window.firestoreDb = firestoreDb;
 window.firebaseAnalytics = firebaseAnalytics;
+window.analytics = firebaseAnalytics;
 window.isFirebaseLive = isFirebaseLive;
 window.saveToFirestore = saveToFirestore;
 window.getFromFirestore = getFromFirestore;
 window.getAllFromFirestore = getAllFromFirestore;
 window.testFirebaseConnection = testFirebaseConnection;
 window.inspectDatabaseCollections = inspectDatabaseCollections;
-

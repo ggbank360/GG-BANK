@@ -3,24 +3,19 @@
  * Supports Local Development (http://localhost:8080) and Production (Vercel -> Deployed Backend)
  */
 const resolveApiBaseUrl = () => {
-  // 1. Check Vite / bundler environment variable if available
-  try {
-    if (typeof import.meta !== 'undefined' && import.meta && import.meta.env && import.meta.env.VITE_API_BASE_URL) {
-      return import.meta.env.VITE_API_BASE_URL;
-    }
-  } catch (_) {}
-
-  // 2. Check window-injected environment variable (for Vercel deployment)
+  // 1. Check window-injected environment variable (for Vercel deployment)
   if (typeof window !== 'undefined') {
     if (window.VITE_API_BASE_URL) return window.VITE_API_BASE_URL;
     if (window.__API_BASE_URL__) return window.__API_BASE_URL__;
     if (window.ENV && window.ENV.VITE_API_BASE_URL) return window.ENV.VITE_API_BASE_URL;
 
     // Check runtime localStorage override (e.g. for testing custom backend URL)
-    const savedUrl = localStorage.getItem('gg_api_base_url');
-    if (savedUrl) return savedUrl;
+    try {
+      const savedUrl = localStorage.getItem('gg_api_base_url');
+      if (savedUrl) return savedUrl;
+    } catch (_) {}
 
-    // 3. Dynamic Hostname Detection
+    // 2. Dynamic Hostname Detection
     const hostname = window.location.hostname;
     const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || window.location.protocol === 'file:';
 
@@ -1530,6 +1525,13 @@ class ApiService {
   }
 }
 
-const API = new ApiService();
-window.API = API;
+let apiInstance = null;
+try {
+  apiInstance = new ApiService();
+} catch (err) {
+  console.error("GG BANK: Failed to initialize ApiService:", err);
+  apiInstance = Object.create(ApiService.prototype);
+}
+var API = apiInstance;
+window.API = apiInstance;
 
