@@ -19,6 +19,35 @@ let activeOfficerModalDocType = 'ALL';
 // ─────────────────────────────────────────────
 // Bootstrap
 // ─────────────────────────────────────────────
+let accountsListenerUnsub = null;
+
+function initRealtimeOfficerSync() {
+  if (accountsListenerUnsub) return;
+  if (typeof window.listenToFirestoreCollection === 'function') {
+    accountsListenerUnsub = window.listenToFirestoreCollection('accounts', null, (updatedAccounts) => {
+      console.log('🔥 [Officer Desk] Live Firestore accounts update received:', updatedAccounts.length, 'records');
+      allCustomers = updatedAccounts.map(a => {
+        const photo = a.avatar || a.profilePhoto || a.photoDoc || (a.kycData && a.kycData.photoDoc) || '';
+        return {
+          ...a,
+          customerName: a.fullName || a.name || 'GG Bank Customer',
+          name: a.fullName || a.name || 'GG Bank Customer',
+          customerEmail: a.email || 'N/A',
+          customerPhone: a.phone || 'N/A',
+          accountStatus: a.status || 'ACTIVE',
+          avatar: photo,
+          profilePhoto: photo,
+          photoDoc: photo
+        };
+      });
+      updateOfficerKpis();
+      renderAssignedLoans();
+      renderKycQueue();
+      renderOfficerCustomers();
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const user = Auth.getCurrentUser();
   if (!user) {
@@ -30,6 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initOfficerUi(currentOfficer);
 
   await loadOfficerData();
+  initRealtimeOfficerSync();
   window.__adminRefreshData = loadOfficerData;
 });
 

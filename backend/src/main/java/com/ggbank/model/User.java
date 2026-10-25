@@ -13,10 +13,12 @@ public class User {
     private String address;
     private String role;     // CUSTOMER, ADMIN
     private String status;   // ACTIVE, INACTIVE, BLOCKED
+    private String password;
     private String createdAt;
     private String updatedAt;
 
     public User() {
+        this.password = "Password@123";
     }
 
     public User(String userId, String name, String email, String phone, String dateOfBirth, String address, String role, String status, String createdAt, String updatedAt) {
@@ -28,6 +30,21 @@ public class User {
         this.address = address;
         this.role = role;
         this.status = status;
+        this.password = "Password@123";
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public User(String userId, String name, String email, String phone, String dateOfBirth, String address, String role, String status, String password, String createdAt, String updatedAt) {
+        this.userId = userId;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
+        this.role = role;
+        this.status = status;
+        this.password = password != null ? password : "Password@123";
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -55,6 +72,9 @@ public class User {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }

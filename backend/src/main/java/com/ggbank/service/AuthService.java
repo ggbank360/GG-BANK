@@ -3,7 +3,6 @@ package com.ggbank.service;
 import com.ggbank.dto.AuthRequest;
 import com.ggbank.dto.AuthResponse;
 import com.ggbank.exception.AccountInactiveException;
-import com.ggbank.exception.BankingException;
 import com.ggbank.exception.ResourceNotFoundException;
 import com.ggbank.model.Account;
 import com.ggbank.model.User;

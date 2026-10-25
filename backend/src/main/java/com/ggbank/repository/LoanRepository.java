@@ -72,4 +72,11 @@ public class LoanRepository {
         }
         return new ArrayList<>(memoryStore.values());
     }
+
+    public void deleteById(String loanId) throws Exception {
+        if (firestore != null) {
+            firestore.collection(COLLECTION_NAME).document(loanId).delete().get();
+        }
+        memoryStore.remove(loanId);
+    }
 }

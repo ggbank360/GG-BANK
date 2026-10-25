@@ -6,6 +6,14 @@
       "destination": "/frontend/index.html"
     },
     {
+      "source": "/frontend",
+      "destination": "/frontend/index.html"
+    },
+    {
+      "source": "/frontend/",
+      "destination": "/frontend/index.html"
+    },
+    {
       "source": "/((?!frontend/|api/).*)",
       "destination": "/frontend/$1"
     }

@@ -1,32 +1,40 @@
 /**
  * GG BANK - Authentication & Session Engine (auth.js)
- * Implements 12-Digit Account Number Login and Session Verification
+ * Implements Firestore-driven authentication for Customers, Officers, and Admins.
+ * Only maintains a lightweight session pointer in localStorage.
  */
 
 const Auth = {
   getCurrentUser() {
-    const userStr = localStorage.getItem('gg_current_user');
-    return userStr ? JSON.parse(userStr) : null;
+    try {
+      const userStr = localStorage.getItem('gg_current_user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch (_) {
+      return null;
+    }
   },
 
   getCurrentAccount() {
-    const accStr = localStorage.getItem('gg_current_account');
-    return accStr ? JSON.parse(accStr) : null;
+    try {
+      const accStr = localStorage.getItem('gg_current_account');
+      return accStr ? JSON.parse(accStr) : null;
+    } catch (_) {
+      return null;
+    }
   },
 
   setSession(user, account, token = 'demo-jwt-token') {
     if (user) {
       if (!user.avatar) {
-        user.avatar = user.photoDoc || user.profilePhoto || (user.documents && (user.documents.photoDoc || user.documents.photo)) || '';
+        user.avatar = user.photoDoc || user.profilePhoto || (user.documents && user.documents.photoDoc) || '';
       }
       user.photoDoc = user.photoDoc || user.avatar;
       user.profilePhoto = user.profilePhoto || user.avatar;
     }
     localStorage.setItem('gg_current_user', JSON.stringify(user));
-    localStorage.setItem('gg_user', JSON.stringify(user));
     localStorage.setItem('gg_current_account', JSON.stringify(account));
     localStorage.setItem('gg_auth_token', token);
-    if (window.API) {
+    if (window.API && typeof API.setToken === 'function') {
       window.API.setToken(token);
     }
   },
@@ -40,44 +48,28 @@ const Auth = {
     localStorage.removeItem('gg_current_account');
     localStorage.removeItem('gg_auth_token');
     if (window.firebaseAuth) {
-      firebaseAuth.signOut().catch(() => {});
+      try { window.firebaseAuth.signOut(); } catch (_) {}
     }
-    Utils.showToast('Logged out successfully.', 'info');
+    if (window.Utils && typeof Utils.showToast === 'function') {
+      Utils.showToast('Logged out successfully.', 'info');
+    }
     setTimeout(() => {
-      window.location.href = 'login.html';
+      window.location.href = 'index.html';
     }, 400);
   },
 
-  // Universal Auth Guard
+  // Auth Guard for Protected Pages
   requireAuth(requiredRole = null) {
     let user = this.getCurrentUser();
     if (!user) {
-      // If user directly opened dashboard without prior login, auto-initialize demo session
-      user = {
-        userId: requiredRole === 'ADMIN' ? 'usr-admin-999' : 'usr-gowtham-101',
-        name: requiredRole === 'ADMIN' ? 'GG Bank Administrator' : 'Gowtham NK',
-        email: requiredRole === 'ADMIN' ? 'admin@ggbank.com' : 'gowtham@ggbank.com',
-        role: requiredRole || 'CUSTOMER',
-        status: 'ACTIVE'
-      };
-      const account = {
-        accountId: 'acc-demo-101',
-        userId: user.userId,
-        accountNumber: '100188492019',
-        accountType: 'SAVINGS',
-        balance: 65450.00,
-        ifscCode: 'GGBN0001234',
-        branch: 'Central Tech Branch',
-        status: 'ACTIVE'
-      };
-      this.setSession(user, account, 'demo-jwt-token');
+      // Auto redirect to login
+      window.location.href = 'index.html';
+      return null;
     }
 
     if (requiredRole && user.role !== requiredRole && user.role !== 'ADMIN') {
-      if (requiredRole === 'ADMIN') {
-        window.location.href = 'index.html';
-        return null;
-      }
+      window.location.href = 'index.html';
+      return null;
     }
     return user;
   },
@@ -90,192 +82,34 @@ const Auth = {
     return this.requireAuth('ADMIN');
   },
 
-  // Customer Login using Email Address or Account Number + Password
+  requireOfficer() {
+    return this.requireAuth('OFFICER');
+  },
+
+  // Customer Login with Email or Account Number
   async loginWithEmail(email, password) {
     const cleanEmail = (email || '').toString().trim();
     if (!cleanEmail) {
       throw new Error('Please enter your Account Number or Email address.');
     }
-    if (!cleanEmail.includes('@') && cleanEmail.replace(/\D/g, '').length >= 10) {
-      return this.loginWithAccountNumber(cleanEmail, password);
-    }
     if (!password) {
       throw new Error('Please enter your account password.');
     }
 
-    // 1. Direct Backend Database Authentication (Cross-Profile Synchronized)
-    if (window.API && typeof API.request === 'function') {
-      try {
-        const res = await API.request('/auth/login', 'POST', { email: cleanEmail, password });
-        if (res && res.success && res.data && res.data.user) {
-          const authUser = res.data.user;
-          const authAcc = res.data.account;
-          const authToken = res.data.token || ('jwt-' + authUser.userId);
-          this.setSession(authUser, authAcc, authToken);
-          // Sync into local cache
-          const localUsers = API.getMock('gg_users');
-          if (!localUsers.some(u => u.userId === authUser.userId)) {
-            localUsers.push(authUser);
-            API.setMock('gg_users', localUsers);
-          }
-          if (authAcc) {
-            const localAccs = API.getMock('gg_accounts');
-            if (!localAccs.some(a => a.accountNumber === authAcc.accountNumber)) {
-              localAccs.push(authAcc);
-              API.setMock('gg_accounts', localAccs);
-            }
-          }
-          return { user: authUser, account: authAcc };
-        }
-      } catch (apiErr) {
-        // If it's a credentials error (401/403/404) or pending approval, throw directly so user sees the message
-        if (apiErr.message && (apiErr.message.includes('password') || apiErr.message.includes('blocked') || apiErr.message.includes('No registered account') || apiErr.message.includes('Pending Approval') || apiErr.message.includes('pending approval'))) {
-          throw apiErr;
-        }
-        console.warn('Backend database auth notice, checking local engine:', apiErr.message);
-      }
+    // Call Centralized API which queries Firestore
+    const res = await API.request('/auth/login', 'POST', { identifier: cleanEmail, password });
+    if (res && res.data && res.data.user) {
+      const authUser = res.data.user;
+      const authAcc = res.data.account;
+      const authToken = res.data.token || ('jwt-' + (authUser.userId || authUser.accountNumber));
+      this.setSession(authUser, authAcc, authToken);
+      return { user: authUser, account: authAcc };
     }
-
-    // 2. Check Live Firestore if active
-    if (window.firestoreDb) {
-      try {
-        const querySnap = await window.firestoreDb.collection('users').where('email', '==', cleanEmail).get();
-        if (!querySnap.empty) {
-          const doc = querySnap.docs[0];
-          const fireUser = doc.data();
-          const expectedPass = fireUser.password || 'Password@123';
-          if (password !== expectedPass) {
-            throw new Error('Incorrect password. Please verify your password and try again.');
-          }
-          if (fireUser.status === 'BLOCKED') {
-            throw new Error('Account is blocked. Please contact GG BANK administration.');
-          }
-          if (fireUser.status === 'PENDING_APPROVAL') {
-            throw new Error('Your account application is Pending Approval. The Bank Administrator is verifying your KYC documents.');
-          }
-
-          const accSnap = await window.firestoreDb.collection('accounts').where('userId', '==', fireUser.userId).get();
-          let fireAcc = !accSnap.empty ? accSnap.docs[0].data() : null;
-          if (!fireAcc) {
-            const localAccs = API ? API.getMock('gg_accounts') : [];
-            fireAcc = localAccs.find(a => a.userId === fireUser.userId) || {
-              accountId: 'acc-' + fireUser.userId,
-              userId: fireUser.userId,
-              accountNumber: '100188492019',
-              balance: 65450.00,
-              accountType: 'SAVINGS',
-              status: 'ACTIVE'
-            };
-          }
-
-          this.setSession(fireUser, fireAcc, 'jwt-' + fireUser.userId);
-          if (API) API.logAudit(fireUser.userId, null, 'LOGIN', `Customer logged in: ${cleanEmail}`);
-          return { user: fireUser, account: fireAcc };
-        }
-      } catch (fErr) {
-        if (fErr.message && (fErr.message.includes('password') || fErr.message.includes('blocked'))) {
-          throw fErr;
-        }
-        console.warn('Firestore login check note:', fErr.message);
-      }
-    }
-
-    // 3. Fallback: Check Local Database Engine
-    const users = API ? API.getMock('gg_users') : [];
-    const accounts = API ? API.getMock('gg_accounts') : [];
-
-    let matchedUser = users.find(u => u.email && u.email.toLowerCase() === cleanEmail);
-    if (!matchedUser) {
-      throw new Error(`No registered account found with email "${cleanEmail}". Please check your email or click "Open Account" to register.`);
-    }
-
-    // STRICT Password Check
-    const expectedPass = matchedUser.password || 'Password@123';
-    if (password !== expectedPass) {
-      throw new Error('Incorrect password. Please verify your password and try again.');
-    }
-
-    if (matchedUser.status === 'BLOCKED') {
-      throw new Error('Account is blocked. Please contact GG BANK administration.');
-    }
-    if (matchedUser.status === 'PENDING_APPROVAL') {
-      throw new Error('Your account application is Pending Approval. The Bank Administrator is verifying your KYC documents.');
-    }
-
-    let matchedAccount = accounts.find(a => a.userId === matchedUser.userId);
-    if (!matchedAccount) {
-      matchedAccount = {
-        accountId: 'acc-' + matchedUser.userId,
-        userId: matchedUser.userId,
-        accountNumber: '100188' + Math.floor(100000 + Math.random() * 900000),
-        accountType: 'SAVINGS',
-        balance: 65450.00,
-        ifscCode: 'GGBN0001234',
-        branch: 'Central Tech Branch',
-        status: 'ACTIVE',
-        createdAt: new Date().toISOString()
-      };
-      accounts.push(matchedAccount);
-      if (API) API.setMock('gg_accounts', accounts);
-    }
-
-    this.setSession(matchedUser, matchedAccount, 'jwt-token-' + matchedUser.userId);
-    if (API) API.logAudit(matchedUser.userId, null, 'LOGIN', `Customer logged in with email ${cleanEmail}`);
-    return { user: matchedUser, account: matchedAccount };
+    throw new Error('Login failed. Please verify your credentials.');
   },
 
-  // Account Number Login Support
   async loginWithAccountNumber(accountNumber, password) {
-    const rawInput = (accountNumber || '').toString().trim().replace(/\D/g, '');
-    if (rawInput.length < 10) {
-      throw new Error('Please enter a valid 11 or 12-digit Account Number.');
-    }
-
-    // 1. Direct Backend Database Authentication
-    if (window.API && typeof API.request === 'function') {
-      try {
-        const res = await API.request('/auth/login', 'POST', { accountNumber: rawInput, password });
-        if (res && res.success && res.data && res.data.user) {
-          const authUser = res.data.user;
-          const authAcc = res.data.account;
-          const authToken = res.data.token || ('jwt-' + authUser.userId);
-          this.setSession(authUser, authAcc, authToken);
-
-          // Sync into local cache
-          const localUsers = API.getMock('gg_users');
-          if (!localUsers.some(u => u.userId === authUser.userId)) {
-            localUsers.push(authUser);
-            API.setMock('gg_users', localUsers);
-          }
-          if (authAcc) {
-            const localAccs = API.getMock('gg_accounts');
-            if (!localAccs.some(a => a.accountNumber === authAcc.accountNumber)) {
-              localAccs.push(authAcc);
-              API.setMock('gg_accounts', localAccs);
-            }
-          }
-          return { user: authUser, account: authAcc };
-        }
-      } catch (apiErr) {
-        if (apiErr.message && (apiErr.message.includes('password') || apiErr.message.includes('blocked') || apiErr.message.includes('No registered account') || apiErr.message.includes('Pending Approval') || apiErr.message.includes('pending approval'))) {
-          throw apiErr;
-        }
-        console.warn('Backend database auth notice, checking local engine:', apiErr.message);
-      }
-    }
-
-    // 2. Fallback to Local Engine
-    const accounts = API ? API.getMock('gg_accounts') : [];
-    const users = API ? API.getMock('gg_users') : [];
-    const acc = accounts.find(a => a.accountNumber === rawInput);
-    if (!acc) {
-      throw new Error(`No account found for account number ${rawInput}.`);
-    }
-    const user = users.find(u => u.userId === acc.userId);
-    if (user && user.email) {
-      return this.loginWithEmail(user.email, password);
-    }
-    throw new Error('User associated with this account number was not found.');
+    return this.loginWithEmail(accountNumber, password);
   },
 
   // Admin Login using Username/Email + Password
@@ -285,7 +119,6 @@ const Auth = {
       throw new Error('Please enter admin credentials.');
     }
 
-    // STRICT Admin Password Check
     const validAdmins = ['admin@ggbank.com', 'admin', 'gowtham@ggbank.com'];
     if (!validAdmins.includes(cleanUser) || password !== 'Password@123') {
       throw new Error('Invalid Admin credentials. Access Denied.');
@@ -294,6 +127,7 @@ const Auth = {
     const adminUser = {
       userId: 'usr-admin-999',
       name: 'GG Bank Administrator',
+      fullName: 'GG Bank Administrator',
       email: 'admin@ggbank.com',
       role: 'ADMIN',
       status: 'ACTIVE'
@@ -308,7 +142,7 @@ const Auth = {
     };
 
     this.setSession(adminUser, adminAccount, 'jwt-admin-token');
-    if (API) API.logAudit('usr-admin-999', 'usr-admin-999', 'ADMIN_LOGIN', 'Administrator logged in to admin console');
+    await API.logAudit('usr-admin-999', 'usr-admin-999', 'ADMIN_LOGIN', 'Administrator signed into Admin Control Console');
     return { user: adminUser, account: adminAccount };
   },
 
@@ -320,26 +154,20 @@ const Auth = {
       throw new Error('Please enter officer email or employee ID.');
     }
 
-    let officers = (window.API && typeof API.getMock === 'function') ? API.getMock('gg_officers') : [];
+    // Query Firestore officers
+    let officers = [];
+    try {
+      officers = await window.getAllFromFirestore('officers');
+    } catch (_) {}
+
     if (!officers || officers.length === 0) {
-      if (window.API && typeof API.request === 'function') {
-        try {
-          const res = await API.request('/admin/officers');
-          officers = res.data || [];
-        } catch (_) {}
-      }
-      if (!officers || officers.length === 0) {
-        officers = [
-          { officerId: 'off-001', employeeId: 'EMP-1001', name: 'Vikram Sharma', email: 'vikram.sharma@ggbank.com', phone: '+91 98765 43210', department: 'LOAN', designation: 'Chief Credit Officer', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123' },
-          { officerId: 'off-002', employeeId: 'EMP-1002', name: 'Anita Roy', email: 'anita.roy@ggbank.com', phone: '+91 98765 43211', department: 'LOAN', designation: 'Senior Personal Loan Underwriter', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123' },
-          { officerId: 'off-003', employeeId: 'EMP-1003', name: 'Priya Patel', email: 'priya.patel@ggbank.com', phone: '+91 98765 43212', department: 'COMPLIANCE', designation: 'Lead KYC & AML Compliance Officer', branch: 'Financial Tower Branch', status: 'ACTIVE', password: 'Password@123' },
-          { officerId: 'off-004', employeeId: 'EMP-1004', name: 'Karthik Rao', email: 'karthik.rao@ggbank.com', phone: '+91 98765 43213', department: 'TREASURY', designation: 'Treasury & Vault Operations Manager', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123' },
-          { officerId: 'off-005', employeeId: 'EMP-1005', name: 'Rajesh Kumar', email: 'rajesh.kumar@ggbank.com', phone: '+91 98765 43214', department: 'OPERATIONS', designation: 'Branch Operations Supervisor', branch: 'North Metro Branch', status: 'ACTIVE', password: 'Password@123' }
-        ];
-        if (window.API && typeof API.setMock === 'function') {
-          API.setMock('gg_officers', officers);
-        }
-      }
+      officers = [
+        { officerId: 'off-001', employeeId: 'EMP-1001', name: 'Vikram Sharma', email: 'vikram.sharma@ggbank.com', phone: '+91 98765 43210', department: 'LOAN', designation: 'Chief Credit Officer', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123', role: 'OFFICER' },
+        { officerId: 'off-002', employeeId: 'EMP-1002', name: 'Anita Roy', email: 'anita.roy@ggbank.com', phone: '+91 98765 43211', department: 'LOAN', designation: 'Senior Personal Loan Underwriter', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123', role: 'OFFICER' },
+        { officerId: 'off-003', employeeId: 'EMP-1003', name: 'Priya Patel', email: 'priya.patel@ggbank.com', phone: '+91 98765 43212', department: 'COMPLIANCE', designation: 'Lead KYC & AML Compliance Officer', branch: 'Financial Tower Branch', status: 'ACTIVE', password: 'Password@123', role: 'OFFICER' },
+        { officerId: 'off-004', employeeId: 'EMP-1004', name: 'Karthik Rao', email: 'karthik.rao@ggbank.com', phone: '+91 98765 43213', department: 'TREASURY', designation: 'Treasury & Vault Operations Manager', branch: 'Central Tech Branch', status: 'ACTIVE', password: 'Password@123', role: 'OFFICER' },
+        { officerId: 'off-005', employeeId: 'EMP-1005', name: 'Rajesh Kumar', email: 'rajesh.kumar@ggbank.com', phone: '+91 98765 43214', department: 'OPERATIONS', designation: 'Branch Operations Supervisor', branch: 'North Metro Branch', status: 'ACTIVE', password: 'Password@123', role: 'OFFICER' }
+      ];
     }
 
     const officer = officers.find(o =>
@@ -363,7 +191,10 @@ const Auth = {
 
     const officerSession = {
       userId: officer.officerId,
+      officerId: officer.officerId,
+      employeeId: officer.employeeId,
       name: officer.name,
+      fullName: officer.name,
       email: officer.email,
       role: 'OFFICER',
       designation: officer.designation,
@@ -382,11 +213,9 @@ const Auth = {
     };
 
     this.setSession(officerSession, officerAccount, officerSession.token);
-    if (API && typeof API.logAudit === 'function') {
-      API.logAudit(officer.officerId, officer.officerId, 'OFFICER_LOGIN', `Officer logged in: ${officer.name} (${officer.employeeId})`);
-    }
+    await API.logAudit(officer.officerId, officer.officerId, 'OFFICER_LOGIN', `Officer signed in: ${officer.name} (${officer.employeeId})`);
     return { user: officerSession, account: officerAccount };
-  },
+  }
 };
 
 window.Auth = Auth;

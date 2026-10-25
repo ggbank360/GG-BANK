@@ -101,7 +101,7 @@
               <div class="form-group">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                   <label class="form-label" for="loginPassword">Password</label>
-                  <a href="#" onclick="openRecoveryModal(event)" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan);">Forgot Password?</a>
+                  <button type="button" class="btn-link" onclick="openRecoveryModal(event)" style="background: none; border: none; padding: 0; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan);">Forgot Password?</button>
                 </div>
                 <div class="input-with-icon">
                   <i class="fa-solid fa-lock input-icon"></i>
@@ -130,11 +130,11 @@
 
             <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color-subtle); display: flex; flex-direction: column; gap: 8px; text-align: center; font-size: 0.84rem;">
               <div style="color: var(--text-secondary);">
-                Don't have an account? <a href="#" onclick="switchPortalTab('tab-register')" style="font-weight: 700; color: var(--accent-cyan);">Open Digital Account</a>
+                Don't have an account? <button type="button" class="btn-link" onclick="switchPortalTab('tab-register')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:700;color:var(--accent-cyan);font-size:inherit;">Open Digital Account</button>
               </div>
               <div style="color: var(--text-muted); font-size: 0.8rem;">
-                Staff Access: <a href="#" onclick="switchPortalTab('tab-officer')" style="font-weight: 600; color: var(--accent-cyan);"><i class="fa-solid fa-user-tie"></i> Officer Desk</a>
-                &bull; <a href="#" onclick="switchPortalTab('tab-admin')" style="font-weight: 600; color: var(--danger);"><i class="fa-solid fa-shield-halved"></i> Admin Portal</a>
+                Staff Access: <button type="button" class="btn-link" onclick="switchPortalTab('tab-officer')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:600;color:var(--accent-cyan);font-size:inherit;"><i class="fa-solid fa-user-tie"></i> Officer Desk</button>
+                &bull; <button type="button" class="btn-link" onclick="switchPortalTab('tab-admin')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:600;color:var(--danger);font-size:inherit;"><i class="fa-solid fa-shield-halved"></i> Admin Portal</button>
               </div>
             </div>
           </div>
@@ -415,7 +415,7 @@
             </form>
 
             <div style="text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-secondary);">
-              Already have an account? <a href="#" onclick="switchPortalTab('tab-login')" style="font-weight: 700; color: var(--accent-cyan);">Sign In</a>
+              Already have an account? <button type="button" class="btn-link" onclick="switchPortalTab('tab-login')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:700;color:var(--accent-cyan);font-size:inherit;">Sign In</button>
             </div>
           </div>
 
@@ -460,7 +460,7 @@
             </form>
 
             <div style="text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-secondary);">
-              Officer Portal: <a href="#" onclick="switchPortalTab('tab-officer')" style="font-weight: 700; color: var(--accent-cyan);">Banking Officer Sign In</a>
+              Officer Portal: <button type="button" class="btn-link" onclick="switchPortalTab('tab-officer')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:700;color:var(--accent-cyan);font-size:inherit;">Banking Officer Sign In</button>
             </div>
           </div>
 
@@ -511,9 +511,9 @@
             </form>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; font-size: 0.82rem;">
-              <a href="#" onclick="switchPortalTab('tab-login')" style="color: var(--text-secondary);">
+              <button type="button" class="btn-link" onclick="switchPortalTab('tab-login')" style="background:none;border:none;padding:0;cursor:pointer;color: var(--text-secondary);font-size:inherit;">
                 <i class="fa-solid fa-arrow-left"></i> Customer Login
-              </a>
+              </button>
               <a href="officer-login.html" style="font-weight: 700; color: var(--accent-cyan);">
                 <i class="fa-solid fa-up-right-from-square"></i> Full Officer Portal
               </a>
@@ -767,7 +767,7 @@
       }
     }
 
-    // Document & Single Image Upload Handlers with Drag & Drop
+    // Document & Single Image Upload Handlers with Canvas Compression (under 100 KB)
     async function processDocFile(file, labelId, previewId, hiddenInputId) {
       if (!file) return;
       const label = document.getElementById(labelId);
@@ -775,40 +775,34 @@
       const hidden = document.getElementById(hiddenInputId);
 
       if (label) {
-        label.innerHTML = `<span style="color: var(--accent-cyan);"><i class="fa-solid fa-spinner fa-spin"></i> Attaching ${file.name}...</span>`;
+        label.innerHTML = `<span style="color: var(--accent-cyan);"><i class="fa-solid fa-spinner fa-spin"></i> Compressing ${file.name}...</span>`;
       }
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        if (hidden) hidden.value = e.target.result;
-        if (preview && file.type.startsWith('image/')) {
-          preview.src = e.target.result;
+      try {
+        let finalData = '';
+        if (file.type && file.type.startsWith('image/')) {
+          finalData = await window.compressKycImage(file, 800, 0.6);
+        } else {
+          finalData = await new Promise((res) => {
+            const r = new FileReader();
+            r.onload = (e) => res(e.target.result);
+            r.readAsDataURL(file);
+          });
+        }
+
+        if (hidden) hidden.value = finalData;
+        if (preview && finalData.startsWith('data:image/')) {
+          preview.src = finalData;
           preview.style.display = 'block';
         }
-      };
-      reader.readAsDataURL(file);
 
-      if (window.Cloudinary) {
-        try {
-          const res = await Cloudinary.upload(file, 'kyc_documents');
-          const finalUrl = (res && typeof res === 'object') ? (res.secure_url || res.url) : res;
-          if (finalUrl && typeof finalUrl === 'string' && finalUrl.length > 5) {
-            if (hidden) hidden.value = finalUrl;
-          }
-          if (label) {
-            label.innerHTML = `<span style="color: var(--success); font-weight: 600;"><i class="fa-solid fa-cloud-arrow-up"></i> ${file.name} (Uploaded)</span>`;
-          }
-          Utils.showToast(`${file.name} attached & uploaded!`, 'success');
-          return;
-        } catch (err) {
-          console.warn('Cloudinary notice, using local copy:', err);
+        if (label) {
+          label.innerHTML = `<span style="color: var(--success); font-weight: 600;"><i class="fa-solid fa-check"></i> ${file.name} (Ready)</span>`;
         }
+        Utils.showToast(`${file.name} compressed & attached!`, 'info');
+      } catch (err) {
+        console.warn('Doc compression notice:', err);
       }
-
-      if (label) {
-        label.innerHTML = `<span style="color: var(--success); font-weight: 600;"><i class="fa-solid fa-check"></i> ${file.name} (Attached)</span>`;
-      }
-      Utils.showToast(`${file.name} attached!`, 'info');
     }
 
     async function processSingleImgFile(file, imgId, placeholderId, hiddenInputId) {
@@ -817,34 +811,20 @@
       const placeholder = document.getElementById(placeholderId);
       const hidden = document.getElementById(hiddenInputId);
 
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        if (hidden) hidden.value = e.target.result;
+      try {
+        const compressed = await window.compressKycImage(file, 600, 0.6);
+        if (hidden) hidden.value = compressed;
         if (img) {
-          img.src = e.target.result;
+          img.src = compressed;
           img.style.display = 'block';
         }
         if (placeholder) {
           placeholder.style.display = 'none';
         }
-
-        if (window.Cloudinary) {
-          try {
-            const res = await Cloudinary.upload(file, 'kyc_media');
-            const finalUrl = (res && typeof res === 'object') ? (res.secure_url || res.url) : res;
-            if (finalUrl && typeof finalUrl === 'string' && finalUrl.length > 5) {
-              if (hidden) hidden.value = finalUrl;
-            }
-            Utils.showToast(`${file.name} attached & uploaded!`, 'success');
-            return;
-          } catch (err) {
-            console.warn('Cloudinary notice, using local copy:', err);
-          }
-        }
-
-        Utils.showToast(`${file.name} attached!`, 'info');
-      };
-      reader.readAsDataURL(file);
+        Utils.showToast(`${file.name} compressed & attached!`, 'info');
+      } catch (err) {
+        console.warn('Single image compression notice:', err);
+      }
     }
 
     function handleDocUpload(event, labelId, previewId, hiddenInputId) {
@@ -1010,42 +990,75 @@
       Utils.showToast('Demo applicant details & documents attached for all 3 steps!', 'success');
     }
 
-    // Pending Approval Modal Handling
+    // Real-Time Approval Listener (Requirement 2)
     let pendingCustomerEmail = '';
+    let activeApprovalListener = null;
 
-    function openPendingApprovalModal(email) {
-      pendingCustomerEmail = email;
-      document.getElementById('pendingCustomerEmailDisplay').textContent = email;
+    function watchApprovalStatus(accountNumberOrEmail) {
+      if (activeApprovalListener) {
+        try { activeApprovalListener(); } catch (_) {}
+        activeApprovalListener = null;
+      }
+
+      const cleanIdentifier = (accountNumberOrEmail || '').toString().trim();
+      if (!cleanIdentifier) return;
+
+      const handleAccountStatusChange = (account) => {
+        if (account && account.status === 'ACTIVE') {
+          if (activeApprovalListener) {
+            try { activeApprovalListener(); } catch (_) {}
+            activeApprovalListener = null;
+          }
+          document.getElementById('accountCreatedModal')?.classList.remove('active');
+          document.getElementById('pendingApprovalModal')?.classList.remove('active');
+
+          Auth.setSession(account, account);
+          Utils.showToast(`🎉 Account Approved by Officer! Welcome, ${account.name || 'Customer'}. Redirecting...`, 'success');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 600);
+        }
+      };
+
+      // Listen directly to Firestore document if 10+ digits, or query by email
+      const cleanDigits = cleanIdentifier.replace(/\D/g, '');
+      if (cleanDigits.length >= 10) {
+        activeApprovalListener = window.listenToFirestoreDoc('accounts', cleanDigits, handleAccountStatusChange);
+      } else {
+        activeApprovalListener = window.listenToFirestoreCollection('accounts', (ref) => {
+          return ref.where('email', '==', cleanIdentifier.toLowerCase());
+        }, (docs) => {
+          if (docs && docs.length > 0) {
+            handleAccountStatusChange(docs[0]);
+          }
+        });
+      }
+    }
+
+    function openPendingApprovalModal(identifier) {
+      pendingCustomerEmail = identifier;
+      document.getElementById('pendingCustomerEmailDisplay').textContent = identifier;
       document.getElementById('pendingApprovalModal').classList.add('active');
+      watchApprovalStatus(identifier);
     }
 
     function closePendingApprovalModal() {
+      if (activeApprovalListener) {
+        try { activeApprovalListener(); } catch (_) {}
+        activeApprovalListener = null;
+      }
       document.getElementById('pendingApprovalModal').classList.remove('active');
     }
 
     async function instantApprovePendingCustomer() {
       const btn = document.getElementById('btnInstantApprove');
-      Utils.setLoading(btn, true, 'Approving Account...');
+      Utils.setLoading(btn, true, 'Approving Account Globally...');
       try {
-        const users = API.getMock('gg_users');
-        const user = users.find(u => u.email && u.email.toLowerCase() === pendingCustomerEmail.toLowerCase());
-        if (user) {
-          await API.request(`/admin/customers/${user.userId}/approve`, 'PUT', {
-            approvedBy: 'Bank Admin (Instant Verification)',
-            remarks: 'Approved KYC Documents'
-          });
-          Utils.showToast('Account Approved! Logging in...', 'success');
-          closePendingApprovalModal();
-          
-          // Log in
-          const pass = document.getElementById('loginPassword').value || 'Password@123';
-          const res = await Auth.loginWithEmail(pendingCustomerEmail, pass);
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 500);
-        } else {
-          Utils.showToast('User record not found.', 'error');
-        }
+        await API.request(`/admin/customers/${pendingCustomerEmail}/approve`, 'PUT', {
+          approvedBy: 'Bank Admin (Instant Demonstration Verification)',
+          remarks: 'KYC Documents Verified and Approved Globally'
+        });
+        Utils.showToast('Account Approved in Cloud Firestore! Logging in...', 'success');
       } catch (err) {
         Utils.showToast('Approval error: ' + err.message, 'error');
       } finally {
@@ -1251,7 +1264,10 @@
 
         document.getElementById('accountCreatedModal').classList.add('active');
 
-        Utils.showToast('Application submitted! Awaiting Admin Approval.', 'success');
+        // Attach real-time approval listener on the newly created account document
+        watchApprovalStatus(createdAcc.accountNumber);
+
+        Utils.showToast('Application submitted! Real-time verification listener active.', 'success');
       } catch (err) {
         Utils.showToast(err.message, 'error');
       } finally {

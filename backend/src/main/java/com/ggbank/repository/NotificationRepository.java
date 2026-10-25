@@ -63,4 +63,23 @@ public class NotificationRepository {
         }
         return Optional.ofNullable(memoryStore.get(notificationId));
     }
+
+    public List<Notification> findAll() throws Exception {
+        if (firestore != null) {
+            QuerySnapshot snapshot = firestore.collection(COLLECTION_NAME).get().get();
+            List<Notification> list = new ArrayList<>();
+            for (QueryDocumentSnapshot doc : snapshot) {
+                list.add(doc.toObject(Notification.class));
+            }
+            return list;
+        }
+        return new ArrayList<>(memoryStore.values());
+    }
+
+    public void deleteById(String notificationId) throws Exception {
+        if (firestore != null) {
+            firestore.collection(COLLECTION_NAME).document(notificationId).delete().get();
+        }
+        memoryStore.remove(notificationId);
+    }
 }

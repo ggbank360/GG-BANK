@@ -71,6 +71,18 @@ async function loadDashboardData(user) {
 
     localStorage.setItem('gg_current_account', JSON.stringify(activeAccount));
 
+    // Real-Time Account Balance Listener across devices
+    if (typeof window.listenToFirestoreDoc === 'function') {
+      window.listenToFirestoreDoc('accounts', activeAccount.accountNumber, (liveAcc) => {
+        if (liveAcc && liveAcc.balance !== undefined && liveAcc.balance !== activeAccount.balance) {
+          activeAccount.balance = liveAcc.balance;
+          localStorage.setItem('gg_current_account', JSON.stringify(activeAccount));
+          updateBalanceDisplay(false);
+          updateDashboardMetrics(false);
+        }
+      });
+    }
+
     // 2. Fetch Transactions
     const txnRes = await API.request(`/transactions/account/${activeAccount.accountNumber}`);
     activeTransactions = txnRes.data || [];

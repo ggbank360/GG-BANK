@@ -62,4 +62,7 @@ public class Transaction {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setCreatedAt(java.time.LocalDateTime createdAt) {
+        this.createdAt = createdAt != null ? createdAt.toString() : null;
+    }
 }

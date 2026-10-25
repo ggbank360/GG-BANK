@@ -17,9 +17,6 @@ public class BudgetService {
     @Autowired
     private BudgetRepository budgetRepository;
 
-    @Autowired
-    private NotificationService notificationService;
-
     public Budget setBudget(BudgetRequest req) throws Exception {
         Optional<Budget> existingOpt = budgetRepository.findByUserIdAndCategory(req.getUserId(), req.getCategory());
         String now = LocalDateTime.now().toString();

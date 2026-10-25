@@ -1,7 +1,6 @@
 package com.ggbank.controller;
 
 import com.ggbank.dto.ApiResponse;
-import com.ggbank.dto.LoanActionRequest;
 import com.ggbank.dto.LoanApplicationRequest;
 import com.ggbank.model.Loan;
 import com.ggbank.security.UserPrincipal;

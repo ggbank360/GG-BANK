@@ -82,4 +82,25 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = `login.html?accountNumber=${accNumber}`;
     });
   }
+
+  // Real-Time Approval Listener on Account Created Page
+  if (typeof window.listenToFirestoreDoc === 'function' && accNumber) {
+    window.listenToFirestoreDoc('accounts', accNumber, (liveAcc) => {
+      if (liveAcc && liveAcc.status === 'ACTIVE') {
+        if (statusDisplay) {
+          statusDisplay.textContent = 'ACTIVE (APPROVED)';
+          statusDisplay.style.color = 'var(--success, #10b981)';
+        }
+        Utils.showToast('🎉 Your Account has been Approved by Bank Administration!', 'success');
+        if (loginBtn) {
+          loginBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Account Active — Enter Banking';
+          loginBtn.className = 'btn btn-success btn-block btn-lg';
+          loginBtn.onclick = () => {
+            Auth.setSession(liveAcc, liveAcc);
+            window.location.href = 'dashboard.html';
+          };
+        }
+      }
+    });
+  }
 });

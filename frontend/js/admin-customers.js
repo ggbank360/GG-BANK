@@ -9,11 +9,38 @@ let filteredCustomers = [];
 let currentPage = 1;
 const PAGE_SIZE = 8;
 
+let adminCustomersUnsub = null;
+
+function initRealtimeAdminCustomersSync() {
+  if (adminCustomersUnsub) return;
+  if (typeof window.listenToFirestoreCollection === 'function') {
+    adminCustomersUnsub = window.listenToFirestoreCollection('accounts', null, (updatedAccounts) => {
+      console.log('🔥 [Admin Customers] Real-time Firestore accounts received:', updatedAccounts.length);
+      allCustomers = updatedAccounts.map(a => {
+        const photo = a.avatar || a.profilePhoto || a.photoDoc || (a.kycData && a.kycData.photoDoc) || '';
+        return {
+          ...a,
+          customerName: a.fullName || a.name || 'GG Bank Customer',
+          name: a.fullName || a.name || 'GG Bank Customer',
+          customerEmail: a.email || 'N/A',
+          customerPhone: a.phone || 'N/A',
+          accountStatus: a.status || 'ACTIVE',
+          avatar: photo,
+          profilePhoto: photo,
+          photoDoc: photo
+        };
+      });
+      applyFilters();
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const admin = AdminCommon.init('customers');
   if (!admin) return;
 
   await loadCustomers();
+  initRealtimeAdminCustomersSync();
   setupEventListeners();
   window.__adminRefreshData = loadCustomers;
 });

@@ -83,4 +83,11 @@ public class AccountRepository {
         }
         return new ArrayList<>(memoryStore.values());
     }
+
+    public void deleteById(String accountId) throws Exception {
+        if (firestore != null) {
+            firestore.collection(COLLECTION_NAME).document(accountId).delete().get();
+        }
+        memoryStore.remove(accountId);
+    }
 }

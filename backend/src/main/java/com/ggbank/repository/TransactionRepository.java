@@ -78,4 +78,23 @@ public class TransactionRepository {
         }
         return new ArrayList<>(memoryStore);
     }
+
+    public Optional<Transaction> findById(String transactionId) throws Exception {
+        if (firestore != null) {
+            DocumentSnapshot doc = firestore.collection(COLLECTION_NAME).document(transactionId).get().get();
+            if (doc.exists()) {
+                return Optional.ofNullable(doc.toObject(Transaction.class));
+            }
+        }
+        return memoryStore.stream()
+                .filter(t -> t.getTransactionId() != null && t.getTransactionId().equals(transactionId))
+                .findFirst();
+    }
+
+    public void deleteById(String transactionId) throws Exception {
+        if (firestore != null) {
+            firestore.collection(COLLECTION_NAME).document(transactionId).delete().get();
+        }
+        memoryStore.removeIf(t -> t.getTransactionId() != null && t.getTransactionId().equals(transactionId));
+    }
 }

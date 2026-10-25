@@ -1,7 +1,6 @@
 package com.ggbank.repository;
 
 import com.ggbank.model.User;
-import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -72,5 +71,12 @@ public class UserRepository {
             return list;
         }
         return new ArrayList<>(memoryStore.values());
+    }
+
+    public void deleteById(String userId) throws Exception {
+        if (firestore != null) {
+            firestore.collection(COLLECTION_NAME).document(userId).delete().get();
+        }
+        memoryStore.remove(userId);
     }
 }

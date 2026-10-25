@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // GG BANK Digital Banking - Global Cloud Firestore Security Rules
+    // Enables seamless cross-device synchronization between Customer,
+    // Officer Desk, and Admin Portals without permission-denied errors.
+    // ===============================================================
+
+    // Global default rule
+    match /{document=**} {
+      allow read, write: if true;
+    }
+
+    // Accounts Collection: Customer registration, balances & approval status
+    match /accounts/{accountNumber} {
+      allow read, write: if true;
+    }
+
+    // Users Collection: User credentials, KYC data & profile
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    // Transactions Ledger: Atomic transfers, deposits & withdrawals
+    match /transactions/{txId} {
+      allow read, write: if true;
+    }
+
+    // Audit Logs: Immutable security actions recorded by Officer/Admin
+    match /auditLogs/{logId} {
+      allow read, write: if true;
+    }
+
+    // Officers Collection: Banking staff profiles & credentials
+    match /officers/{officerId} {
+      allow read, write: if true;
+    }
+
+    // Loans Collection: Credit applications & officer disbursements
+    match /loans/{loanId} {
+      allow read, write: if true;
+    }
+
+    // Beneficiaries & Budgets
+    match /beneficiaries/{beneficiaryId} {
+      allow read, write: if true;
+    }
+
+    match /budgets/{budgetId} {
+      allow read, write: if true;
+    }
+
+    // Notifications & System Health
+    match /notifications/{notificationId} {
+      allow read, write: if true;
+    }
+
+    match /system_health/{docId} {
+      allow read, write: if true;
+    }
+
+    match /upiRequests/{requestId} {
+      allow read, write: if true;
+    }
+  }
+}

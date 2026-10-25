@@ -28,10 +28,10 @@ public class QrController {
     private TransactionRepository transactionRepository;
 
     @PostMapping("/validate")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> validateQr(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> validateQr(@RequestBody Map<String, String> payload) throws Exception {
         String qrData = payload.get("qrData");
         if (qrData == null || qrData.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("QR code payload is required", null));
+            return ResponseEntity.badRequest().body(ApiResponse.error("QR code payload is required"));
         }
 
         // Check if QR contains 11-digit account number
@@ -42,13 +42,13 @@ public class QrController {
         }
 
         if (targetAcc == null) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Unrecognized QR Code format", null));
+            return ResponseEntity.badRequest().body(ApiResponse.error("Unrecognized QR Code format"));
         }
 
         Optional<Account> accountOpt = accountRepository.findByAccountNumber(targetAcc);
         if (accountOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error("Account associated with QR code not found in GG BANK", null));
+                    .body(ApiResponse.error("Account associated with QR code not found in GG BANK"));
         }
 
         Account acc = accountOpt.get();
@@ -93,7 +93,7 @@ public class QrController {
         txn.setDescription(request.getNote() != null ? request.getNote() : "Instant QR Scan & Pay");
         txn.setStatus("COMPLETED");
         txn.setBalanceAfter(sender.getBalance());
-        txn.setCreatedAt(LocalDateTime.now());
+        txn.setCreatedAt(LocalDateTime.now().toString());
 
         Transaction savedTxn = transactionRepository.save(txn);
 
