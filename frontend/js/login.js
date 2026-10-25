@@ -62,8 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const accNum = accInput.value.trim();
       const pass = passInput.value;
 
-      if (accNum.length !== 12) {
-        Utils.showToast('Please enter your complete 12-digit account number.', 'warning', 'Invalid Account Number');
+      if (accNum.length !== 11) {
+        Utils.showToast('Please enter your complete 11-digit account number.', 'warning', 'Invalid Account Number');
         accInput.focus();
         return;
       }

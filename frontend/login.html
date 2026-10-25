@@ -11,33 +11,40 @@
   <link rel="stylesheet" href="css/responsive.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <style>
+    /* Absolute Zero-FOUC Guarantee for native hidden elements */
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+
   <!-- jsPDF for Certificate / Document Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
-  <!-- Official Top Navigation Bar: Bank Logo & Name on Left Side -->
+  <!-- Official Top Navigation Bar: Bank Logo & Name on Left Side (BUG-01 & BUG-06) -->
   <header class="bank-header">
     <div class="bank-header-left">
-      <a href="login.html" class="bank-logo-group" title="GG BANK Digital Banking">
-        <img src="images/logo.png" alt="GG BANK Logo" class="brand-logo-img">
+      <a href="index.html" class="bank-logo-group" title="GG BANK Digital Banking">
+        <img src="images/logo.png" alt="GG BANK Logo" class="brand-logo-img" width="44" height="44">
         <div class="bank-brand-text">
           <div class="brand-title-main">GG BANK</div>
           <div class="brand-subtitle-main">Digital Banking</div>
         </div>
       </a>
       <div class="bank-header-badges">
-        <span class="official-badge"><i class="fa-solid fa-shield-halved"></i> RBI Regulated</span>
+        <span class="official-badge"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> RBI Regulated</span>
       </div>
     </div>
 
     <div class="bank-header-right">
       <a href="tel:1800442265" class="bank-helpline-pill" title="Toll-Free Customer Care">
-        <i class="fa-solid fa-headset"></i> Priority Helpline: 1800-GG-BANK
+        <i class="fa-solid fa-headset" aria-hidden="true"></i> Priority Helpline: 1800-GG-BANK
       </a>
       <!-- Dark / Light Mode Switcher -->
-      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
-        <i class="fa-solid fa-sun" id="themeToggleIcon"></i>
+      <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode">
+        <i class="fa-solid fa-sun" id="themeToggleIcon" aria-hidden="true"></i>
         <span id="themeToggleText">Light Mode</span>
       </button>
     </div>
@@ -47,10 +54,10 @@
   <div class="auth-page">
     <div class="auth-page-container">
       
-      <!-- ================= LEFT SIDE: PROMINENT LOGO & BRAND IDENTITY ================= -->
+      <!-- ================= LEFT SIDE: PROMINENT LOGO & BRAND IDENTITY (BUG-07 CLS) ================= -->
       <div class="bank-showcase" style="align-items: center; justify-content: center; text-align: center; padding: 40px 20px;">
         <div class="hero-brand-card" style="display: flex; flex-direction: column; align-items: center; gap: 20px; animation: fadeIn 0.4s ease;">
-          <img src="images/logo.png" alt="GG BANK Logo" class="hero-showcase-logo" style="width: 280px; max-width: 85%; height: auto; filter: drop-shadow(0 10px 30px rgba(0, 114, 255, 0.4)); transition: transform 0.3s ease;">
+          <img src="images/logo.png" alt="GG BANK Logo" class="hero-showcase-logo" width="280" height="280" style="width: 280px; max-width: 85%; height: auto; filter: drop-shadow(0 10px 30px rgba(0, 114, 255, 0.4)); transition: transform 0.3s ease;">
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <h1 style="font-size: 3.2rem; font-weight: 900; letter-spacing: 1.5px; color: var(--text-primary); margin: 0; line-height: 1;">GG BANK</h1>
             <div style="font-size: 1.1rem; color: var(--accent-cyan); font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">Digital Banking</div>
@@ -64,29 +71,29 @@
         
         <div class="auth-card">
           
-          <!-- 4 Portal Navigation Tabs -->
-          <div class="portal-tabs" role="tablist">
-            <button class="portal-tab-btn active" id="tabBtnLogin" onclick="switchPortalTab('tab-login')">
-              <i class="fa-solid fa-user"></i> Login
+          <!-- 4 Navigation Tabs: Customer Login, Account Opening, Officer Desk, Admin Portal (BUG-04: Full WAI-ARIA) -->
+          <div class="portal-tabs" role="tablist" aria-label="GG BANK Authentication Portals">
+            <button type="button" role="tab" class="portal-tab-btn active" id="tabBtnLogin" aria-selected="true" aria-controls="pane-tab-login" onclick="switchPortalTab('tab-login')">
+              <i class="fa-solid fa-user" aria-hidden="true"></i> Login
             </button>
-            <button class="portal-tab-btn tab-register" id="tabBtnRegister" onclick="switchPortalTab('tab-register')">
-              <i class="fa-solid fa-user-plus"></i> Open Acc
+            <button type="button" role="tab" class="portal-tab-btn tab-register" id="tabBtnRegister" aria-selected="false" aria-controls="pane-tab-register" onclick="switchPortalTab('tab-register')">
+              <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Open Acc
             </button>
-            <button class="portal-tab-btn tab-officer" id="tabBtnOfficer" onclick="switchPortalTab('tab-officer')">
-              <i class="fa-solid fa-user-tie"></i> Officer
+            <button type="button" role="tab" class="portal-tab-btn tab-officer" id="tabBtnOfficer" aria-selected="false" aria-controls="pane-tab-officer" onclick="switchPortalTab('tab-officer')">
+              <i class="fa-solid fa-user-tie" aria-hidden="true"></i> Officer
             </button>
-            <button class="portal-tab-btn tab-admin" id="tabBtnAdmin" onclick="switchPortalTab('tab-admin')">
-              <i class="fa-solid fa-shield-halved"></i> Admin
+            <button type="button" role="tab" class="portal-tab-btn tab-admin" id="tabBtnAdmin" aria-selected="false" aria-controls="pane-tab-admin" onclick="switchPortalTab('tab-admin')">
+              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Admin
             </button>
           </div>
 
-          <!-- ================= TAB 1: CUSTOMER LOGIN ================= -->
-          <div class="tab-pane active" id="pane-tab-login">
+          <!-- ================= TAB 1: CUSTOMER LOGIN (BUG-04: ARIA Tabpanel) ================= -->
+          <div class="tab-pane active" role="tabpanel" id="pane-tab-login" aria-labelledby="tabBtnLogin">
             <form id="customerLoginForm" onsubmit="handleCustomerLoginSubmit(event)">
               <div class="form-group">
                 <label class="form-label" for="loginEmail">Account Number or Email Address</label>
                 <div class="input-with-icon">
-                  <i class="fa-solid fa-user-check input-icon"></i>
+                  <i class="fa-solid fa-user-check input-icon" aria-hidden="true"></i>
                   <input 
                     type="text" 
                     id="loginEmail" 
@@ -104,7 +111,7 @@
                   <button type="button" class="btn-link" onclick="openRecoveryModal(event)" style="background: none; border: none; padding: 0; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan);">Forgot Password?</button>
                 </div>
                 <div class="input-with-icon">
-                  <i class="fa-solid fa-lock input-icon"></i>
+                  <i class="fa-solid fa-lock input-icon" aria-hidden="true"></i>
                   <input 
                     type="password" 
                     id="loginPassword" 
@@ -113,7 +120,7 @@
                     required 
                     autocomplete="current-password"
                   >
-                  <i class="fa-regular fa-eye input-action-icon" id="toggleLoginPassword" onclick="togglePass('loginPassword', 'toggleLoginPassword')"></i>
+                  <i class="fa-regular fa-eye input-action-icon" id="toggleLoginPassword" onclick="togglePass('loginPassword', 'toggleLoginPassword')" aria-hidden="true" title="Toggle password visibility" style="cursor: pointer;"></i>
                 </div>
               </div>
 
@@ -123,31 +130,37 @@
                 </label>
               </div>
 
-              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnLoginSubmit" onclick="handleCustomerLoginSubmit(event)">
-                <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnLoginSubmit">
+                <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i> Sign In
               </button>
             </form>
 
-            <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color-subtle); display: flex; flex-direction: column; gap: 8px; text-align: center; font-size: 0.84rem;">
+            <!-- BUG-05: Accessible Semantic Switch Buttons with Direct Portal Switching -->
+            <div class="form-switch-prompt" style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color-subtle); display: flex; flex-direction: column; gap: 10px; text-align: center; font-size: 0.84rem;">
               <div style="color: var(--text-secondary);">
-                Don't have an account? <button type="button" class="btn-link" onclick="switchPortalTab('tab-register')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:700;color:var(--accent-cyan);font-size:inherit;">Open Digital Account</button>
+                Don't have an account? <button type="button" id="switchToRegisterBtn" class="link-btn" onclick="switchPortalTab('tab-register')" style="background:none; border:none; padding:0; cursor:pointer; font-weight:700; color:var(--accent-cyan); font-size:inherit;">Register Now</button>
               </div>
-              <div style="color: var(--text-muted); font-size: 0.8rem;">
-                Staff Access: <button type="button" class="btn-link" onclick="switchPortalTab('tab-officer')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:600;color:var(--accent-cyan);font-size:inherit;"><i class="fa-solid fa-user-tie"></i> Officer Desk</button>
-                &bull; <button type="button" class="btn-link" onclick="switchPortalTab('tab-admin')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:600;color:var(--danger);font-size:inherit;"><i class="fa-solid fa-shield-halved"></i> Admin Portal</button>
+              <div class="staff-portal-nav" style="margin-top: 4px; display: flex; justify-content: center; gap: 12px; font-size: 0.8rem;">
+                <button type="button" class="link-btn" onclick="switchPortalTab('tab-officer')" style="background:none; border:none; padding:0; cursor:pointer; font-weight:600; color:var(--accent-cyan); font-size:inherit;">
+                  <i class="fa-solid fa-user-tie" aria-hidden="true"></i> Officer Desk
+                </button>
+                <span style="color: var(--border-color-subtle);">|</span>
+                <button type="button" class="link-btn" onclick="switchPortalTab('tab-admin')" style="background:none; border:none; padding:0; cursor:pointer; font-weight:600; color:var(--danger); font-size:inherit;">
+                  <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Admin Console
+                </button>
               </div>
             </div>
           </div>
 
-          <!-- ================= TAB 2: 3-STEP ACCOUNT CREATION FLOW ================= -->
-          <div class="tab-pane" id="pane-tab-register">
+          <!-- ================= TAB 2: 3-STEP ACCOUNT CREATION FLOW (BUG-04) ================= -->
+          <div class="tab-pane" role="tabpanel" id="pane-tab-register" aria-labelledby="tabBtnRegister" hidden>
 
-            <!-- 3-Step Stepper Bar -->
+            <!-- 3-Step Stepper Bar with aria-current="step" -->
             <div class="stepper-container">
               <div class="stepper-track"></div>
               <div class="stepper-progress" id="stepperProgress" style="width: 0%;"></div>
 
-              <div class="step-item active" id="stepIndicator1" onclick="jumpToStep(1)">
+              <div class="step-item active" id="stepIndicator1" onclick="jumpToStep(1)" aria-current="step">
                 <div class="step-circle" id="stepCircle1">1</div>
                 <span class="step-label">Personal</span>
               </div>
@@ -167,13 +180,13 @@
               
               <!-- STEP 1: PERSONAL DETAILS -->
               <div class="wizard-step active" id="wizardStep1">
-                <h3 class="step-section-heading"><i class="fa-solid fa-user-tag" style="color: var(--accent-cyan);"></i> Step 1 – Personal Details</h3>
+                <h3 class="step-section-heading"><i class="fa-solid fa-user-tag" style="color: var(--accent-cyan);" aria-hidden="true"></i> Step 1 – Personal Details</h3>
                 <p class="step-section-sub">Please enter your basic identity and contact details.</p>
 
                 <div class="form-group">
                   <label class="form-label" for="regName">Full Name</label>
                   <div class="input-with-icon">
-                    <i class="fa-solid fa-user input-icon"></i>
+                    <i class="fa-solid fa-user input-icon" aria-hidden="true"></i>
                     <input type="text" id="regName" class="form-control" placeholder="Gowtham NK" required value="">
                   </div>
                 </div>
@@ -197,14 +210,14 @@
                   <div class="form-group">
                     <label class="form-label" for="regPhone">Mobile Number</label>
                     <div class="input-with-icon">
-                      <i class="fa-solid fa-phone input-icon"></i>
+                      <i class="fa-solid fa-phone input-icon" aria-hidden="true"></i>
                       <input type="tel" id="regPhone" class="form-control" placeholder="9876543210" required value="">
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="form-label" for="regEmail">Email Address</label>
                     <div class="input-with-icon">
-                      <i class="fa-solid fa-envelope input-icon"></i>
+                      <i class="fa-solid fa-envelope input-icon" aria-hidden="true"></i>
                       <input type="email" id="regEmail" class="form-control" placeholder="applicant@domain.com" required value="">
                     </div>
                   </div>
@@ -213,7 +226,7 @@
                 <div class="form-group">
                   <label class="form-label" for="regAddress">Address</label>
                   <div class="input-with-icon">
-                    <i class="fa-solid fa-location-dot input-icon"></i>
+                    <i class="fa-solid fa-location-dot input-icon" aria-hidden="true"></i>
                     <input type="text" id="regAddress" class="form-control" placeholder="42 Cyber City, Tech Park, Bangalore" required value="">
                   </div>
                 </div>
@@ -234,31 +247,31 @@
                 <div class="wizard-actions">
                   <div></div>
                   <button type="button" class="btn-wizard-next" onclick="nextWizardStep(1)">
-                    Next: KYC Documents <i class="fa-solid fa-arrow-right"></i>
+                    Next: KYC Documents <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>
 
               <!-- STEP 2: KYC DOCUMENTS -->
               <div class="wizard-step" id="wizardStep2">
-                <h3 class="step-section-heading"><i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> Step 2 – KYC Documents</h3>
+                <h3 class="step-section-heading"><i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);" aria-hidden="true"></i> Step 2 – KYC Documents</h3>
                 <p class="step-section-sub">Upload government-issued IDs and biometric verification assets.</p>
 
                 <!-- 1. Aadhaar Card -->
                 <div class="kyc-doc-card">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                     <label class="form-label" style="margin: 0;" for="regAadhaarNumber">
-                      <i class="fa-solid fa-fingerprint" style="color: var(--warning);"></i> Aadhaar Number
+                      <i class="fa-solid fa-fingerprint" style="color: var(--warning);" aria-hidden="true"></i> Aadhaar Number
                     </label>
                     <span class="badge badge-warning" style="font-size: 0.7rem;">UIDAI 12-Digit</span>
                   </div>
                   <input type="text" id="regAadhaarNumber" class="form-control" placeholder="2345 6789 0123" maxlength="14" required value="" style="font-family: var(--font-mono); margin-bottom: 8px;">
                   <div class="kyc-upload-dropzone" id="aadhaarDropzone" onclick="document.getElementById('aadhaarFileInput').click()">
-                    <i class="fa-solid fa-cloud-arrow-up" style="color: var(--warning);"></i>
+                    <i class="fa-solid fa-cloud-arrow-up" style="color: var(--warning);" aria-hidden="true"></i>
                     <span style="font-size: 0.8rem; margin-left: 6px;" id="aadhaarUploadLabel">Click or Drag & Drop Aadhaar Card (Image / PDF)</span>
                     <input type="file" id="aadhaarFileInput" accept="image/*,.pdf" onchange="handleDocUpload(event, 'aadhaarUploadLabel', 'aadhaarPreviewThumb', 'aadhaarDocData')">
                   </div>
-                  <img id="aadhaarPreviewThumb" class="kyc-preview-thumb" alt="Aadhaar Preview">
+                  <img id="aadhaarPreviewThumb" class="kyc-preview-thumb" alt="Aadhaar Preview" style="display: none;">
                   <input type="hidden" id="aadhaarDocData">
                 </div>
 
@@ -266,17 +279,17 @@
                 <div class="kyc-doc-card">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                     <label class="form-label" style="margin: 0;" for="regPanNumber">
-                      <i class="fa-solid fa-id-card" style="color: var(--accent-cyan);"></i> PAN Number
+                      <i class="fa-solid fa-id-card" style="color: var(--accent-cyan);" aria-hidden="true"></i> PAN Number
                     </label>
                     <span class="badge badge-info" style="font-size: 0.7rem;">Income Tax 10-Digit</span>
                   </div>
                   <input type="text" id="regPanNumber" class="form-control" placeholder="ABCDE1234F" maxlength="10" required value="" style="text-transform: uppercase; font-family: var(--font-mono); margin-bottom: 8px;">
                   <div class="kyc-upload-dropzone" id="panDropzone" onclick="document.getElementById('panFileInput').click()">
-                    <i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent-cyan);"></i>
+                    <i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent-cyan);" aria-hidden="true"></i>
                     <span style="font-size: 0.8rem; margin-left: 6px;" id="panUploadLabel">Click or Drag & Drop PAN Card (Image / PDF)</span>
                     <input type="file" id="panFileInput" accept="image/*,.pdf" onchange="handleDocUpload(event, 'panUploadLabel', 'panPreviewThumb', 'panDocData')">
                   </div>
-                  <img id="panPreviewThumb" class="kyc-preview-thumb" alt="PAN Preview">
+                  <img id="panPreviewThumb" class="kyc-preview-thumb" alt="PAN Preview" style="display: none;">
                   <input type="hidden" id="panDocData">
                 </div>
 
@@ -285,11 +298,11 @@
                   <!-- Passport-size photo -->
                   <div class="media-upload-card" id="photoDropzone">
                     <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                      <i class="fa-solid fa-camera" style="color: var(--accent-cyan);"></i> Passport Photo
+                      <i class="fa-solid fa-camera" style="color: var(--accent-cyan);" aria-hidden="true"></i> Passport Photo
                     </div>
                     <div class="photo-preview-circle" id="photoPreviewContainer" onclick="document.getElementById('photoFileInput').click()" title="Click or Drag & Drop Photo">
-                      <i class="fa-solid fa-user-tie" id="photoPlaceholderIcon" style="font-size: 1.8rem;"></i>
-                      <img id="photoPreviewImg" alt="Passport Photo">
+                      <i class="fa-solid fa-user-tie" id="photoPlaceholderIcon" style="font-size: 1.8rem;" aria-hidden="true"></i>
+                      <img id="photoPreviewImg" alt="Passport Photo" style="display: none;">
                     </div>
                     <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; font-size: 0.72rem;" onclick="document.getElementById('photoFileInput').click()">
                       Upload / Drop Photo
@@ -301,11 +314,11 @@
                   <!-- Signature -->
                   <div class="media-upload-card" id="sigDropzone">
                     <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                      <i class="fa-solid fa-signature" style="color: var(--success);"></i> Signature
+                      <i class="fa-solid fa-signature" style="color: var(--success);" aria-hidden="true"></i> Signature
                     </div>
                     <div class="signature-preview-box" id="sigPreviewContainer" onclick="document.getElementById('signatureFileInput').click()" title="Click or Drag & Drop Signature">
-                      <span id="sigPlaceholderText" style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-pen-nib"></i> Sign / Drop</span>
-                      <img id="signaturePreviewImg" alt="Signature Preview">
+                      <span id="sigPlaceholderText" style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Sign / Drop</span>
+                      <img id="signaturePreviewImg" alt="Signature Preview" style="display: none;">
                     </div>
                     <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; font-size: 0.72rem;" onclick="document.getElementById('signatureFileInput').click()">
                       Upload / Drop Signature
@@ -317,36 +330,36 @@
 
                 <div class="wizard-actions">
                   <button type="button" class="btn-wizard-back" onclick="prevWizardStep(2)">
-                    <i class="fa-solid fa-arrow-left"></i> Back
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back
                   </button>
                   <button type="button" class="btn-wizard-next" onclick="nextWizardStep(2)">
-                    Next: Account Details <i class="fa-solid fa-arrow-right"></i>
+                    Next: Account Details <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>
 
               <!-- STEP 3: ACCOUNT DETAILS -->
               <div class="wizard-step" id="wizardStep3">
-                <h3 class="step-section-heading"><i class="fa-solid fa-building-columns" style="color: var(--accent-cyan);"></i> Step 3 – Account Details</h3>
+                <h3 class="step-section-heading"><i class="fa-solid fa-building-columns" style="color: var(--accent-cyan);" aria-hidden="true"></i> Step 3 – Account Details</h3>
                 <p class="step-section-sub">Select your account tier, assign nominee, and secure credentials.</p>
 
                 <!-- Account Type Cards (Savings, Current, Student) -->
                 <label class="form-label" style="margin-bottom: 8px;">Account Type</label>
                 <div class="account-type-grid">
                   <div class="acc-type-card selected" id="accTypeSavings" onclick="selectAccType('SAVINGS')">
-                    <div class="acc-type-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                    <div class="acc-type-icon"><i class="fa-solid fa-piggy-bank" aria-hidden="true"></i></div>
                     <div class="acc-type-title">Savings</div>
                     <div class="acc-type-badge">4.5% APY • ₹0 Min</div>
                   </div>
 
                   <div class="acc-type-card" id="accTypeCurrent" onclick="selectAccType('CURRENT')">
-                    <div class="acc-type-icon"><i class="fa-solid fa-briefcase"></i></div>
+                    <div class="acc-type-icon"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></div>
                     <div class="acc-type-title">Current</div>
                     <div class="acc-type-badge">Commercial • High Vol</div>
                   </div>
 
                   <div class="acc-type-card" id="accTypeStudent" onclick="selectAccType('STUDENT')">
-                    <div class="acc-type-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="acc-type-icon"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></div>
                     <div class="acc-type-title">Student</div>
                     <div class="acc-type-badge">Zero Fee • Scholar</div>
                   </div>
@@ -356,7 +369,7 @@
                 <!-- Nominee Details -->
                 <div class="kyc-doc-card" style="margin-top: 14px;">
                   <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                    <i class="fa-solid fa-users" style="color: var(--accent-cyan);"></i> Nominee Information
+                    <i class="fa-solid fa-users" style="color: var(--accent-cyan);" aria-hidden="true"></i> Nominee Information
                   </div>
 
                   <div class="form-group" style="margin-bottom: 8px;">
@@ -390,87 +403,43 @@
                 <div class="form-group" style="margin-top: 12px;">
                   <label class="form-label" for="regPassword">Create Account Password</label>
                   <div class="input-with-icon">
-                    <i class="fa-solid fa-lock input-icon"></i>
+                    <i class="fa-solid fa-lock input-icon" aria-hidden="true"></i>
                     <input type="password" id="regPassword" class="form-control" placeholder="••••••••••••" required value="" oninput="checkStrength()">
-                    <i class="fa-regular fa-eye input-action-icon" id="toggleRegPassword" onclick="togglePass('regPassword', 'toggleRegPassword')"></i>
+                    <i class="fa-regular fa-eye input-action-icon" id="toggleRegPassword" onclick="togglePass('regPassword', 'toggleRegPassword')" aria-hidden="true" title="Toggle password visibility" style="cursor: pointer;"></i>
                   </div>
                   <div class="strength-meter"><div class="strength-bar" id="regStrengthBar" style="width: 100%; background-color: var(--success);"></div></div>
                   <div class="strength-text" id="regStrengthText" style="color: var(--success);">Strong Password</div>
                 </div>
 
                 <div style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan); margin-bottom: 14px;">
-                  <i class="fa-solid fa-info-circle"></i> Once submitted, your 11-digit account number will be generated immediately and sent for admin KYC verification.
+                  <i class="fa-solid fa-info-circle" aria-hidden="true"></i> Once submitted, your 11-digit account number will be generated immediately and sent for admin KYC verification.
                 </div>
 
                 <div class="wizard-actions">
                   <button type="button" class="btn-wizard-back" onclick="prevWizardStep(3)">
-                    <i class="fa-solid fa-arrow-left"></i> Back
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back
                   </button>
                   <button type="submit" class="btn btn-primary" id="btnRegisterSubmit" style="margin-left: auto;">
-                    <i class="fa-solid fa-paper-plane"></i> Submit & Open Account
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Submit & Open Account
                   </button>
                 </div>
               </div>
 
             </form>
 
-            <div style="text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-secondary);">
-              Already have an account? <button type="button" class="btn-link" onclick="switchPortalTab('tab-login')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:700;color:var(--accent-cyan);font-size:inherit;">Sign In</button>
+            <!-- BUG-05: Accessible Semantic Switch Button -->
+            <div class="form-switch-prompt" style="text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-secondary);">
+              Already have an account? <button type="button" id="switchToLoginBtn" class="link-btn" onclick="switchPortalTab('tab-login')" style="background:none; border:none; padding:0; cursor:pointer; font-weight:700; color:var(--accent-cyan); font-size:inherit;">Sign In</button>
             </div>
           </div>
 
-          <!-- ================= TAB 3: ADMIN LOGIN ================= -->
-          <div class="tab-pane" id="pane-tab-admin">
-            
-            <form id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)">
-              <div class="form-group">
-                <label class="form-label" for="adminUsername">Admin Identifier / Email</label>
-                <div class="input-with-icon">
-                  <i class="fa-solid fa-user-shield input-icon" style="color: var(--danger);"></i>
-                  <input 
-                    type="text" 
-                    id="adminUsername" 
-                    class="form-control" 
-                    placeholder="admin@ggbank.com" 
-                    required 
-                    autocomplete="username"
-                  >
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="adminPassword">Master Security Key</label>
-                <div class="input-with-icon">
-                  <i class="fa-solid fa-key input-icon" style="color: var(--danger);"></i>
-                  <input 
-                    type="password" 
-                    id="adminPassword" 
-                    class="form-control" 
-                    placeholder="••••••••••••" 
-                    required 
-                    autocomplete="current-password"
-                  >
-                  <i class="fa-regular fa-eye input-action-icon" id="toggleAdminPassword" onclick="togglePass('adminPassword', 'toggleAdminPassword')"></i>
-                </div>
-              </div>
-
-              <button type="submit" class="btn btn-danger btn-block btn-lg" id="btnAdminLoginSubmit" onclick="handleAdminLoginSubmit(event)" style="margin-top: 16px;">
-                <i class="fa-solid fa-shield-halved"></i> Access Bank Admin Console
-              </button>
-            </form>
-
-            <div style="text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-secondary);">
-              Officer Portal: <button type="button" class="btn-link" onclick="switchPortalTab('tab-officer')" style="background:none;border:none;padding:0;cursor:pointer;font-weight:700;color:var(--accent-cyan);font-size:inherit;">Banking Officer Sign In</button>
-            </div>
-          </div>
-
-          <!-- ================= TAB 4: OFFICER LOGIN ================= -->
-          <div class="tab-pane" id="pane-tab-officer">
+          <!-- ================= TAB 3: OFFICER WORKSPACE LOGIN ================= -->
+          <div class="tab-pane" role="tabpanel" id="pane-tab-officer" aria-labelledby="tabBtnOfficer" hidden>
             <form id="officerInlineLoginForm" onsubmit="handleOfficerInlineLogin(event)">
               <div class="form-group">
                 <label class="form-label" for="officerInlineEmail">Officer Email or Employee ID</label>
                 <div class="input-with-icon">
-                  <i class="fa-solid fa-user-tie input-icon" style="color: var(--accent-cyan);"></i>
+                  <i class="fa-solid fa-user-tie input-icon" style="color: var(--accent-cyan);" aria-hidden="true"></i>
                   <input 
                     type="text" 
                     id="officerInlineEmail" 
@@ -485,7 +454,7 @@
               <div class="form-group">
                 <label class="form-label" for="officerInlinePassword">Staff Password</label>
                 <div class="input-with-icon">
-                  <i class="fa-solid fa-lock input-icon" style="color: var(--accent-cyan);"></i>
+                  <i class="fa-solid fa-lock input-icon" style="color: var(--accent-cyan);" aria-hidden="true"></i>
                   <input 
                     type="password" 
                     id="officerInlinePassword" 
@@ -494,28 +463,84 @@
                     required 
                     autocomplete="current-password"
                   >
-                  <i class="fa-regular fa-eye input-action-icon" id="toggleOfficerInlinePassword" onclick="togglePass('officerInlinePassword', 'toggleOfficerInlinePassword')" style="cursor: pointer;"></i>
+                  <i class="fa-regular fa-eye input-action-icon" id="toggleOfficerInlinePassword" onclick="togglePass('officerInlinePassword', 'toggleOfficerInlinePassword')" aria-hidden="true" title="Toggle password visibility" style="cursor: pointer;"></i>
                 </div>
               </div>
 
               <div class="security-alert-box" style="margin-bottom: 16px; border-left: 3px solid var(--accent-cyan); background: rgba(56, 189, 248, 0.08); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; display: flex; gap: 8px; align-items: center;">
-                <i class="fa-solid fa-building-columns" style="color: var(--accent-cyan);"></i>
+                <i class="fa-solid fa-building-columns" style="color: var(--accent-cyan);" aria-hidden="true"></i>
                 <div style="color: var(--text-secondary);">
                   <strong style="color: #fff;">Staff Desk:</strong> Access loan underwriting, customer KYC reviews, and branch operations.
                 </div>
               </div>
 
-              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnOfficerInlineLoginSubmit" onclick="handleOfficerInlineLogin(event)" style="margin-top: 10px; cursor: pointer;">
-                <i class="fa-solid fa-arrow-right-to-bracket"></i> Open Officer Workspace
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnOfficerInlineLoginSubmit" style="margin-top: 10px; cursor: pointer;">
+                <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i> Open Officer Workspace
               </button>
             </form>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; font-size: 0.82rem;">
-              <button type="button" class="btn-link" onclick="switchPortalTab('tab-login')" style="background:none;border:none;padding:0;cursor:pointer;color: var(--text-secondary);font-size:inherit;">
-                <i class="fa-solid fa-arrow-left"></i> Customer Login
+              <button type="button" class="btn-link" onclick="switchPortalTab('tab-login')" style="background:none; border:none; padding:0; cursor:pointer; color: var(--text-secondary); font-size:inherit;">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Customer Login
               </button>
               <a href="officer-login.html" style="font-weight: 700; color: var(--accent-cyan);">
-                <i class="fa-solid fa-up-right-from-square"></i> Full Officer Portal
+                <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i> Dedicated Portal
+              </a>
+            </div>
+          </div>
+
+          <!-- ================= TAB 4: ADMIN CONSOLE LOGIN ================= -->
+          <div class="tab-pane" role="tabpanel" id="pane-tab-admin" aria-labelledby="tabBtnAdmin" hidden>
+            <form id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)">
+              <div class="form-group">
+                <label class="form-label" for="adminUsername">Admin Identifier / Email</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-user-shield input-icon" style="color: var(--danger);" aria-hidden="true"></i>
+                  <input 
+                    type="text" 
+                    id="adminUsername" 
+                    class="form-control" 
+                    placeholder="admin@ggbank.com" 
+                    required 
+                    autocomplete="username"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="adminPassword">Master Security Key</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-key input-icon" style="color: var(--danger);" aria-hidden="true"></i>
+                  <input 
+                    type="password" 
+                    id="adminPassword" 
+                    class="form-control" 
+                    placeholder="••••••••••••" 
+                    required 
+                    autocomplete="current-password"
+                  >
+                  <i class="fa-regular fa-eye input-action-icon" id="toggleAdminPassword" onclick="togglePass('adminPassword', 'toggleAdminPassword')" aria-hidden="true" title="Toggle password visibility" style="cursor: pointer;"></i>
+                </div>
+              </div>
+
+              <div class="security-alert-box" style="margin-bottom: 16px; border-left: 3px solid var(--danger); background: rgba(239, 68, 68, 0.08); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; display: flex; gap: 8px; align-items: center;">
+                <i class="fa-solid fa-shield-halved" style="color: var(--danger);" aria-hidden="true"></i>
+                <div style="color: var(--text-secondary);">
+                  <strong style="color: #fff;">Restricted Access:</strong> Master administrative console for database auditing and system management.
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-danger btn-block btn-lg" id="btnAdminLoginSubmit" style="margin-top: 10px; cursor: pointer;">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Access Admin Console
+              </button>
+            </form>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; font-size: 0.82rem;">
+              <button type="button" class="btn-link" onclick="switchPortalTab('tab-login')" style="background:none; border:none; padding:0; cursor:pointer; color: var(--text-secondary); font-size:inherit;">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Customer Login
+              </button>
+              <a href="admin-login.html" style="font-weight: 700; color: var(--danger);">
+                <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i> Dedicated Portal
               </a>
             </div>
           </div>
@@ -527,23 +552,23 @@
     </div>
   </div>
 
-  <!-- Account Creation Success Modal -->
-  <div class="modal-backdrop" id="accountCreatedModal">
+  <!-- Account Creation Success Modal (BUG-03: hidden, role=dialog, aria-modal, aria-labelledby, dynamic values) -->
+  <div class="modal-backdrop" id="accountCreatedModal" role="dialog" aria-modal="true" aria-labelledby="accountCreatedHeading" hidden>
     <div class="modal-card success-card" style="max-width: 480px;">
       <div class="success-icon-wrap">
-        <i class="fa-solid fa-check"></i>
+        <i class="fa-solid fa-check" aria-hidden="true"></i>
       </div>
-      <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">Application Submitted!</h2>
+      <h2 id="accountCreatedHeading" style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">Application Submitted!</h2>
       <div id="modalSuccessAvatarContainer" style="display: flex; justify-content: center; margin: 10px auto;">
         <div class="customer-avatar-display" id="modalSuccessCustAvatar" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid var(--accent-cyan, #00f0ff); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan, #00f0ff);">
-          <i class="fa-solid fa-user"></i>
+          <i class="fa-solid fa-user" aria-hidden="true"></i>
         </div>
       </div>
-      <p style="font-size: 0.88rem; color: var(--accent-cyan); margin-top: 3px;">Welcome to GG BANK, <span id="modalSuccessCustName">Customer</span></p>
+      <p style="font-size: 0.88rem; color: var(--accent-cyan); margin-top: 3px;">Welcome to GG BANK, <span id="applicantName"></span><span id="modalSuccessCustName"></span></p>
 
       <div class="account-number-highlight-box">
         <div class="acc-box-label">Your Reserved 11-Digit Account Number</div>
-        <div class="acc-box-number" id="modalSuccessAccNumber">10018812345</div>
+        <div class="acc-box-number" id="reservedAccountNumber"><span id="modalSuccessAccNumber">—</span></div>
         <div class="acc-details-strip">
           <div><span style="color: var(--text-secondary);">Type:</span> <strong id="modalSuccessType" style="color: var(--text-primary);">SAVINGS</strong></div>
           <div><span style="color: var(--text-secondary);">Status:</span> <strong style="color: var(--warning);">PENDING APPROVAL</strong></div>
@@ -557,29 +582,29 @@
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 10px;">
-        <button class="btn btn-primary btn-block" onclick="copyCreatedAccount()">
-          <i class="fa-regular fa-copy"></i> Copy Account Number
+        <button type="button" class="btn btn-primary btn-block" onclick="copyCreatedAccount()">
+          <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy Account Number
         </button>
-        <button class="btn btn-secondary btn-block" onclick="goToLoginWithCreatedAccount()">
-          <i class="fa-solid fa-arrow-right-to-bracket"></i> Go to Login
+        <button type="button" class="btn btn-secondary btn-block" onclick="goToLoginWithCreatedAccount()">
+          <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i> Go to Login
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Pending KYC Review Resolution Modal -->
-  <div class="modal-backdrop" id="pendingApprovalModal">
+  <!-- Pending KYC Review Resolution Modal (BUG-03: hidden, role=dialog, aria-modal, aria-labelledby) -->
+  <div class="modal-backdrop" id="pendingApprovalModal" role="dialog" aria-modal="true" aria-labelledby="pendingApprovalHeading" hidden>
     <div class="modal-card" style="max-width: 500px; border-left: 4px solid var(--warning);">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <h3 class="modal-title" style="color: var(--warning); display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-clock"></i> Verification in Progress
+        <h3 class="modal-title" id="pendingApprovalHeading" style="color: var(--warning); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-clock" aria-hidden="true"></i> Verification in Progress
         </h3>
-        <button class="modal-close-btn" onclick="closePendingApprovalModal()">&times;</button>
+        <button type="button" class="modal-close-btn" onclick="closePendingApprovalModal()" aria-label="Close dialog">&times;</button>
       </div>
 
       <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
         <div style="font-size: 0.92rem; color: var(--text-primary); line-height: 1.5;">
-          The account for <strong id="pendingCustomerEmailDisplay" style="color: var(--accent-cyan); font-family: var(--font-mono);">customer</strong> has submitted documents and is currently waiting for Admin Approval.
+          The account for <strong id="pendingCustomerEmailDisplay" style="color: var(--accent-cyan); font-family: var(--font-mono);"></strong> has submitted documents and is currently waiting for Admin Approval.
         </div>
       </div>
 
@@ -588,10 +613,10 @@
       </p>
 
       <div style="display: flex; flex-direction: column; gap: 10px;">
-        <button class="btn btn-primary btn-block" onclick="window.location.href='officer-login.html'" style="padding: 11px;">
-          <i class="fa-solid fa-user-tie"></i> Banking Officer Login
+        <button type="button" class="btn btn-primary btn-block" onclick="switchPortalTab('tab-officer'); closePendingApprovalModal();" style="padding: 11px;">
+          <i class="fa-solid fa-user-tie" aria-hidden="true"></i> Staff / Officer Login
         </button>
-        <button class="btn btn-secondary btn-block" onclick="closePendingApprovalModal()">
+        <button type="button" class="btn btn-secondary btn-block" onclick="closePendingApprovalModal()">
           Close
         </button>
       </div>
@@ -611,30 +636,52 @@
   <script src="js/auth.js"></script>
 
   <script>
-    // Tab Switcher
-    function switchPortalTab(tabId) {
-      document.querySelectorAll('.portal-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    // Tab Switcher with WAI-ARIA & [hidden] management across all 4 portals
+    const ALL_TABS = ['tab-login', 'tab-register', 'tab-officer', 'tab-admin'];
 
-      if (tabId === 'tab-login') {
-        document.getElementById('tabBtnLogin')?.classList.add('active');
-        document.getElementById('pane-tab-login')?.classList.add('active');
-      } else if (tabId === 'tab-register') {
-        document.getElementById('tabBtnRegister')?.classList.add('active');
-        document.getElementById('pane-tab-register')?.classList.add('active');
-      } else if (tabId === 'tab-officer') {
-        document.getElementById('tabBtnOfficer')?.classList.add('active');
-        document.getElementById('pane-tab-officer')?.classList.add('active');
-      } else if (tabId === 'tab-admin') {
-        document.getElementById('tabBtnAdmin')?.classList.add('active');
-        document.getElementById('pane-tab-admin')?.classList.add('active');
-      }
+    function switchPortalTab(tabId) {
+      if (!ALL_TABS.includes(tabId)) tabId = 'tab-login';
+
+      const tabMap = {
+        'tab-login': { btn: 'tabBtnLogin', pane: 'pane-tab-login' },
+        'tab-register': { btn: 'tabBtnRegister', pane: 'pane-tab-register' },
+        'tab-officer': { btn: 'tabBtnOfficer', pane: 'pane-tab-officer' },
+        'tab-admin': { btn: 'tabBtnAdmin', pane: 'pane-tab-admin' }
+      };
+
+      ALL_TABS.forEach(t => {
+        const { btn, pane } = tabMap[t];
+        const btnEl = document.getElementById(btn);
+        const paneEl = document.getElementById(pane);
+        const isActive = (t === tabId);
+
+        if (btnEl) {
+          if (isActive) {
+            btnEl.classList.add('active');
+            btnEl.setAttribute('aria-selected', 'true');
+          } else {
+            btnEl.classList.remove('active');
+            btnEl.setAttribute('aria-selected', 'false');
+          }
+        }
+
+        if (paneEl) {
+          if (isActive) {
+            paneEl.classList.add('active');
+            paneEl.removeAttribute('hidden');
+          } else {
+            paneEl.classList.remove('active');
+            paneEl.setAttribute('hidden', '');
+          }
+        }
+      });
     }
 
     // Toggle Password Visibility
     function togglePass(inputId, iconId) {
       const input = document.getElementById(inputId);
       const icon = document.getElementById(iconId);
+      if (!input || !icon) return;
       if (input.type === 'password') {
         input.type = 'text';
         icon.classList.remove('fa-eye');
@@ -674,7 +721,7 @@
       if (text) text.textContent = saved === 'dark' ? 'Light Mode' : 'Dark Mode';
     })();
 
-    // Stepper & Wizard Navigation Logic
+    // Stepper & Wizard Navigation Logic with aria-current="step"
     let currentStep = 1;
 
     function jumpToStep(step) {
@@ -699,18 +746,20 @@
       document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
       document.getElementById(`wizardStep${step}`)?.classList.add('active');
 
-      // Update stepper bar indicators
+      // Update stepper bar indicators & ARIA step state
       for (let i = 1; i <= 3; i++) {
         const item = document.getElementById(`stepIndicator${i}`);
         const circle = document.getElementById(`stepCircle${i}`);
         if (!item || !circle) continue;
 
         item.classList.remove('active', 'completed');
+        item.removeAttribute('aria-current');
         if (i < step) {
           item.classList.add('completed');
-          circle.innerHTML = '<i class="fa-solid fa-check"></i>';
+          circle.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
         } else if (i === step) {
           item.classList.add('active');
+          item.setAttribute('aria-current', 'step');
           circle.textContent = i;
         } else {
           circle.textContent = i;
@@ -775,7 +824,7 @@
       const hidden = document.getElementById(hiddenInputId);
 
       if (label) {
-        label.innerHTML = `<span style="color: var(--accent-cyan);"><i class="fa-solid fa-spinner fa-spin"></i> Compressing ${file.name}...</span>`;
+        label.innerHTML = `<span style="color: var(--accent-cyan);"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Compressing ${file.name}...</span>`;
       }
 
       try {
@@ -797,7 +846,7 @@
         }
 
         if (label) {
-          label.innerHTML = `<span style="color: var(--success); font-weight: 600;"><i class="fa-solid fa-check"></i> ${file.name} (Ready)</span>`;
+          label.innerHTML = `<span style="color: var(--success); font-weight: 600;"><i class="fa-solid fa-check" aria-hidden="true"></i> ${file.name} (Ready)</span>`;
         }
         Utils.showToast(`${file.name} compressed & attached!`, 'info');
       } catch (err) {
@@ -867,8 +916,6 @@
       if (a) setupDropzoneEvents(a, (f) => processDocFile(f, 'aadhaarUploadLabel', 'aadhaarPreviewThumb', 'aadhaarDocData'));
       const p = document.getElementById('panDropzone');
       if (p) setupDropzoneEvents(p, (f) => processDocFile(f, 'panUploadLabel', 'panPreviewThumb', 'panDocData'));
-      const ad = document.getElementById('addressProofDropzone');
-      if (ad) setupDropzoneEvents(ad, (f) => processDocFile(f, 'addressProofUploadLabel', 'addressProofPreviewThumb', 'addressProofDocData'));
       const ph = document.getElementById('photoPreviewContainer') || document.getElementById('photoDropzone');
       if (ph) setupDropzoneEvents(ph, (f) => processSingleImgFile(f, 'photoPreviewImg', 'photoPlaceholderIcon', 'photoDocData'));
       const sg = document.getElementById('sigPreviewContainer') || document.getElementById('sigDropzone');
@@ -918,79 +965,7 @@
       }
     }
 
-    // Demo Autofill Helpers
-    function fillDemoCustomer() {
-      document.getElementById('loginEmail').value = 'gowtham@ggbank.com';
-      document.getElementById('loginPassword').value = 'Password@123';
-      Utils.showToast('Customer credentials filled!', 'info');
-    }
-
-    function fillDemoAdmin() {
-      document.getElementById('adminUsername').value = 'admin@ggbank.com';
-      document.getElementById('adminPassword').value = 'Password@123';
-      Utils.showToast('Admin credentials filled!', 'info');
-    }
-
-    function fillDemoKYCApplicant() {
-      // Step 1 Details
-      document.getElementById('regName').value = 'Sarah Connor';
-      document.getElementById('regDob').value = '2001-11-20';
-      document.getElementById('regGender').value = 'Female';
-      document.getElementById('regPhone').value = '9123456780';
-      document.getElementById('regEmail').value = 'sarah.new' + Math.floor(Math.random() * 900 + 100) + '@ggbank.com';
-      document.getElementById('regAddress').value = '120 Silicon Park, Tech Corridor, Chennai';
-      document.getElementById('regOccupation').value = 'Salaried Employee';
-
-      // Step 2 Details
-      document.getElementById('regAadhaarNumber').value = '5421 8976 1234';
-      document.getElementById('regPanNumber').value = 'SARAH7890K';
-      const addrTypeEl = document.getElementById('regAddressProofType');
-      if (addrTypeEl) addrTypeEl.value = 'Electricity Bill';
-
-      const sampleSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="180" viewBox="0 0 300 180"><rect width="300" height="180" fill="%23172752" rx="10"/><text x="20" y="35" fill="%2300f0ff" font-family="sans-serif" font-weight="bold" font-size="14">GOVERNMENT OF INDIA</text><text x="20" y="70" fill="%23fff" font-family="sans-serif" font-size="12">IDENTIFICATION DOCUMENT</text><rect x="20" y="90" width="70" height="70" fill="%2338bdf8" rx="5"/><text x="105" y="115" fill="%23e2e8f0" font-family="monospace" font-size="13">VERIFIED ID CARD</text><text x="105" y="140" fill="%2310b981" font-family="sans-serif" font-weight="bold" font-size="12">&#x2714; SECURE CHIP</text></svg>';
-      
-      document.getElementById('panDocData').value = sampleSvg;
-      document.getElementById('panPreviewThumb').src = sampleSvg;
-      document.getElementById('panPreviewThumb').style.display = 'block';
-      document.getElementById('panUploadLabel').textContent = 'PAN Card Attached';
-
-      document.getElementById('aadhaarDocData').value = sampleSvg;
-      document.getElementById('aadhaarPreviewThumb').src = sampleSvg;
-      document.getElementById('aadhaarPreviewThumb').style.display = 'block';
-      document.getElementById('aadhaarUploadLabel').textContent = 'Aadhaar Card Attached';
-
-      const addrDocEl = document.getElementById('addressProofDocData');
-      if (addrDocEl) addrDocEl.value = sampleSvg;
-      const addrThumb = document.getElementById('addressProofPreviewThumb');
-      if (addrThumb) { addrThumb.src = sampleSvg; addrThumb.style.display = 'block'; }
-      const addrLbl = document.getElementById('addressProofUploadLabel');
-      if (addrLbl) addrLbl.textContent = 'Address Proof Attached';
-
-      // Photo and Signature sample
-      const photoSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="60" fill="%230284c7"/><text x="60" y="70" fill="%23fff" font-size="40" text-anchor="middle">👤</text></svg>';
-      document.getElementById('photoDocData').value = photoSvg;
-      document.getElementById('photoPreviewImg').src = photoSvg;
-      document.getElementById('photoPreviewImg').style.display = 'block';
-      document.getElementById('photoPlaceholderIcon').style.display = 'none';
-
-      const sigSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60"><text x="20" y="42" fill="%2300f0ff" font-family="cursive" font-size="28" font-weight="bold">Sarah C.</text></svg>';
-      document.getElementById('signatureDocData').value = sigSvg;
-      document.getElementById('signaturePreviewImg').src = sigSvg;
-      document.getElementById('signaturePreviewImg').style.display = 'block';
-      document.getElementById('sigPlaceholderText').style.display = 'none';
-
-      // Step 3 Details
-      selectAccType('SAVINGS');
-      document.getElementById('regNomineeName').value = 'John Connor';
-      document.getElementById('regNomineeRelation').value = 'Son';
-      document.getElementById('regNomineePhone').value = '9876543211';
-      document.getElementById('regPassword').value = 'Password@123';
-      checkStrength();
-
-      Utils.showToast('Demo applicant details & documents attached for all 3 steps!', 'success');
-    }
-
-    // Real-Time Approval Listener (Requirement 2)
+    // Real-Time Approval Listener
     let pendingCustomerEmail = '';
     let activeApprovalListener = null;
 
@@ -1009,8 +984,8 @@
             try { activeApprovalListener(); } catch (_) {}
             activeApprovalListener = null;
           }
-          document.getElementById('accountCreatedModal')?.classList.remove('active');
-          document.getElementById('pendingApprovalModal')?.classList.remove('active');
+          closeAccountCreatedModal();
+          closePendingApprovalModal();
 
           Auth.setSession(account, account);
           Utils.showToast(`🎉 Account Approved by Officer! Welcome, ${account.name || 'Customer'}. Redirecting...`, 'success');
@@ -1020,7 +995,6 @@
         }
       };
 
-      // Listen directly to Firestore document if 10+ digits, or query by email
       const cleanDigits = cleanIdentifier.replace(/\D/g, '');
       if (cleanDigits.length >= 10) {
         activeApprovalListener = window.listenToFirestoreDoc('accounts', cleanDigits, handleAccountStatusChange);
@@ -1035,10 +1009,16 @@
       }
     }
 
+    // Modal Control Functions (BUG-03: hidden attribute + active class)
     function openPendingApprovalModal(identifier) {
       pendingCustomerEmail = identifier;
-      document.getElementById('pendingCustomerEmailDisplay').textContent = identifier;
-      document.getElementById('pendingApprovalModal').classList.add('active');
+      const display = document.getElementById('pendingCustomerEmailDisplay');
+      if (display) display.textContent = identifier;
+      const modal = document.getElementById('pendingApprovalModal');
+      if (modal) {
+        modal.removeAttribute('hidden');
+        modal.classList.add('active');
+      }
       watchApprovalStatus(identifier);
     }
 
@@ -1047,22 +1027,18 @@
         try { activeApprovalListener(); } catch (_) {}
         activeApprovalListener = null;
       }
-      document.getElementById('pendingApprovalModal').classList.remove('active');
+      const modal = document.getElementById('pendingApprovalModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('hidden', '');
+      }
     }
 
-    async function instantApprovePendingCustomer() {
-      const btn = document.getElementById('btnInstantApprove');
-      Utils.setLoading(btn, true, 'Approving Account Globally...');
-      try {
-        await API.request(`/admin/customers/${pendingCustomerEmail}/approve`, 'PUT', {
-          approvedBy: 'Bank Admin (Instant Demonstration Verification)',
-          remarks: 'KYC Documents Verified and Approved Globally'
-        });
-        Utils.showToast('Account Approved in Cloud Firestore! Logging in...', 'success');
-      } catch (err) {
-        Utils.showToast('Approval error: ' + err.message, 'error');
-      } finally {
-        Utils.setLoading(btn, false);
+    function closeAccountCreatedModal() {
+      const modal = document.getElementById('accountCreatedModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('hidden', '');
       }
     }
 
@@ -1077,7 +1053,7 @@
       const btn = document.getElementById('btnLoginSubmit');
 
       if (!loginInput) {
-        Utils.showToast('Please enter your Account Number or Email address.', 'warning');
+        Utils.showToast('Please enter your 11-digit Account Number or Email address.', 'warning');
         document.getElementById('loginEmail')?.focus();
         return;
       }
@@ -1118,35 +1094,7 @@
 
     document.getElementById('customerLoginForm')?.addEventListener('submit', handleCustomerLoginSubmit);
 
-    // URL Parameter & Pre-fill Initializer
-    document.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const accParam = urlParams.get('accountNumber') || urlParams.get('acc');
-      const emailParam = urlParams.get('email');
-      const tabParam = urlParams.get('tab');
-
-      if (tabParam) {
-        switchPortalTab(tabParam.startsWith('tab-') ? tabParam : ('tab-' + tabParam));
-      }
-
-      const input = document.getElementById('loginEmail');
-      if (input) {
-        if (accParam) {
-          input.value = accParam;
-          Utils.showToast(`Account Number ${accParam} pre-filled. Enter your password to sign in.`, 'info');
-        } else if (emailParam) {
-          input.value = emailParam;
-        }
-      }
-    });
-
-    // Officer Inline Functions
-    function fillDemoOfficerInline(email, label) {
-      document.getElementById('officerInlineEmail').value = email || 'vikram.sharma@ggbank.com';
-      document.getElementById('officerInlinePassword').value = 'Password@123';
-      Utils.showToast(`Selected: ${label || 'Officer'} credentials`, 'info');
-    }
-
+    // Officer Workspace Login Handler
     async function handleOfficerInlineLogin(e) {
       if (e) {
         e.preventDefault();
@@ -1158,6 +1106,7 @@
 
       if (!email) {
         Utils.showToast('Please enter officer staff email.', 'error');
+        document.getElementById('officerInlineEmail')?.focus();
         return;
       }
 
@@ -1174,108 +1123,9 @@
       }
     }
 
-    // Customer 3-Step Registration Handler
-    let latestCreatedAccount = null;
+    document.getElementById('officerInlineLoginForm')?.addEventListener('submit', handleOfficerInlineLogin);
 
-    document.getElementById('customerRegisterForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('regName').value.trim();
-      const dob = document.getElementById('regDob').value;
-      const gender = document.getElementById('regGender').value;
-      const phone = document.getElementById('regPhone').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
-      const address = document.getElementById('regAddress').value.trim();
-      const occupation = document.getElementById('regOccupation').value;
-      
-      const aadhaarNumber = document.getElementById('regAadhaarNumber').value.trim();
-      const aadhaarDoc = document.getElementById('aadhaarDocData').value;
-      const panNumber = document.getElementById('regPanNumber').value.trim().toUpperCase();
-      const panDoc = document.getElementById('panDocData').value;
-      const addressProofType = document.getElementById('regAddressProofType') ? document.getElementById('regAddressProofType').value : 'Not Required';
-      const addressProofDoc = document.getElementById('addressProofDocData') ? document.getElementById('addressProofDocData').value : '';
-      const photoDoc = document.getElementById('photoDocData').value;
-      const signatureDoc = document.getElementById('signatureDocData').value;
-
-      const accountType = document.getElementById('regAccountType').value;
-      const nomineeName = document.getElementById('regNomineeName').value.trim();
-      const nomineeRelation = document.getElementById('regNomineeRelation').value;
-      const nomineePhone = document.getElementById('regNomineePhone').value.trim();
-      const pass = document.getElementById('regPassword').value;
-
-      const btn = document.getElementById('btnRegisterSubmit');
-
-      if (!panNumber || !aadhaarNumber) {
-        Utils.showToast('Please provide both PAN and Aadhaar numbers.', 'error');
-        setWizardStep(2);
-        return;
-      }
-
-      Utils.setLoading(btn, true, 'Submitting Application...');
-
-      try {
-        const res = await API.request('/users/register', 'POST', {
-          name,
-          email,
-          phone,
-          dateOfBirth: dob,
-          gender,
-          address,
-          occupation,
-          accountType,
-          password: pass,
-          panNumber,
-          panDoc,
-          aadhaarNumber,
-          aadhaarDoc,
-          addressProofType,
-          addressProofDoc,
-          photoDoc,
-          signatureDoc,
-          nomineeName,
-          nomineeRelation,
-          nomineePhone
-        });
-
-        const createdAcc = res.data && res.data.account ? res.data.account : {
-          accountNumber: '100188' + Math.floor(10000 + Math.random() * 90000),
-          accountType: accountType
-        };
-
-        latestCreatedAccount = {
-          name,
-          accountNumber: createdAcc.accountNumber,
-          accountType: createdAcc.accountType || accountType,
-          createdDate: new Date().toLocaleDateString('en-GB'),
-          status: 'PENDING ADMIN APPROVAL',
-          avatar: photoDoc,
-          profilePhoto: photoDoc,
-          photoDoc: photoDoc
-        };
-        sessionStorage.setItem('gg_new_account_created', JSON.stringify(latestCreatedAccount));
-
-        document.getElementById('modalSuccessCustName').textContent = name;
-        document.getElementById('modalSuccessAccNumber').textContent = createdAcc.accountNumber;
-        document.getElementById('modalSuccessType').textContent = createdAcc.accountType || accountType;
-
-        const modalAvatar = document.getElementById('modalSuccessCustAvatar');
-        if (modalAvatar && typeof Utils !== 'undefined' && Utils.renderUserAvatar) {
-          Utils.renderUserAvatar(modalAvatar, latestCreatedAccount);
-        }
-
-        document.getElementById('accountCreatedModal').classList.add('active');
-
-        // Attach real-time approval listener on the newly created account document
-        watchApprovalStatus(createdAcc.accountNumber);
-
-        Utils.showToast('Application submitted! Real-time verification listener active.', 'success');
-      } catch (err) {
-        Utils.showToast(err.message, 'error');
-      } finally {
-        Utils.setLoading(btn, false);
-      }
-    });
-
-    // Admin Login Handler
+    // Admin Console Login Handler
     async function handleAdminLoginSubmit(e) {
       if (e) {
         e.preventDefault();
@@ -1311,6 +1161,141 @@
 
     document.getElementById('adminLoginForm')?.addEventListener('submit', handleAdminLoginSubmit);
 
+    // URL Parameter & Pre-fill Initializer
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const accParam = urlParams.get('accountNumber') || urlParams.get('acc');
+      const emailParam = urlParams.get('email');
+      const tabParam = urlParams.get('tab');
+
+      if (tabParam) {
+        switchPortalTab(tabParam.startsWith('tab-') ? tabParam : ('tab-' + tabParam));
+      }
+
+      const input = document.getElementById('loginEmail');
+      if (input) {
+        if (accParam) {
+          input.value = accParam;
+          Utils.showToast(`Account Number ${accParam} pre-filled. Enter your password to sign in.`, 'info');
+        } else if (emailParam) {
+          input.value = emailParam;
+        }
+      }
+    });
+
+    // Customer 3-Step Registration Handler (BUG-03: Dynamic Modal Population)
+    let latestCreatedAccount = null;
+
+    document.getElementById('customerRegisterForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const dob = document.getElementById('regDob').value;
+      const gender = document.getElementById('regGender').value;
+      const phone = document.getElementById('regPhone').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const address = document.getElementById('regAddress').value.trim();
+      const occupation = document.getElementById('regOccupation').value;
+      
+      const aadhaarNumber = document.getElementById('regAadhaarNumber').value.trim();
+      const aadhaarDoc = document.getElementById('aadhaarDocData').value;
+      const panNumber = document.getElementById('regPanNumber').value.trim().toUpperCase();
+      const panDoc = document.getElementById('panDocData').value;
+      const photoDoc = document.getElementById('photoDocData').value;
+      const signatureDoc = document.getElementById('signatureDocData').value;
+
+      const accountType = document.getElementById('regAccountType').value;
+      const nomineeName = document.getElementById('regNomineeName').value.trim();
+      const nomineeRelation = document.getElementById('regNomineeRelation').value;
+      const nomineePhone = document.getElementById('regNomineePhone').value.trim();
+      const pass = document.getElementById('regPassword').value;
+
+      const btn = document.getElementById('btnRegisterSubmit');
+
+      if (!panNumber || !aadhaarNumber) {
+        Utils.showToast('Please provide both PAN and Aadhaar numbers.', 'error');
+        setWizardStep(2);
+        return;
+      }
+
+      Utils.setLoading(btn, true, 'Submitting Application...');
+
+      try {
+        const res = await API.request('/users/register', 'POST', {
+          name,
+          email,
+          phone,
+          dateOfBirth: dob,
+          gender,
+          address,
+          occupation,
+          accountType,
+          password: pass,
+          panNumber,
+          panDoc,
+          aadhaarNumber,
+          aadhaarDoc,
+          photoDoc,
+          signatureDoc,
+          nomineeName,
+          nomineeRelation,
+          nomineePhone
+        });
+
+        // Generate 11-digit account number (100188 + 5 digits)
+        const createdAcc = res.data && res.data.account ? res.data.account : {
+          accountNumber: '100188' + Math.floor(10000 + Math.random() * 90000),
+          accountType: accountType
+        };
+
+        latestCreatedAccount = {
+          name,
+          accountNumber: createdAcc.accountNumber,
+          accountType: createdAcc.accountType || accountType,
+          createdDate: new Date().toLocaleDateString('en-GB'),
+          status: 'PENDING ADMIN APPROVAL',
+          avatar: photoDoc,
+          profilePhoto: photoDoc,
+          photoDoc: photoDoc
+        };
+        sessionStorage.setItem('gg_new_account_created', JSON.stringify(latestCreatedAccount));
+
+        // Inject dynamic values only upon opening (BUG-03)
+        const nameDisplay = document.getElementById('modalSuccessCustName');
+        const applicantNameDisplay = document.getElementById('applicantName');
+        if (nameDisplay) nameDisplay.textContent = name;
+        if (applicantNameDisplay) applicantNameDisplay.textContent = name;
+
+        const accDisplay = document.getElementById('modalSuccessAccNumber');
+        const reservedDisplay = document.getElementById('reservedAccountNumber');
+        if (accDisplay) accDisplay.textContent = createdAcc.accountNumber;
+        if (reservedDisplay && !reservedDisplay.contains(accDisplay)) reservedDisplay.textContent = createdAcc.accountNumber;
+
+        const typeDisplay = document.getElementById('modalSuccessType');
+        if (typeDisplay) typeDisplay.textContent = createdAcc.accountType || accountType;
+
+        const modalAvatar = document.getElementById('modalSuccessCustAvatar');
+        if (modalAvatar && typeof Utils !== 'undefined' && Utils.renderUserAvatar) {
+          Utils.renderUserAvatar(modalAvatar, latestCreatedAccount);
+        }
+
+        // Open modal by removing hidden attribute and adding active class (BUG-03)
+        const modal = document.getElementById('accountCreatedModal');
+        if (modal) {
+          modal.removeAttribute('hidden');
+          modal.classList.add('active');
+        }
+
+        // Attach real-time Firestore approval listener
+        watchApprovalStatus(createdAcc.accountNumber);
+
+        Utils.showToast('Application submitted! Real-time verification listener active.', 'success');
+      } catch (err) {
+        Utils.showToast(err.message, 'error');
+      } finally {
+        Utils.setLoading(btn, false);
+      }
+    });
+
     // Success Modal Actions
     function copyCreatedAccount() {
       if (latestCreatedAccount) {
@@ -1319,7 +1304,7 @@
     }
 
     function goToLoginWithCreatedAccount() {
-      document.getElementById('accountCreatedModal').classList.remove('active');
+      closeAccountCreatedModal();
       switchPortalTab('tab-login');
       if (latestCreatedAccount) {
         document.getElementById('loginEmail').value = latestCreatedAccount.accountNumber || document.getElementById('regEmail').value;
@@ -1336,7 +1321,7 @@
       }
     }
 
-    // Global Window Exports to guarantee all buttons function without error
+    // Global Window Exports
     window.switchPortalTab = switchPortalTab;
     window.togglePass = togglePass;
     window.toggleTheme = toggleTheme;
@@ -1344,15 +1329,11 @@
     window.nextWizardStep = nextWizardStep;
     window.prevWizardStep = prevWizardStep;
     window.selectAccType = selectAccType;
-    window.fillDemoCustomer = fillDemoCustomer;
-    window.fillDemoAdmin = fillDemoAdmin;
-    window.fillDemoKYCApplicant = fillDemoKYCApplicant;
-    window.fillDemoOfficerInline = fillDemoOfficerInline;
-    window.handleCustomerLoginSubmit = handleCustomerLoginSubmit;
-    window.handleAdminLoginSubmit = handleAdminLoginSubmit;
     window.handleOfficerInlineLogin = handleOfficerInlineLogin;
+    window.handleAdminLoginSubmit = handleAdminLoginSubmit;
     window.openPendingApprovalModal = openPendingApprovalModal;
     window.closePendingApprovalModal = closePendingApprovalModal;
+    window.closeAccountCreatedModal = closeAccountCreatedModal;
     window.copyCreatedAccount = copyCreatedAccount;
     window.goToLoginWithCreatedAccount = goToLoginWithCreatedAccount;
     window.openRecoveryModal = openRecoveryModal;

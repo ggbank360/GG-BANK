@@ -5,8 +5,8 @@ import jakarta.validation.constraints.Pattern;
 
 public class AuthRequest {
 
-    @NotBlank(message = "12-digit account number is required")
-    @Pattern(regexp = "^[0-9]{12}$", message = "Account number must be exactly 12 numeric digits")
+    @NotBlank(message = "11-digit account number is required")
+    @Pattern(regexp = "^[0-9]{11}$", message = "Account number must be exactly 11 numeric digits")
     private String accountNumber;
 
     @NotBlank(message = "Password is required")

@@ -325,7 +325,7 @@
 /* 4-Way Portal Tab Bar - Perfectly Balanced Grid */
 .portal-tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   background: var(--bg-primary);
   padding: 5px;
   border-radius: var(--radius-md);

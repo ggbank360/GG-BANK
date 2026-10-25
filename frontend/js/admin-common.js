@@ -294,8 +294,8 @@ const AdminCommon = {
           </div>
           <form id="adminDirectDepositForm" style="display: flex; flex-direction: column; gap: 16px; margin-top: 10px;">
             <div class="form-group">
-              <label class="form-label" for="admDepAccount">Beneficiary 12-Digit Account No *</label>
-              <input type="text" id="admDepAccount" class="form-control" placeholder="100188492019" required maxlength="12" inputmode="numeric">
+              <label class="form-label" for="admDepAccount">Beneficiary 11-Digit Account No *</label>
+              <input type="text" id="admDepAccount" class="form-control" placeholder="10018849201" required maxlength="11" inputmode="numeric">
             </div>
             <div class="form-group">
               <label class="form-label" for="admDepAmount">Credit Amount (₹) *</label>
@@ -333,8 +333,8 @@ const AdminCommon = {
         const remarks = document.getElementById('admDepRemarks').value.trim();
         const btn = document.getElementById('btnSubmitAdminDeposit');
 
-        if (!/^\d{12}$/.test(acc)) {
-          Utils.showToast('Please provide a valid 12-digit account number', 'warning');
+        if (!/^\d{11}$/.test(acc)) {
+          Utils.showToast('Please provide a valid 11-digit account number', 'warning');
           return;
         }
 

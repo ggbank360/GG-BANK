@@ -90,8 +90,8 @@ function setupAddBeneficiaryModal() {
       const ifsc = document.getElementById('benIfsc').value.trim();
       const bank = document.getElementById('benBank').value.trim();
 
-      if (accNum.length !== 12) {
-        Utils.showToast('Beneficiary account number must be exactly 12 digits.', 'error');
+      if (accNum.length !== 11) {
+        Utils.showToast('Beneficiary account number must be exactly 11 digits.', 'error');
         accInput.focus();
         return;
       }
