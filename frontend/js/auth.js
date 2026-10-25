@@ -15,12 +15,24 @@ const Auth = {
   },
 
   setSession(user, account, token = 'demo-jwt-token') {
+    if (user) {
+      if (!user.avatar) {
+        user.avatar = user.photoDoc || user.profilePhoto || (user.documents && (user.documents.photoDoc || user.documents.photo)) || '';
+      }
+      user.photoDoc = user.photoDoc || user.avatar;
+      user.profilePhoto = user.profilePhoto || user.avatar;
+    }
     localStorage.setItem('gg_current_user', JSON.stringify(user));
+    localStorage.setItem('gg_user', JSON.stringify(user));
     localStorage.setItem('gg_current_account', JSON.stringify(account));
     localStorage.setItem('gg_auth_token', token);
     if (window.API) {
       window.API.setToken(token);
     }
+  },
+
+  getUser() {
+    return this.getCurrentUser();
   },
 
   logout() {
@@ -78,11 +90,14 @@ const Auth = {
     return this.requireAuth('ADMIN');
   },
 
-  // Customer Login using Email Address + Password
+  // Customer Login using Email Address or Account Number + Password
   async loginWithEmail(email, password) {
-    const cleanEmail = (email || '').toString().trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      throw new Error('Please enter a valid email address.');
+    const cleanEmail = (email || '').toString().trim();
+    if (!cleanEmail) {
+      throw new Error('Please enter your Account Number or Email address.');
+    }
+    if (!cleanEmail.includes('@') && cleanEmail.replace(/\D/g, '').length >= 10) {
+      return this.loginWithAccountNumber(cleanEmail, password);
     }
     if (!password) {
       throw new Error('Please enter your account password.');
@@ -113,8 +128,8 @@ const Auth = {
           return { user: authUser, account: authAcc };
         }
       } catch (apiErr) {
-        // If it's a credentials error (401/403/404), throw directly so user sees the message
-        if (apiErr.message && (apiErr.message.includes('password') || apiErr.message.includes('blocked') || apiErr.message.includes('No registered account'))) {
+        // If it's a credentials error (401/403/404) or pending approval, throw directly so user sees the message
+        if (apiErr.message && (apiErr.message.includes('password') || apiErr.message.includes('blocked') || apiErr.message.includes('No registered account') || apiErr.message.includes('Pending Approval') || apiErr.message.includes('pending approval'))) {
           throw apiErr;
         }
         console.warn('Backend database auth notice, checking local engine:', apiErr.message);
@@ -134,6 +149,9 @@ const Auth = {
           }
           if (fireUser.status === 'BLOCKED') {
             throw new Error('Account is blocked. Please contact GG BANK administration.');
+          }
+          if (fireUser.status === 'PENDING_APPROVAL') {
+            throw new Error('Your account application is Pending Approval. The Bank Administrator is verifying your KYC documents.');
           }
 
           const accSnap = await window.firestoreDb.collection('accounts').where('userId', '==', fireUser.userId).get();
@@ -180,6 +198,9 @@ const Auth = {
     if (matchedUser.status === 'BLOCKED') {
       throw new Error('Account is blocked. Please contact GG BANK administration.');
     }
+    if (matchedUser.status === 'PENDING_APPROVAL') {
+      throw new Error('Your account application is Pending Approval. The Bank Administrator is verifying your KYC documents.');
+    }
 
     let matchedAccount = accounts.find(a => a.userId === matchedUser.userId);
     if (!matchedAccount) {
@@ -206,8 +227,8 @@ const Auth = {
   // Account Number Login Support
   async loginWithAccountNumber(accountNumber, password) {
     const rawInput = (accountNumber || '').toString().trim().replace(/\D/g, '');
-    if (rawInput.length !== 12 && rawInput.length !== 11) {
-      throw new Error('Please enter a valid 12-digit account number.');
+    if (rawInput.length < 10) {
+      throw new Error('Please enter a valid 11 or 12-digit Account Number.');
     }
 
     // 1. Direct Backend Database Authentication
@@ -236,7 +257,7 @@ const Auth = {
           return { user: authUser, account: authAcc };
         }
       } catch (apiErr) {
-        if (apiErr.message && (apiErr.message.includes('password') || apiErr.message.includes('blocked') || apiErr.message.includes('No registered account'))) {
+        if (apiErr.message && (apiErr.message.includes('password') || apiErr.message.includes('blocked') || apiErr.message.includes('No registered account') || apiErr.message.includes('Pending Approval') || apiErr.message.includes('pending approval'))) {
           throw apiErr;
         }
         console.warn('Backend database auth notice, checking local engine:', apiErr.message);

@@ -733,13 +733,95 @@
   <!-- Loan Details Modal                                                  -->
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <div class="modal-backdrop" id="officerLoanDetailModal">
-    <div class="modal-card" style="max-width: 560px;">
+    <div class="modal-card" style="max-width: 580px;">
       <div class="modal-header">
         <h3 class="modal-title"><i class="fa-solid fa-file-contract" style="color: var(--warning);"></i> Assigned Loan Dossier</h3>
         <button class="modal-close-btn" onclick="document.getElementById('officerLoanDetailModal').classList.remove('active')">&times;</button>
       </div>
+      <div id="officerLoanDetailBody" style="padding: 14px 0; max-height: 70vh; overflow-y: auto;">
+        <!-- Filled dynamically -->
+      </div>
       <div class="modal-footer" style="display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
         <button type="button" class="btn btn-secondary" onclick="document.getElementById('officerLoanDetailModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Officer Loan Supporting Documents & Underwriting Approval Modal   -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="officerLoanDocViewerModal">
+    <div class="modal-card" style="max-width: 720px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> Loan Supporting Documents &amp; Approval</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('officerLoanDocViewerModal').classList.remove('active')">&times;</button>
+      </div>
+
+      <!-- Applicant Header Summary -->
+      <div style="background: var(--bg-surface); padding: 12px 16px; border-radius: var(--radius-md); margin-top: 8px; border-left: 3px solid var(--accent-cyan); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <div style="font-weight: 800; color: #fff; font-size: 0.95rem;" id="officerDocApplicantName">Customer Name</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px;" id="officerDocRefId">LOAN ID: --</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent-cyan); font-family: var(--font-mono);" id="officerDocLoanAmount">₹0.00</div>
+          <span class="badge badge-warning" id="officerDocStatusBadge">PENDING REVIEW</span>
+        </div>
+      </div>
+
+      <!-- Document Selector Tabs -->
+      <div style="display: flex; gap: 6px; margin: 14px 0 10px; overflow-x: auto; padding-bottom: 4px;" id="officerDocTabStrip">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnDocTabPan" onclick="switchOfficerDocTab('panCard')" style="font-size: 0.78rem;">
+          <i class="fa-solid fa-id-card"></i> PAN Card
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnDocTabAadhaar" onclick="switchOfficerDocTab('aadhaarCard')" style="font-size: 0.78rem;">
+          <i class="fa-solid fa-fingerprint"></i> Aadhaar Card
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnDocTabIncome" onclick="switchOfficerDocTab('incomeProof')" style="font-size: 0.78rem;">
+          <i class="fa-solid fa-file-invoice-dollar"></i> Income Proof
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnDocTabStatement" onclick="switchOfficerDocTab('bankStatement')" style="font-size: 0.78rem;">
+          <i class="fa-solid fa-building-columns"></i> Bank Statement
+        </button>
+      </div>
+
+      <!-- Document Preview Canvas -->
+      <div id="officerDocPreviewContainer" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color-subtle); border-radius: var(--radius-md); min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; margin-bottom: 12px; position: relative;">
+        <!-- Filled dynamically -->
+      </div>
+
+      <!-- Applicant Financial Checklist -->
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color-subtle); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 12px; font-size: 0.8rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;">
+        <div>
+          <span style="color: var(--text-muted);">Monthly Income:</span>
+          <div style="font-weight: 700; color: #fff; font-family: var(--font-mono);" id="officerDocMonthlyIncome">₹0.00</div>
+        </div>
+        <div>
+          <span style="color: var(--text-muted);">Existing EMIs:</span>
+          <div style="font-weight: 700; color: #fff; font-family: var(--font-mono);" id="officerDocExistingEmi">₹0.00</div>
+        </div>
+        <div>
+          <span style="color: var(--text-muted);">Credit Score:</span>
+          <div style="font-weight: 700; color: var(--success); font-family: var(--font-mono);">720 (Good)</div>
+        </div>
+        <div>
+          <span style="color: var(--text-muted);">Proposed Tenure:</span>
+          <div style="font-weight: 700; color: #fff;" id="officerDocTenure">--</div>
+        </div>
+      </div>
+
+      <!-- Underwriter Remarks Input -->
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label" for="officerLoanDecisionRemarks" style="font-size: 0.8rem;">Loan Officer Underwriting Remarks</label>
+        <input type="text" id="officerLoanDecisionRemarks" class="form-control" style="font-size: 0.84rem;" placeholder="e.g. Identity and income verified against salary slips. Approved for disbursement." value="Verified all applicant proof documents. Satisfies retail credit guidelines.">
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('officerLoanDocViewerModal').classList.remove('active')">Close</button>
+        <div style="display: flex; gap: 8px;" id="officerLoanDocActionBtns">
+          <!-- Filled dynamically: Reject & Approve buttons -->
+        </div>
       </div>
     </div>
   </div>

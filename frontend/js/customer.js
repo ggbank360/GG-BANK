@@ -32,7 +32,11 @@ function initUI() {
 
   const avatarElems = document.querySelectorAll('.customer-avatar-display');
   avatarElems.forEach(el => {
-    el.textContent = currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    if (window.Utils && typeof Utils.renderUserAvatar === 'function') {
+      Utils.renderUserAvatar(el, currentUser);
+    } else {
+      el.textContent = currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
   });
 
   // Theme Initializer

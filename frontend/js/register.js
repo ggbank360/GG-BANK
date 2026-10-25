@@ -587,7 +587,11 @@ document.addEventListener('DOMContentLoaded', () => {
           accountType: createdAcc.accountType || accountType,
           balance: 0.00,
           createdDate: new Date().toLocaleDateString('en-GB'),
-          email: email
+          email: email,
+          status: 'PENDING ADMIN APPROVAL',
+          avatar: photoDoc,
+          profilePhoto: photoDoc,
+          photoDoc: photoDoc
         };
         sessionStorage.setItem('gg_new_account_created', JSON.stringify(successData));
 

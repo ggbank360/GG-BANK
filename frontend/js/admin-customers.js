@@ -57,7 +57,10 @@ function setupEventListeners() {
 
       const payload = {
         name: document.getElementById('editCustName').value.trim(),
+        email: document.getElementById('editCustEmail') ? document.getElementById('editCustEmail').value.trim() : undefined,
         phone: document.getElementById('editCustPhone').value.trim(),
+        panNumber: document.getElementById('editCustPan') ? document.getElementById('editCustPan').value.trim().toUpperCase() : undefined,
+        aadhaarNumber: document.getElementById('editCustAadhaar') ? document.getElementById('editCustAadhaar').value.trim() : undefined,
         dateOfBirth: document.getElementById('editCustDob').value,
         address: document.getElementById('editCustAddress').value.trim(),
         status: document.getElementById('editCustStatus').value
@@ -167,24 +170,33 @@ function renderTable() {
          </span>`
       : '';
 
+    const custPhoto = c.avatar || c.profilePhoto || c.photoDoc || (c.documents && (c.documents.photoDoc || c.documents.photo)) || '';
+
     return `
       <tr style="${isDuplicatePan ? 'border-left: 3px solid var(--danger); background: rgba(239,68,68,0.04);' : ''}">
         <td>
           <strong style="font-family: var(--font-mono); color: var(--accent-cyan);">${c.userId}</strong>
         </td>
         <td>
-          <div style="font-weight: 700; color: var(--text-primary);">${c.name} ${dupPanBadge}</div>
-          <div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; align-items: center;">
-            <span class="kyc-doc-badge pan" onclick="openCustomerKYCViewer('${c.userId}', 'PAN')" title="Click to View PAN Document" style="${isDuplicatePan ? 'border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.08);' : ''}">
-              <i class="fa-solid fa-id-card"></i> PAN: ${panNum}
-              ${isDuplicatePan ? '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;margin-left:3px;"></i>' : ''}
-            </span>
-            <span class="kyc-doc-badge dl" onclick="openCustomerKYCViewer('${c.userId}', 'DL')" title="Click to View Driving License">
-              <i class="fa-solid fa-id-badge"></i> DL: ${dlNum}
-            </span>
-            <span class="kyc-doc-badge aadhaar" onclick="openCustomerKYCViewer('${c.userId}', 'AADHAAR')" title="Click to View Aadhaar Card">
-              <i class="fa-solid fa-fingerprint"></i> Aadhaar: ${aadhaarNum}
-            </span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--accent-cyan); background: rgba(0,240,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
+              ${custPhoto && custPhoto.length > 20 ? `<img src="${custPhoto}" alt="${c.name}" style="width: 100%; height: 100%; object-fit: cover;">` : `<span style="font-weight: 700; color: var(--accent-cyan); font-size: 0.82rem;">${(c.name || 'C').slice(0, 2).toUpperCase()}</span>`}
+            </div>
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary);">${c.name} ${dupPanBadge}</div>
+              <div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; align-items: center;">
+                <span class="kyc-doc-badge pan" onclick="openCustomerKYCViewer('${c.userId}', 'PAN')" title="Click to View PAN Document" style="${isDuplicatePan ? 'border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.08);' : ''}">
+                  <i class="fa-solid fa-id-card"></i> PAN: ${panNum}
+                  ${isDuplicatePan ? '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;margin-left:3px;"></i>' : ''}
+                </span>
+                <span class="kyc-doc-badge dl" onclick="openCustomerKYCViewer('${c.userId}', 'PHOTO')" title="Click to View Profile Photo">
+                  <i class="fa-solid fa-camera"></i> Photo
+                </span>
+                <span class="kyc-doc-badge aadhaar" onclick="openCustomerKYCViewer('${c.userId}', 'AADHAAR')" title="Click to View Aadhaar Card">
+                  <i class="fa-solid fa-fingerprint"></i> Aadhaar: ${aadhaarNum}
+                </span>
+              </div>
+            </div>
           </div>
         </td>
         <td>
@@ -304,7 +316,11 @@ function openEditCustomerModal(userId) {
 
   document.getElementById('editCustUserId').value = customer.userId;
   document.getElementById('editCustName').value = customer.name || '';
+  if (document.getElementById('editCustEmail')) document.getElementById('editCustEmail').value = customer.email || '';
   document.getElementById('editCustPhone').value = customer.phone || '';
+  const docs = customer.documents || {};
+  if (document.getElementById('editCustPan')) document.getElementById('editCustPan').value = docs.panNumber || customer.panNumber || '';
+  if (document.getElementById('editCustAadhaar')) document.getElementById('editCustAadhaar').value = docs.aadhaarNumber || customer.aadhaarNumber || '';
   document.getElementById('editCustDob').value = customer.dateOfBirth || '';
   document.getElementById('editCustAddress').value = customer.address || '';
   document.getElementById('editCustStatus').value = customer.status || 'ACTIVE';
@@ -497,11 +513,12 @@ function switchKYCModalDoc(docType) {
   activeModalDocType = docType;
   if (!activeModalCustomer) return;
 
-  const docs = activeModalCustomer.documents || {};
+  const docs = (typeof activeModalCustomer.documents === 'string') ? JSON.parse(activeModalCustomer.documents) : (activeModalCustomer.documents || {});
+  const photoDoc = activeModalCustomer.avatar || activeModalCustomer.profilePhoto || activeModalCustomer.photoDoc || docs.photoDoc || docs.photo || '';
   const nominee = activeModalCustomer.nominee || { name: 'Not Provided', relationship: 'N/A', contact: 'N/A' };
 
-  const panNum = docs.panNumber || 'ABCDE1234F';
-  const aadhaarNum = docs.aadhaarNumber || '2345 6789 0123';
+  const panNum = docs.panNumber || activeModalCustomer.panNumber || 'ABCDE1234F';
+  const aadhaarNum = docs.aadhaarNumber || activeModalCustomer.aadhaarNumber || '2345 6789 0123';
 
   // Toggle Tab UI
   ['All', 'Aadhaar', 'Pan', 'Photo', 'Signature', 'Nominee'].forEach(tab => {

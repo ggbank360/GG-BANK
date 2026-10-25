@@ -17,6 +17,7 @@ const BankCharts = {
     this.destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
+    if (typeof Chart === 'undefined') return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: 'bar',
@@ -71,6 +72,7 @@ const BankCharts = {
     this.destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
+    if (typeof Chart === 'undefined') return;
 
     const colors = [
       '#0ea5e9', // cyan
@@ -116,10 +118,15 @@ const BankCharts = {
     });
   },
 
+  renderMonthlyTrend(canvasId, labels = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'], dataPoints = [25000, 34000, 42000, 50000, 65450, 65450]) {
+    return this.renderTransactionTrend(canvasId, labels, dataPoints);
+  },
+
   renderTransactionTrend(canvasId, labels = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'], dataPoints = [25000, 34000, 42000, 50000, 65450, 65450]) {
     this.destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
+    if (typeof Chart === 'undefined') return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: 'line',
@@ -172,6 +179,7 @@ const BankCharts = {
     this.destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
+    if (typeof Chart === 'undefined') return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: 'line',

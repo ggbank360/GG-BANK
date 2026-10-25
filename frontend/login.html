@@ -82,16 +82,16 @@
 
           <!-- ================= TAB 1: CUSTOMER LOGIN ================= -->
           <div class="tab-pane active" id="pane-tab-login">
-            <form id="customerLoginForm">
+            <form id="customerLoginForm" onsubmit="handleCustomerLoginSubmit(event)">
               <div class="form-group">
-                <label class="form-label" for="loginEmail">Email Address</label>
+                <label class="form-label" for="loginEmail">Account Number or Email Address</label>
                 <div class="input-with-icon">
-                  <i class="fa-solid fa-envelope input-icon"></i>
+                  <i class="fa-solid fa-user-check input-icon"></i>
                   <input 
-                    type="email" 
+                    type="text" 
                     id="loginEmail" 
                     class="form-control" 
-                    placeholder="name@domain.com" 
+                    placeholder="11-digit Account Number or Email" 
                     required 
                     autocomplete="username"
                   >
@@ -123,7 +123,7 @@
                 </label>
               </div>
 
-              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnLoginSubmit">
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnLoginSubmit" onclick="handleCustomerLoginSubmit(event)">
                 <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
               </button>
             </form>
@@ -422,7 +422,7 @@
           <!-- ================= TAB 3: ADMIN LOGIN ================= -->
           <div class="tab-pane" id="pane-tab-admin">
             
-            <form id="adminLoginForm">
+            <form id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)">
               <div class="form-group">
                 <label class="form-label" for="adminUsername">Admin Identifier / Email</label>
                 <div class="input-with-icon">
@@ -454,7 +454,7 @@
                 </div>
               </div>
 
-              <button type="submit" class="btn btn-danger btn-block btn-lg" id="btnAdminLoginSubmit" style="margin-top: 14px;">
+              <button type="submit" class="btn btn-danger btn-block btn-lg" id="btnAdminLoginSubmit" onclick="handleAdminLoginSubmit(event)" style="margin-top: 16px;">
                 <i class="fa-solid fa-shield-halved"></i> Access Bank Admin Console
               </button>
             </form>
@@ -534,6 +534,11 @@
         <i class="fa-solid fa-check"></i>
       </div>
       <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">Application Submitted!</h2>
+      <div id="modalSuccessAvatarContainer" style="display: flex; justify-content: center; margin: 10px auto;">
+        <div class="customer-avatar-display" id="modalSuccessCustAvatar" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid var(--accent-cyan, #00f0ff); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan, #00f0ff);">
+          <i class="fa-solid fa-user"></i>
+        </div>
+      </div>
       <p style="font-size: 0.88rem; color: var(--accent-cyan); margin-top: 3px;">Welcome to GG BANK, <span id="modalSuccessCustName">Customer</span></p>
 
       <div class="account-number-highlight-box">
@@ -1049,20 +1054,35 @@
     }
 
     // Customer Login Handler
-    document.getElementById('customerLoginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
+    async function handleCustomerLoginSubmit(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const loginInput = document.getElementById('loginEmail').value.trim();
       const pass = document.getElementById('loginPassword').value;
       const btn = document.getElementById('btnLoginSubmit');
 
-      if (!email || !email.includes('@')) {
-        Utils.showToast('Please enter a valid email address.', 'error');
+      if (!loginInput) {
+        Utils.showToast('Please enter your Account Number or Email address.', 'warning');
+        document.getElementById('loginEmail')?.focus();
+        return;
+      }
+      if (!pass) {
+        Utils.showToast('Please enter your account password.', 'warning');
+        document.getElementById('loginPassword')?.focus();
         return;
       }
 
       Utils.setLoading(btn, true, 'Signing In...');
       try {
-        const { user } = await Auth.loginWithEmail(email, pass);
+        let authResult;
+        if (loginInput.includes('@')) {
+          authResult = await Auth.loginWithEmail(loginInput, pass);
+        } else {
+          authResult = await Auth.loginWithAccountNumber(loginInput, pass);
+        }
+        const user = authResult.user;
         Utils.showToast(`Welcome, ${user.name}!`, 'success');
         setTimeout(() => {
           if (user.role === 'OFFICER') {
@@ -1074,12 +1094,36 @@
           }
         }, 500);
       } catch (err) {
-        if (err.message && err.message.includes('Pending Approval')) {
-          openPendingApprovalModal(email);
+        if (err.message && (err.message.includes('Pending Approval') || err.message.includes('pending approval'))) {
+          openPendingApprovalModal(loginInput);
         } else {
           Utils.showToast(err.message, 'error');
         }
         Utils.setLoading(btn, false);
+      }
+    }
+
+    document.getElementById('customerLoginForm')?.addEventListener('submit', handleCustomerLoginSubmit);
+
+    // URL Parameter & Pre-fill Initializer
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const accParam = urlParams.get('accountNumber') || urlParams.get('acc');
+      const emailParam = urlParams.get('email');
+      const tabParam = urlParams.get('tab');
+
+      if (tabParam) {
+        switchPortalTab(tabParam.startsWith('tab-') ? tabParam : ('tab-' + tabParam));
+      }
+
+      const input = document.getElementById('loginEmail');
+      if (input) {
+        if (accParam) {
+          input.value = accParam;
+          Utils.showToast(`Account Number ${accParam} pre-filled. Enter your password to sign in.`, 'info');
+        } else if (emailParam) {
+          input.value = emailParam;
+        }
       }
     });
 
@@ -1188,12 +1232,23 @@
           name,
           accountNumber: createdAcc.accountNumber,
           accountType: createdAcc.accountType || accountType,
-          createdDate: new Date().toLocaleDateString('en-GB')
+          createdDate: new Date().toLocaleDateString('en-GB'),
+          status: 'PENDING ADMIN APPROVAL',
+          avatar: photoDoc,
+          profilePhoto: photoDoc,
+          photoDoc: photoDoc
         };
+        sessionStorage.setItem('gg_new_account_created', JSON.stringify(latestCreatedAccount));
 
         document.getElementById('modalSuccessCustName').textContent = name;
         document.getElementById('modalSuccessAccNumber').textContent = createdAcc.accountNumber;
         document.getElementById('modalSuccessType').textContent = createdAcc.accountType || accountType;
+
+        const modalAvatar = document.getElementById('modalSuccessCustAvatar');
+        if (modalAvatar && typeof Utils !== 'undefined' && Utils.renderUserAvatar) {
+          Utils.renderUserAvatar(modalAvatar, latestCreatedAccount);
+        }
+
         document.getElementById('accountCreatedModal').classList.add('active');
 
         Utils.showToast('Application submitted! Awaiting Admin Approval.', 'success');
@@ -1205,11 +1260,25 @@
     });
 
     // Admin Login Handler
-    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    async function handleAdminLoginSubmit(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       const u = document.getElementById('adminUsername').value.trim();
       const p = document.getElementById('adminPassword').value;
       const btn = document.getElementById('btnAdminLoginSubmit');
+
+      if (!u) {
+        Utils.showToast('Please enter Admin Email or Identifier.', 'warning');
+        document.getElementById('adminUsername')?.focus();
+        return;
+      }
+      if (!p) {
+        Utils.showToast('Please enter Admin Master Security Key.', 'warning');
+        document.getElementById('adminPassword')?.focus();
+        return;
+      }
 
       Utils.setLoading(btn, true, 'Signing In...');
       try {
@@ -1222,7 +1291,9 @@
         Utils.showToast(err.message, 'error');
         Utils.setLoading(btn, false);
       }
-    });
+    }
+
+    document.getElementById('adminLoginForm')?.addEventListener('submit', handleAdminLoginSubmit);
 
     // Success Modal Actions
     function copyCreatedAccount() {
@@ -1235,12 +1306,12 @@
       document.getElementById('accountCreatedModal').classList.remove('active');
       switchPortalTab('tab-login');
       if (latestCreatedAccount) {
-        document.getElementById('loginEmail').value = document.getElementById('regEmail').value;
+        document.getElementById('loginEmail').value = latestCreatedAccount.accountNumber || document.getElementById('regEmail').value;
       }
     }
 
     function openRecoveryModal(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const em = prompt('Enter your registered email address to receive password reset link:');
       if (em && em.includes('@')) {
         Utils.showToast(`Password reset link sent to ${em}`, 'success');
@@ -1248,6 +1319,27 @@
         Utils.showToast('Please enter a valid email address.', 'error');
       }
     }
+
+    // Global Window Exports to guarantee all buttons function without error
+    window.switchPortalTab = switchPortalTab;
+    window.togglePass = togglePass;
+    window.toggleTheme = toggleTheme;
+    window.jumpToStep = jumpToStep;
+    window.nextWizardStep = nextWizardStep;
+    window.prevWizardStep = prevWizardStep;
+    window.selectAccType = selectAccType;
+    window.fillDemoCustomer = fillDemoCustomer;
+    window.fillDemoAdmin = fillDemoAdmin;
+    window.fillDemoKYCApplicant = fillDemoKYCApplicant;
+    window.fillDemoOfficerInline = fillDemoOfficerInline;
+    window.handleCustomerLoginSubmit = handleCustomerLoginSubmit;
+    window.handleAdminLoginSubmit = handleAdminLoginSubmit;
+    window.handleOfficerInlineLogin = handleOfficerInlineLogin;
+    window.openPendingApprovalModal = openPendingApprovalModal;
+    window.closePendingApprovalModal = closePendingApprovalModal;
+    window.copyCreatedAccount = copyCreatedAccount;
+    window.goToLoginWithCreatedAccount = goToLoginWithCreatedAccount;
+    window.openRecoveryModal = openRecoveryModal;
   </script>
 
 </body>

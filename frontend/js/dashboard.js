@@ -36,8 +36,12 @@ function initDashboardLayout(user) {
   document.querySelectorAll('.customer-name-display').forEach(el => el.textContent = user.name);
   document.querySelectorAll('.customer-email-display').forEach(el => el.textContent = user.email || '');
 
-  const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CU';
-  document.querySelectorAll('.customer-avatar-display').forEach(el => el.textContent = initials);
+  if (window.Utils && typeof Utils.renderUserAvatar === 'function') {
+    Utils.updateAllUserAvatars(user);
+  } else {
+    const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CU';
+    document.querySelectorAll('.customer-avatar-display').forEach(el => el.textContent = initials);
+  }
 
   // Toggle Balance Visibility
   const toggleBtn = document.getElementById('btnToggleBalance');
@@ -71,8 +75,8 @@ async function loadDashboardData(user) {
     const txnRes = await API.request(`/transactions/account/${activeAccount.accountNumber}`);
     activeTransactions = txnRes.data || [];
 
-    updateBalanceDisplay();
-    updateDashboardMetrics();
+    updateBalanceDisplay(true);
+    updateDashboardMetrics(true);
     renderRecentTransactions(activeTransactions.slice(0, 5));
 
     // 3. Fetch Linked UPI ID
@@ -87,18 +91,59 @@ async function loadDashboardData(user) {
   }
 }
 
-function updateBalanceDisplay() {
+function animateNumberValue(element, targetValue, duration = 750) {
+  if (!element || isNaN(targetValue)) return;
+  element.classList.remove('number-animate-active');
+  void element.offsetWidth; // trigger reflow
+  element.classList.add('number-animate-active');
+
+  const startValue = 0;
+  const startTime = performance.now();
+
+  function updateCount(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
+    const current = startValue + (targetValue - startValue) * easeProgress;
+    element.textContent = Utils.formatCurrency(current);
+
+    if (progress < 1) {
+      requestAnimationFrame(updateCount);
+    } else {
+      element.textContent = Utils.formatCurrency(targetValue);
+    }
+  }
+  requestAnimationFrame(updateCount);
+}
+
+function updateBalanceDisplay(animate = false) {
   const balElem = document.getElementById('cardBalanceDisplay');
   const availElem = document.getElementById('cardAvailableBalance');
   const accNumElem = document.getElementById('cardAccountNumberDisplay');
   const accTypeElem = document.getElementById('cardAccountTypeDisplay');
 
   if (activeAccount) {
-    const formattedAmount = Utils.formatCurrency(activeAccount.balance);
+    const num = parseFloat(activeAccount.balance || 0);
+    const formattedAmount = Utils.formatCurrency(num);
     const maskedAmount = '₹ ••••••••';
 
-    if (balElem) balElem.textContent = isBalanceVisible ? formattedAmount : maskedAmount;
-    if (availElem) availElem.textContent = isBalanceVisible ? formattedAmount : maskedAmount;
+    if (balElem) {
+      if (isBalanceVisible) {
+        if (animate) animateNumberValue(balElem, num, 800);
+        else balElem.textContent = formattedAmount;
+      } else {
+        balElem.textContent = maskedAmount;
+      }
+    }
+
+    if (availElem) {
+      if (isBalanceVisible) {
+        if (animate) animateNumberValue(availElem, num, 800);
+        else availElem.textContent = formattedAmount;
+      } else {
+        availElem.textContent = maskedAmount;
+      }
+    }
 
     // Show Savings •••• 9201 as requested in Requirement 5
     if (accNumElem) {
@@ -113,7 +158,7 @@ function updateBalanceDisplay() {
   }
 }
 
-function updateDashboardMetrics() {
+function updateDashboardMetrics(animate = false) {
   let totalDeposits = 0;
   let totalWithdrawals = 0;
 
@@ -126,15 +171,49 @@ function updateDashboardMetrics() {
   });
 
   const totalDepElem = document.getElementById('statTotalDeposit');
-  if (totalDepElem) totalDepElem.textContent = Utils.formatCurrency(totalDeposits);
+  if (totalDepElem) {
+    if (animate) animateNumberValue(totalDepElem, totalDeposits, 700);
+    else totalDepElem.textContent = Utils.formatCurrency(totalDeposits);
+  }
 
   const totalWithElem = document.getElementById('statTotalWithdrawal');
-  if (totalWithElem) totalWithElem.textContent = Utils.formatCurrency(totalWithdrawals);
+  if (totalWithElem) {
+    if (animate) animateNumberValue(totalWithElem, totalWithdrawals, 700);
+    else totalWithElem.textContent = Utils.formatCurrency(totalWithdrawals);
+  }
 
   const savingsElem = document.getElementById('statMonthlySavings');
-  const netSavings = Math.max(0, totalDeposits - totalWithdrawals);
-  if (savingsElem) savingsElem.textContent = Utils.formatCurrency(netSavings || (activeAccount ? activeAccount.balance : 65450));
+  const netSavings = Math.max(0, totalDeposits - totalWithdrawals) || (activeAccount ? activeAccount.balance : 65450);
+  if (savingsElem) {
+    if (animate) animateNumberValue(savingsElem, netSavings, 800);
+    else savingsElem.textContent = Utils.formatCurrency(netSavings);
+  }
 }
+
+function switchView(viewId) {
+  if (viewId === 'view-notifications') {
+    window.location.href = 'notifications.html';
+    return;
+  }
+  if (viewId === 'view-profile') {
+    window.location.href = 'profile.html';
+    return;
+  }
+
+  const sections = document.querySelectorAll('.view-section');
+  sections.forEach(s => {
+    s.classList.remove('active-view');
+    s.style.display = 'none';
+  });
+
+  const target = document.getElementById(viewId);
+  if (target) {
+    target.style.display = 'block';
+    void target.offsetWidth;
+    target.classList.add('active-view');
+  }
+}
+window.switchView = switchView;
 
 // Category Icon Mapping
 function getCategoryIcon(category, type) {

@@ -20,10 +20,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.customer-name-display').forEach(el => {
     el.textContent = currentUser.name || 'Customer';
   });
-  const initials = currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CU';
-  document.querySelectorAll('.customer-avatar-display').forEach(el => {
-    el.textContent = initials;
-  });
+  if (window.Utils && typeof Utils.renderUserAvatar === 'function') {
+    Utils.updateAllUserAvatars(currentUser);
+  } else {
+    const initials = currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CU';
+    document.querySelectorAll('.customer-avatar-display').forEach(el => {
+      el.textContent = initials;
+    });
+  }
 
   try {
     const accRes = await API.request(`/accounts/user/${currentUser.userId}`);

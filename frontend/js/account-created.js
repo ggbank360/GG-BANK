@@ -48,6 +48,17 @@ document.addEventListener('DOMContentLoaded', () => {
     balanceDisplay.textContent = '₹0.00';
   }
 
+  const statusDisplay = document.getElementById('createdAccountStatusDisplay');
+  if (statusDisplay) {
+    statusDisplay.textContent = accountData.status || 'PENDING ADMIN APPROVAL';
+  }
+
+  // Render applicant avatar if profile photo was uploaded
+  const avatarEl = document.getElementById('createdCustomerAvatar');
+  if (avatarEl && typeof Utils !== 'undefined' && Utils.renderUserAvatar) {
+    Utils.renderUserAvatar(avatarEl, accountData);
+  }
+
   // 1. COPY ACCOUNT NUMBER BUTTON
   const copyBtn = document.getElementById('btnCopyAccountNumber');
   if (copyBtn) {

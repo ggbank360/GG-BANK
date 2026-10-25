@@ -68,6 +68,9 @@ function renderCustomerDossier(data) {
           <i class="fa-solid fa-circle-check"></i> Approve KYC & Activate
         </button>
       ` : ''}
+      <button class="btn btn-secondary btn-sm" onclick="openEditCustomerDetailsModal()" title="Edit and correct customer profile details">
+        <i class="fa-solid fa-user-pen"></i> Edit Profile
+      </button>
       <button class="btn btn-primary btn-sm" onclick="openCustomerQrModal('${accNum !== 'N/A' ? accNum : '10018849201'}', '${u.name || 'Customer'}')">
         <i class="fa-solid fa-qrcode"></i> Customer QR Code
       </button>
@@ -164,14 +167,22 @@ function renderCustomerDossier(data) {
     `).join('');
   }
 
+  const userPhoto = u.avatar || u.profilePhoto || u.photoDoc || (docs && (docs.photoDoc || docs.photo)) || '';
+
   container.innerHTML = `
     <!-- Top Identity Card -->
     <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(16, 30, 66, 0.9) 0%, rgba(11, 21, 45, 0.95) 100%); border-left: 5px solid var(--accent-cyan);">
       <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
         <div style="display: flex; align-items: center; gap: 18px;">
-          <div style="width: 64px; height: 64px; border-radius: var(--radius-md); background: linear-gradient(135deg, #0072ff 0%, #00f0ff 100%); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: #fff;">
-            ${(u.name || 'C').substring(0, 2).toUpperCase()}
-          </div>
+          ${userPhoto && userPhoto.length > 20 ? `
+            <div style="width: 68px; height: 68px; border-radius: var(--radius-md); overflow: hidden; border: 2.5px solid var(--accent-cyan); box-shadow: 0 4px 16px rgba(0,240,255,0.3); background: rgba(15,23,42,0.8); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <img src="${userPhoto}" alt="${u.name}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+            </div>
+          ` : `
+            <div style="width: 64px; height: 64px; border-radius: var(--radius-md); background: linear-gradient(135deg, #0072ff 0%, #00f0ff 100%); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: #fff; flex-shrink: 0;">
+              ${(u.name || 'C').substring(0, 2).toUpperCase()}
+            </div>
+          `}
           <div>
             <h3 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin-bottom: 4px;">${u.name || 'Customer Profile'}</h3>
             <div style="font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono);">
@@ -205,8 +216,31 @@ function renderCustomerDossier(data) {
         </div>
       </div>
 
-      <!-- Submitted Documents Cards: PAN Card, Aadhaar / ID Proof, Income Proof, Bank Statement -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color-subtle);">
+      <!-- Submitted Documents Cards: Photo, PAN Card, Aadhaar / ID Proof, Income Proof, Bank Statement -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color-subtle);">
+        <!-- 0. Passport Photo Card -->
+        <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color-subtle); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong style="color: var(--accent-cyan); font-size: 0.88rem;"><i class="fa-solid fa-camera"></i> Passport Photo</strong>
+              <span class="badge badge-success" style="font-size: 0.7rem;">Profile Photo</span>
+            </div>
+            <div style="display: flex; justify-content: center; margin: 10px 0;">
+              ${userPhoto && userPhoto.length > 20 ? `
+                <img src="${userPhoto}" alt="Passport Photo" style="width: 64px; height: 64px; object-fit: cover; border-radius: 50%; border: 2px solid var(--accent-cyan); box-shadow: 0 2px 10px rgba(0,240,255,0.25);">
+              ` : `
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(0,240,255,0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-cyan); font-size: 1.6rem;">
+                  <i class="fa-solid fa-user-tie"></i>
+                </div>
+              `}
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); text-align: center;">Account Registration Photo</div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="viewKYCDocumentDetails('PHOTO')" style="margin-top: 12px; width: 100%;">
+            <i class="fa-solid fa-eye"></i> View Passport Photo
+          </button>
+        </div>
+
         <!-- 1. PAN Card -->
         <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color-subtle); display: flex; flex-direction: column; justify-content: space-between;">
           <div>
@@ -479,7 +513,7 @@ function switchKYCDetailsDoc(docType) {
     ? rawStatement
     : (window.Utils && window.Utils.generateBankStatement ? window.Utils.generateBankStatement(u.name, a.accountNumber) : '');
 
-  const rawPhoto = docs.photoDoc || docs.photo;
+  const rawPhoto = docs.photoDoc || docs.photo || u.profilePhoto || u.avatar;
   const photoImg = (rawPhoto && rawPhoto !== 'null' && rawPhoto.length > 20) 
     ? rawPhoto 
     : (window.Utils && window.Utils.generatePassportPhoto ? window.Utils.generatePassportPhoto(u.name) : '');
@@ -750,6 +784,60 @@ function downloadModalQr() {
   }
 }
 
+function openEditCustomerDetailsModal() {
+  if (!customerData || !customerData.user) return;
+  const u = customerData.user;
+  const docs = (typeof u.documents === 'string') ? JSON.parse(u.documents) : (u.documents || {});
+
+  document.getElementById('editCustUserId').value = u.userId;
+  document.getElementById('editCustName').value = u.name || '';
+  document.getElementById('editCustEmail').value = u.email || '';
+  document.getElementById('editCustPhone').value = u.phone || '';
+  document.getElementById('editCustPan').value = docs.panNumber || u.panNumber || '';
+  document.getElementById('editCustAadhaar').value = docs.aadhaarNumber || u.aadhaarNumber || '';
+  document.getElementById('editCustDob').value = u.dateOfBirth || '';
+  document.getElementById('editCustStatus').value = u.status || 'ACTIVE';
+  document.getElementById('editCustAddress').value = u.address || '';
+
+  document.getElementById('editCustomerModal')?.classList.add('active');
+}
+
+// Bind edit form submission
+document.addEventListener('DOMContentLoaded', () => {
+  const editForm = document.getElementById('editCustomerDetailsForm');
+  if (editForm) {
+    editForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('editCustUserId').value;
+      const btn = document.getElementById('btnSaveEditCustomerDossier');
+
+      const payload = {
+        name: document.getElementById('editCustName').value.trim(),
+        email: document.getElementById('editCustEmail').value.trim(),
+        phone: document.getElementById('editCustPhone').value.trim(),
+        panNumber: document.getElementById('editCustPan').value.trim().toUpperCase(),
+        aadhaarNumber: document.getElementById('editCustAadhaar').value.trim(),
+        dateOfBirth: document.getElementById('editCustDob').value,
+        status: document.getElementById('editCustStatus').value,
+        address: document.getElementById('editCustAddress').value.trim()
+      };
+
+      Utils.setLoading(btn, true, 'Applying Corrections...');
+      try {
+        await API.request(`/admin/customers/${userId}/edit`, 'PUT', payload);
+        Utils.showToast('Customer dossier details updated & corrected successfully!', 'success');
+        document.getElementById('editCustomerModal')?.classList.remove('active');
+        await loadCustomerDetails();
+      } catch (err) {
+        Utils.showToast(err.message || 'Failed to update customer details', 'error');
+      } finally {
+        Utils.setLoading(btn, false);
+      }
+    });
+  }
+});
+
+window.openEditCustomerDetailsModal = openEditCustomerDetailsModal;
 window.approveCurrentCustomer = approveCurrentCustomer;
 window.executeApproveCurrentCustomer = executeApproveCurrentCustomer;
 window.rejectCurrentCustomer = rejectCurrentCustomer;

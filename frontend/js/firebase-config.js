@@ -1,18 +1,18 @@
 /**
  * GG BANK - Firebase Client Configuration & Database Sync Engine
- * Project: ggbank-d6735
+ * Project: gg-techcore
  */
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBcJ9LyBWyqDZjY5bxlui_m_Bq3qx1nxJI",
-  authDomain: "ggbank-d6735.firebaseapp.com",
-  databaseURL: "https://ggbank-d6735-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "ggbank-d6735",
-  storageBucket: "ggbank-d6735.firebasestorage.app",
-  messagingSenderId: "19675824500",
-  appId: "1:19675824500:web:ac34fb072cd7a88653ec21",
-  measurementId: "G-1GP5RLN83B"
+  apiKey: "AIzaSyAyfF49hVKbrpjpgynAWm7a0z33lUofv_U",
+  authDomain: "gg-techcore.firebaseapp.com",
+  databaseURL: "https://gg-techcore-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "gg-techcore",
+  storageBucket: "gg-techcore.firebasestorage.app",
+  messagingSenderId: "880101841073",
+  appId: "1:880101841073:web:8efdef0da8b63bc85c2a90",
+  measurementId: "G-Q89J26XCGW"
 };
 
 // Initialize Firebase SDK instances
@@ -43,7 +43,7 @@ function initFirebase() {
       if (firebase.analytics) {
         firebaseAnalytics = firebase.analytics();
       }
-      console.log("🔥 GG BANK: Connected to Firebase Project [ggbank-d6735]");
+      console.log("🔥 GG BANK: Connected to Firebase Project [gg-techcore]");
     }
   } catch (error) {
     console.warn("GG BANK: Firebase connection notice:", error.message);
@@ -102,7 +102,7 @@ async function testFirebaseConnection() {
     const testRef = firestoreDb.collection('system_health').doc('ping');
     await testRef.set({
       appName: 'GG BANK',
-      projectId: 'ggbank-d6735',
+      projectId: 'gg-techcore',
       timestamp: new Date().toISOString(),
       status: 'ONLINE'
     }, { merge: true });
@@ -112,7 +112,7 @@ async function testFirebaseConnection() {
       status: 'LIVE_FIRESTORE',
       connected: true,
       latencyMs: latency,
-      projectId: 'ggbank-d6735',
+      projectId: 'gg-techcore',
       message: `Successfully connected to Cloud Firestore (Latency: ${latency}ms)!`
     };
   } catch (err) {
@@ -174,7 +174,7 @@ async function inspectDatabaseCollections() {
 
   return {
     isOnline: !!firestoreDb,
-    projectId: 'ggbank-d6735',
+    projectId: 'gg-techcore',
     totalStoredRecords: totalDocs,
     collections: results,
     timestamp: new Date().toISOString()

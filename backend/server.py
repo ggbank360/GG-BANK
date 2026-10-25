@@ -11,6 +11,7 @@ import os
 import json
 import sqlite3
 import re
+import random
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -26,6 +27,37 @@ def get_db():
     conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     return conn
+
+def _format_user(row):
+    if not row:
+        return None
+    d = dict(row)
+    docs = {}
+    if d.get("documents"):
+        if isinstance(d["documents"], str):
+            try:
+                docs = json.loads(d["documents"])
+            except Exception:
+                docs = {}
+        elif isinstance(d["documents"], dict):
+            docs = d["documents"]
+
+    photo = (
+        d.get("profilePhoto") or
+        d.get("avatar") or
+        docs.get("photoDoc") or
+        docs.get("photo") or
+        docs.get("profilePhoto") or
+        ""
+    )
+    d["avatar"] = photo
+    d["profilePhoto"] = photo
+    d["photoDoc"] = photo
+    docs["photoDoc"] = photo
+    docs.setdefault("panNumber", d.get("panNumber") or "ABCDE1234F")
+    docs.setdefault("aadhaarNumber", d.get("aadhaarNumber") or "2345 6789 0123")
+    d["documents"] = docs
+    return d
 
 def seed_initial_data(c):
     print("[DATABASE] Seeding initial banking records into SQLite...")
@@ -125,6 +157,15 @@ def init_db():
         createdAt TEXT
     )
     """)
+
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN profilePhoto TEXT")
+    except Exception:
+        pass
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN avatar TEXT")
+    except Exception:
+        pass
 
     # 2. Accounts
     c.execute("""
@@ -374,7 +415,7 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                 c.execute("SELECT * FROM users ORDER BY createdAt DESC LIMIT 1")
                 row = c.fetchone()
                 if row:
-                    self._send_success(dict(row))
+                    self._send_success(_format_user(row))
                 else:
                     self._send_error("No user found", 404)
                 return
@@ -543,27 +584,13 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                 """)
                 custs = []
                 for r in c.fetchall():
-                    row = dict(r)
-                    pan = row.get("panNumber") or "ABCDE1234F"
-                    dl = row.get("dlNumber") or "DL-1420110012345"
-                    aadhaar = row.get("aadhaarNumber") or "2345 6789 0123"
-                    if "documents" not in row or not row["documents"]:
-                        row["documents"] = {
-                            "panNumber": pan,
-                            "dlNumber": dl,
-                            "aadhaarNumber": aadhaar
-                        }
-                    elif isinstance(row["documents"], str):
-                        try:
-                            row["documents"] = json.loads(row["documents"])
-                        except Exception:
-                            row["documents"] = {"panNumber": pan, "dlNumber": dl, "aadhaarNumber": aadhaar}
-                    custs.append(row)
+                    formatted = _format_user(r)
+                    custs.append(formatted)
                 self._send_success(custs)
                 return
 
             # 15. /admin/customers/{userId}
-            if path.startswith("/admin/customers/") and not any(k in path for k in ("/status", "/activate", "/deactivate", "/block", "/edit")):
+            if path.startswith("/admin/customers/") and not any(k in path for k in ("/status", "/activate", "/deactivate", "/block", "/edit", "/approve", "/reject")):
                 user_id = path.split("/")[3]
                 c.execute("SELECT * FROM users WHERE userId = ?", (user_id,))
                 user = c.fetchone()
@@ -579,7 +606,7 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                 loans = [dict(r) for r in c.fetchall()]
 
                 self._send_success({
-                    "user": dict(user),
+                    "user": _format_user(user),
                     "account": dict(acc) if acc else None,
                     "totalTransactionsCount": len(txns),
                     "recentTransactions": txns,
@@ -708,6 +735,32 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                 self._send_success([dict(r) for r in c.fetchall()])
                 return
 
+            # 29. Static File Serving (HTML, CSS, JS, Images, Fonts)
+            frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
+            clean_p = path.lstrip("/")
+            if not clean_p or clean_p == "/":
+                clean_p = "login.html"
+            local_file = os.path.abspath(os.path.join(frontend_dir, clean_p.replace("/", os.sep)))
+            if local_file.startswith(frontend_dir) and os.path.isfile(local_file):
+                mime = "application/octet-stream"
+                if local_file.endswith(".html"): mime = "text/html; charset=utf-8"
+                elif local_file.endswith(".css"): mime = "text/css; charset=utf-8"
+                elif local_file.endswith(".js"): mime = "application/javascript; charset=utf-8"
+                elif local_file.endswith(".json"): mime = "application/json; charset=utf-8"
+                elif local_file.endswith(".png"): mime = "image/png"
+                elif local_file.endswith(".jpg") or local_file.endswith(".jpeg"): mime = "image/jpeg"
+                elif local_file.endswith(".svg"): mime = "image/svg+xml"
+                elif local_file.endswith(".ico"): mime = "image/x-icon"
+                elif local_file.endswith(".woff2"): mime = "font/woff2"
+
+                self.send_response(200)
+                self._set_cors()
+                self.send_header("Content-Type", mime)
+                self.end_headers()
+                with open(local_file, "rb") as f:
+                    self.wfile.write(f.read())
+                return
+
             # Unmatched GET
             self._send_error(f"Endpoint GET {path} not found", 404)
 
@@ -732,28 +785,41 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
         try:
             # 1. /auth/login
             if path in ("/auth/login", "/login"):
-                email = (body.get("email") or "").strip().lower()
-                acc_num = (body.get("accountNumber") or "").strip()
+                raw_id = (body.get("identifier") or body.get("email") or body.get("accountNumber") or body.get("username") or "").strip()
                 password = body.get("password")
 
                 user = None
                 account = None
 
-                if email:
-                    c.execute("SELECT * FROM users WHERE LOWER(email) = ?", (email,))
+                if "@" in raw_id:
+                    c.execute("SELECT * FROM users WHERE LOWER(email) = ?", (raw_id.lower(),))
                     user = c.fetchone()
                     if user:
                         c.execute("SELECT * FROM accounts WHERE userId = ?", (user["userId"],))
                         account = c.fetchone()
-                elif acc_num:
-                    c.execute("SELECT * FROM accounts WHERE accountNumber = ?", (acc_num,))
+                elif raw_id.isdigit():
+                    # Check 11/12-digit account number first
+                    c.execute("SELECT * FROM accounts WHERE accountNumber = ?", (raw_id,))
                     account = c.fetchone()
                     if account:
                         c.execute("SELECT * FROM users WHERE userId = ?", (account["userId"],))
                         user = c.fetchone()
+                    else:
+                        # Check phone number
+                        c.execute("SELECT * FROM users WHERE phone = ?", (raw_id,))
+                        user = c.fetchone()
+                        if user:
+                            c.execute("SELECT * FROM accounts WHERE userId = ?", (user["userId"],))
+                            account = c.fetchone()
+                else:
+                    c.execute("SELECT * FROM users WHERE LOWER(email) = ? OR userId = ?", (raw_id.lower(), raw_id))
+                    user = c.fetchone()
+                    if user:
+                        c.execute("SELECT * FROM accounts WHERE userId = ?", (user["userId"],))
+                        account = c.fetchone()
 
                 if not user:
-                    self._send_error(f"No registered account found with {'email ' + email if email else 'account number ' + acc_num}.", 404)
+                    self._send_error(f"No registered account found with identifier '{raw_id}'.", 404)
                     return
 
                 if password and user["password"] != password:
@@ -764,7 +830,11 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                     self._send_error("Account is blocked. Please contact GG BANK administration.", 403)
                     return
 
-                user_dict = dict(user)
+                if user["status"] == "PENDING_APPROVAL":
+                    self._send_error("Account application is Pending Approval. The Bank Administrator is verifying your KYC documents.", 403)
+                    return
+
+                user_dict = _format_user(user)
                 acc_dict = dict(account) if account else None
 
                 # Log audit
@@ -801,33 +871,54 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
 
                 user_id = f"usr-{int(datetime.utcnow().timestamp()) % 1000000}"
                 # Generate unique 12-digit account number starting with 100188
-                import random
                 acc_num = f"100188{random.randint(100000, 999999)}"
+                photo_doc = body.get("photoDoc", "")
 
-                new_user = (
-                    user_id,
-                    body.get("name", "New Customer"),
-                    email,
-                    body.get("password", "Password@123"),
-                    body.get("phone", ""),
-                    body.get("dateOfBirth", ""),
-                    body.get("gender", ""),
-                    body.get("address", ""),
-                    body.get("occupation", ""),
-                    "CUSTOMER",
-                    "ACTIVE",
-                    pan,
-                    aadhaar,
-                    json.dumps({
-                        "panDoc": body.get("panDoc", ""),
-                        "aadhaarDoc": body.get("aadhaarDoc", ""),
-                        "addressProofDoc": body.get("addressProofDoc", ""),
-                        "photoDoc": body.get("photoDoc", ""),
-                        "signatureDoc": body.get("signatureDoc", "")
-                    }),
-                    now
-                )
-                c.execute("INSERT INTO users VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", new_user)
+                doc_payload = {
+                    "panNumber": pan,
+                    "aadhaarNumber": aadhaar,
+                    "panDoc": body.get("panDoc", ""),
+                    "aadhaarDoc": body.get("aadhaarDoc", ""),
+                    "addressProofType": body.get("addressProofType", "Not Required"),
+                    "addressProofDoc": body.get("addressProofDoc", ""),
+                    "photoDoc": photo_doc,
+                    "signatureDoc": body.get("signatureDoc", ""),
+                    "nomineeName": body.get("nomineeName", ""),
+                    "nomineeRelation": body.get("nomineeRelation", ""),
+                    "nomineePhone": body.get("nomineePhone", "")
+                }
+
+                cols = [col[1] for col in c.execute("PRAGMA table_info(users)").fetchall()]
+                if "profilePhoto" in cols and "avatar" in cols:
+                    c.execute("""
+                    INSERT INTO users (userId, name, email, password, phone, dateOfBirth, gender, address, occupation, role, status, panNumber, aadhaarNumber, documents, createdAt, profilePhoto, avatar)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """, (
+                        user_id, body.get("name", "New Customer"), email, body.get("password", "Password@123"),
+                        body.get("phone", ""), body.get("dateOfBirth", ""), body.get("gender", ""), body.get("address", ""),
+                        body.get("occupation", ""), "CUSTOMER", "PENDING_APPROVAL", pan, aadhaar,
+                        json.dumps(doc_payload), now, photo_doc, photo_doc
+                    ))
+                elif "profilePhoto" in cols:
+                    c.execute("""
+                    INSERT INTO users (userId, name, email, password, phone, dateOfBirth, gender, address, occupation, role, status, panNumber, aadhaarNumber, documents, createdAt, profilePhoto)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """, (
+                        user_id, body.get("name", "New Customer"), email, body.get("password", "Password@123"),
+                        body.get("phone", ""), body.get("dateOfBirth", ""), body.get("gender", ""), body.get("address", ""),
+                        body.get("occupation", ""), "CUSTOMER", "PENDING_APPROVAL", pan, aadhaar,
+                        json.dumps(doc_payload), now, photo_doc
+                    ))
+                else:
+                    c.execute("""
+                    INSERT INTO users (userId, name, email, password, phone, dateOfBirth, gender, address, occupation, role, status, panNumber, aadhaarNumber, documents, createdAt)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """, (
+                        user_id, body.get("name", "New Customer"), email, body.get("password", "Password@123"),
+                        body.get("phone", ""), body.get("dateOfBirth", ""), body.get("gender", ""), body.get("address", ""),
+                        body.get("occupation", ""), "CUSTOMER", "PENDING_APPROVAL", pan, aadhaar,
+                        json.dumps(doc_payload), now
+                    ))
 
                 acc_id = f"acc-{user_id}"
                 acc_type = body.get("accountType", "SAVINGS")
@@ -839,7 +930,7 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                     0.00,
                     "GGBN0001234",
                     "Central Tech Branch",
-                    "ACTIVE",
+                    "PENDING_APPROVAL",
                     now
                 )
                 c.execute("INSERT INTO accounts VALUES (?,?,?,?,?,?,?,?,?)", new_acc)
@@ -850,16 +941,16 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
 
                 # Audit log
                 c.execute("INSERT INTO audit_logs VALUES (?, ?, NULL, 'USER_REGISTRATION', ?, ?, 'SUCCESS')",
-                          (f"LOG-{int(datetime.utcnow().timestamp())}", user_id, f"New customer account created for {body.get('name')}", now))
+                          (f"LOG-{int(datetime.utcnow().timestamp())}", user_id, f"New customer registration submitted for {body.get('name')}. Status: PENDING_APPROVAL", now))
 
                 conn.commit()
 
                 c.execute("SELECT * FROM users WHERE userId = ?", (user_id,))
-                user_res = dict(c.fetchone())
+                user_res = _format_user(c.fetchone())
                 c.execute("SELECT * FROM accounts WHERE accountId = ?", (acc_id,))
                 acc_res = dict(c.fetchone())
 
-                self._send_success({"user": user_res, "account": acc_res}, "Customer registered successfully", 201)
+                self._send_success({"user": user_res, "account": acc_res}, "Customer registered successfully. Status is Pending Admin Approval.", 201)
                 return
 
             # 3. /transfer
@@ -895,13 +986,16 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                     new_rec_bal = receiver_acc["balance"] + amount
                     c.execute("UPDATE accounts SET balance = ? WHERE accountNumber = ?", (new_rec_bal, receiver_acc_num))
 
+                is_upi = "@" in str(receiver_acc_num) or body.get("transferMethod") == "UPI" or bool(body.get("upiId"))
+                txn_type = "UPI_TRANSFER" if is_upi else "TRANSFER"
+                txn_cat = "UPI Transfer" if is_upi else "Transfer"
                 txn_id = f"TXN-2026-{int(datetime.utcnow().timestamp()) % 1000000}"
                 c.execute("""
-                INSERT INTO transactions VALUES (?, ?, ?, ?, 'TRANSFER', 'Transfer', ?, 'COMPLETED', ?, ?)
-                """, (txn_id, sender_acc_num, receiver_acc_num, amount, body.get("description", f"Transfer to {receiver_acc_num}"), new_sender_bal, now))
+                INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, 'COMPLETED', ?, ?)
+                """, (txn_id, sender_acc_num, receiver_acc_num, amount, txn_type, txn_cat, body.get("description", f"Transfer to {receiver_acc_num}"), new_sender_bal, now))
 
-                c.execute("INSERT INTO audit_logs VALUES (?, ?, NULL, 'TRANSFER', ?, ?, 'SUCCESS')",
-                          (f"LOG-{int(datetime.utcnow().timestamp())}", sender_acc["userId"], f"Transferred ₹{amount} to {receiver_acc_num}", now))
+                c.execute("INSERT INTO audit_logs VALUES (?, ?, NULL, ?, ?, ?, 'SUCCESS')",
+                          (f"LOG-{int(datetime.utcnow().timestamp())}", sender_acc["userId"], txn_type, f"Transferred ₹{amount} to {receiver_acc_num}", now))
 
                 conn.commit()
 
@@ -1211,7 +1305,38 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
         now = datetime.utcnow().isoformat() + "Z"
 
         try:
-            # 1. /admin/customers/{userId}/status or activate/deactivate/block
+            # 1. /admin/customers/{userId}/approve
+            if path.startswith("/admin/customers/") and path.endswith("/approve"):
+                user_id = path.split("/")[3]
+                remarks = body.get("remarks", "Official KYC Documents Verified and Approved")
+                approved_by = body.get("approvedBy", "GG Bank Administrator")
+                c.execute("UPDATE users SET status = 'ACTIVE' WHERE userId = ?", (user_id,))
+                c.execute("UPDATE accounts SET status = 'ACTIVE' WHERE userId = ?", (user_id,))
+                c.execute("INSERT INTO audit_logs VALUES (?, ?, 'usr-admin-999', 'KYC_APPROVED', ?, ?, 'SUCCESS')",
+                          (f"LOG-{int(datetime.utcnow().timestamp())}", user_id, f"KYC documents approved by {approved_by}: {remarks}", now))
+                c.execute("INSERT INTO notifications VALUES (?, ?, 'Account Approved & Activated', 'Your GG Bank account KYC documents have been verified and approved. You can now access all banking services.', 'ACCOUNT', 0, ?)",
+                          (f"notif-{int(datetime.utcnow().timestamp())}", user_id, now))
+                conn.commit()
+
+                c.execute("SELECT * FROM users WHERE userId = ?", (user_id,))
+                self._send_success(_format_user(c.fetchone()), "Customer KYC approved and account activated")
+                return
+
+            # 2. /admin/customers/{userId}/reject
+            if path.startswith("/admin/customers/") and path.endswith("/reject"):
+                user_id = path.split("/")[3]
+                remarks = body.get("remarks", "KYC documents rejected during compliance check")
+                c.execute("UPDATE users SET status = 'REJECTED' WHERE userId = ?", (user_id,))
+                c.execute("UPDATE accounts SET status = 'REJECTED' WHERE userId = ?", (user_id,))
+                c.execute("INSERT INTO audit_logs VALUES (?, ?, 'usr-admin-999', 'KYC_REJECTED', ?, ?, 'WARNING')",
+                          (f"LOG-{int(datetime.utcnow().timestamp())}", user_id, f"Customer registration rejected: {remarks}", now))
+                conn.commit()
+
+                c.execute("SELECT * FROM users WHERE userId = ?", (user_id,))
+                self._send_success(_format_user(c.fetchone()), "Customer application rejected")
+                return
+
+            # 3. /admin/customers/{userId}/status or activate/deactivate/block
             if path.startswith("/admin/customers/") and any(k in path for k in ("/activate", "/deactivate", "/block", "/status")):
                 user_id = path.split("/")[3]
                 new_status = "ACTIVE"
@@ -1225,25 +1350,47 @@ class GgBankApiHandler(BaseHTTPRequestHandler):
                 conn.commit()
 
                 c.execute("SELECT * FROM users WHERE userId = ?", (user_id,))
-                self._send_success(dict(c.fetchone()), f"Customer status updated to {new_status}")
+                self._send_success(_format_user(c.fetchone()), f"Customer status updated to {new_status}")
                 return
 
-            # 2. /admin/customers/{userId}/edit
-            if path.startswith("/admin/customers/") and (path.endswith("/edit") or "/edit" in path):
-                user_id = path.split("/")[3]
+            # 4. /admin/customers/{userId}/edit or /admin/customers/{userId} profile update
+            if path.startswith("/admin/customers/") and (path.endswith("/edit") or "/edit" in path or len(path.strip("/").split("/")) == 3):
+                user_id = path.strip("/").split("/")[2]
                 updates = []
                 params = []
-                for k in ("name", "email", "phone", "dateOfBirth", "address", "status"):
-                    if k in body:
+                cols = [col[1] for col in c.execute("PRAGMA table_info(users)").fetchall()]
+                for k in ("name", "email", "phone", "dateOfBirth", "address", "status", "panNumber", "aadhaarNumber", "profilePhoto", "avatar"):
+                    if k in body and k in cols:
                         updates.append(f"{k} = ?")
                         params.append(body[k])
                 if updates:
                     params.append(user_id)
                     c.execute(f"UPDATE users SET {', '.join(updates)} WHERE userId = ?", params)
-                    conn.commit()
+
+                # Update accounts table if status or accountType modified
+                if "status" in body:
+                    c.execute("UPDATE accounts SET status = ? WHERE userId = ?", (body["status"].upper(), user_id))
+                if "accountType" in body:
+                    c.execute("UPDATE accounts SET accountType = ? WHERE userId = ?", (body["accountType"], user_id))
+
+                conn.commit()
 
                 c.execute("SELECT * FROM users WHERE userId = ?", (user_id,))
-                self._send_success(dict(c.fetchone()), "Customer details updated successfully")
+                self._send_success(_format_user(c.fetchone()), "Customer details updated successfully")
+                return
+
+            # 5. /users/{userId}/photo or /profile-photo
+            if (path.startswith("/users/") or path.startswith("/admin/customers/")) and path.endswith("/photo"):
+                user_id = path.split("/")[2] if path.startswith("/users/") else path.split("/")[3]
+                photo = body.get("photo") or body.get("avatar") or body.get("photoDoc") or ""
+                cols = [col[1] for col in c.execute("PRAGMA table_info(users)").fetchall()]
+                if "profilePhoto" in cols and "avatar" in cols:
+                    c.execute("UPDATE users SET profilePhoto = ?, avatar = ? WHERE userId = ?", (photo, photo, user_id))
+                elif "profilePhoto" in cols:
+                    c.execute("UPDATE users SET profilePhoto = ? WHERE userId = ?", (photo, user_id))
+                conn.commit()
+                c.execute("SELECT * FROM users WHERE userId = ?", (user_id,))
+                self._send_success(_format_user(c.fetchone()), "Profile photo updated successfully")
                 return
 
             # 3. /admin/loans/{loanId}/approve

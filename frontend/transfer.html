@@ -3,22 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fund Transfer - GG BANK</title>
+  <meta name="description" content="GG BANK - Instant Money Transfer & UPI Payments">
+  <title>Money Transfer - GG BANK</title>
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/responsive.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Transfer Mode Tab Switcher */
+    .transfer-tab-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 22px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 6px;
+      border-radius: var(--radius-md, 12px);
+      border: 1px solid var(--border);
+    }
+    .transfer-tab-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .transfer-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .transfer-tab-btn.active {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(2, 132, 199, 0.35) 100%);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      box-shadow: 0 4px 16px rgba(0, 240, 255, 0.15);
+    }
+    .transfer-tab-btn.active i {
+      color: var(--accent-cyan);
+    }
+
+    /* UPI Suffix Chips */
+    .upi-suffix-chip {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--accent-cyan);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono, monospace);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 600;
+    }
+    .upi-suffix-chip:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--accent-cyan);
+      transform: translateY(-1px);
+    }
+
+    /* Quick Amount Chips */
+    .amount-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: var(--font-mono, monospace);
+      transition: all 0.2s ease;
+      font-weight: 600;
+    }
+    .amount-chip:hover {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: rgba(0, 240, 255, 0.3);
+      color: #fff;
+    }
+
+    /* Balance Preview Card */
+    .balance-preview-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md, 12px);
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.86rem;
+    }
+    .bp-row .bp-label {
+      color: var(--text-secondary);
+    }
+    .bp-row .bp-val {
+      font-family: var(--font-mono, monospace);
+      font-weight: 700;
+      color: #fff;
+    }
+    .bp-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2px 0;
+    }
+
+    .verified-vpa-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
 
   <div class="app-container">
     
-    <!-- Sidebar -->
+    <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="dashboard.html" class="brand-logo">
-          <div class="logo-icon">GG</div>
+          <div class="logo-icon"></div>
           <div class="brand-info">
             <span class="brand-title">GG BANK</span>
             <span class="brand-subtitle">Smart Digital Banking</span>
@@ -27,26 +152,60 @@
       </div>
 
       <ul class="nav-menu">
-        <div class="nav-section-title">Main Portal</div>
-        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a></li>
-        <li class="nav-item"><a href="account.html" class="nav-link"><i class="fa-solid fa-id-card"></i> <span>My Account</span></a></li>
-        <li class="nav-item"><a href="transactions.html" class="nav-link"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a></li>
-        <li class="nav-item active"><a href="transfer.html" class="nav-link"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a></li>
-        <li class="nav-item"><a href="deposit.html" class="nav-link"><i class="fa-solid fa-circle-arrow-down"></i> <span>Deposit</span></a></li>
-        <li class="nav-item"><a href="withdraw.html" class="nav-link"><i class="fa-solid fa-circle-arrow-up"></i> <span>Withdraw</span></a></li>
-        <li class="nav-item"><a href="beneficiaries.html" class="nav-link"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a></li>
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        
+        <div class="nav-section-title">Money</div>
+        <li class="nav-item">
+          <a class="nav-link" href="account.html"><i class="fa-solid fa-id-card"></i> <span>Accounts</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="transfer.html"><i class="fa-solid fa-paper-plane"></i> <span>Transfer</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="qr-pay.html"><i class="fa-solid fa-qrcode"></i> <span>Scan &amp; Pay</span></a>
+        </li>
 
-        <div class="nav-section-title">Finance & Utilities</div>
-        <li class="nav-item"><a href="loans.html" class="nav-link"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a></li>
-        <li class="nav-item"><a href="budget.html" class="nav-link"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a></li>
-        <li class="nav-item"><a href="financial-insights.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span>Financial Insights</span></a></li>
-        <li class="nav-item"><a href="bill-payments.html" class="nav-link"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a></li>
+        <div class="nav-section-title">Payments</div>
+        <li class="nav-item">
+          <a class="nav-link" href="bill-payments.html"><i class="fa-solid fa-receipt"></i> <span>Bill Payments</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="beneficiaries.html"><i class="fa-solid fa-users"></i> <span>Beneficiaries</span></a>
+        </li>
 
-        <div class="nav-section-title">Settings</div>
-        <li class="nav-item"><a href="notifications.html" class="nav-link"><i class="fa-solid fa-bell"></i> <span>Notifications</span></a></li>
-        <li class="nav-item"><a href="security.html" class="nav-link"><i class="fa-solid fa-shield-halved"></i> <span>Security</span></a></li>
-        <li class="nav-item"><a href="profile.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span>Profile</span></a></li>
-        <li class="nav-item"><a href="#" onclick="Auth.logout()" class="nav-link" style="color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span></a></li>
+        <div class="nav-section-title">Financial</div>
+        <li class="nav-item">
+          <a class="nav-link" href="transactions.html"><i class="fa-solid fa-list-check"></i> <span>Transactions</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="budget.html"><i class="fa-solid fa-wallet"></i> <span>Budget</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="financial-insights.html"><i class="fa-solid fa-chart-pie"></i> <span>Insights</span></a>
+        </li>
+
+        <div class="nav-section-title">Services</div>
+        <li class="nav-item">
+          <a class="nav-link" href="loans.html"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Loans</span></a>
+        </li>
+
+        <div class="nav-section-title">Account</div>
+        <li class="nav-item">
+          <a class="nav-link" href="notifications.html">
+            <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+            <span class="badge-count" id="notifBadgeCount" style="display: none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="security.html"><i class="fa-solid fa-shield-halved"></i> <span>Profile & Security</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="Auth.logout()" style="color: var(--danger); cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+          </a>
+        </li>
       </ul>
 
       <div class="sidebar-footer">
@@ -64,12 +223,15 @@
     <div class="main-wrapper">
       <header class="topbar">
         <div class="topbar-left">
-          <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
             <i class="fa-solid fa-bars"></i>
           </button>
-          <div class="greeting-text">Fund Transfer</div>
+          <div class="greeting-text">Money Transfer</div>
         </div>
         <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☀️</span>
+          </button>
           <a href="notifications.html" class="icon-btn"><i class="fa-solid fa-bell"></i></a>
           <a href="profile.html" class="user-avatar customer-avatar-display">CU</a>
         </div>
@@ -78,57 +240,265 @@
       <main class="content-area">
         <div class="page-header">
           <div>
-            <h2 class="page-title"><i class="fa-solid fa-paper-plane"></i> Money <span>Transfer</span></h2>
-            <p class="page-description">Fast, atomic, and secure double-entry money transfer engine.</p>
+            <h2 class="page-title"><i class="fa-solid fa-paper-plane" style="color: var(--accent-cyan);"></i> Money <span>Transfer</span></h2>
+            <p class="page-description">Send money instantly using Unified Payments Interface (UPI ID) or standard Bank Account transfer.</p>
           </div>
+          <a href="qr-pay.html" class="btn btn-secondary">
+            <i class="fa-solid fa-qrcode"></i> Switch to Scan &amp; Pay
+          </a>
         </div>
 
-        <div class="card" style="max-width: 680px;">
-          <form id="moneyTransferForm">
+        <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start;">
+          
+          <!-- LEFT: Main Transfer Form Card -->
+          <div class="card">
             
-            <div class="form-group">
-              <label class="form-label" for="transferBeneficiarySelect">Select from Saved Beneficiaries</label>
-              <select id="transferBeneficiarySelect" class="form-control">
-                <option value="">-- Choose Saved Beneficiary or Enter Manually --</option>
-              </select>
+            <!-- Mode Switcher Tabs -->
+            <div class="transfer-tab-nav">
+              <button type="button" class="transfer-tab-btn active" id="tabBtnUpi" onclick="switchTransferMode('UPI')">
+                <i class="fa-solid fa-bolt"></i> Transfer via UPI ID
+              </button>
+              <button type="button" class="transfer-tab-btn" id="tabBtnAccount" onclick="switchTransferMode('ACCOUNT')">
+                <i class="fa-solid fa-building-columns"></i> Bank Account &amp; IFSC
+              </button>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="transferBenName">Beneficiary Legal Name</label>
-              <input type="text" id="transferBenName" class="form-control" placeholder="Recipient Name" required>
-            </div>
-
-            <div class="form-row">
+            <!-- ================= UPI TRANSFER FORM ================= -->
+            <form id="upiTransferForm">
+              
               <div class="form-group">
-                <label class="form-label" for="transferAccNumber">Recipient 12-Digit Account Number</label>
-                <input type="text" id="transferAccNumber" class="form-control" placeholder="100188492020" maxlength="12" inputmode="numeric" required>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label class="form-label" for="transferUpiId" style="margin: 0;">Recipient UPI ID / VPA</label>
+                  <span id="upiVerifiedBadge" style="display: none;" class="verified-vpa-badge">
+                    <i class="fa-solid fa-circle-check"></i> <span id="upiVerifiedNameText">Verified Payee</span>
+                  </span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <div class="input-with-icon" style="flex: 1;">
+                    <i class="fa-solid fa-at input-icon"></i>
+                    <input 
+                      type="text" 
+                      id="transferUpiId" 
+                      class="form-control" 
+                      placeholder="e.g. gowtham@okaxis or 9876543210@upi" 
+                      required
+                      autocomplete="off"
+                      oninput="onUpiInputChange()"
+                    >
+                  </div>
+                  <button type="button" class="btn btn-secondary" id="btnVerifyUpi" onclick="verifyRecipientUpi()" style="white-space: nowrap; font-size: 0.85rem;">
+                    <i class="fa-solid fa-shield-check"></i> Verify
+                  </button>
+                </div>
+                
+                <!-- Quick UPI Extensions -->
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center;">
+                  <span style="font-size: 0.74rem; color: var(--text-muted); font-weight: 600;">Popular Handles:</span>
+                  <span class="upi-suffix-chip" onclick="appendUpiSuffix('@ggbank')">@ggbank</span>
+                  <span class="upi-suffix-chip" onclick="appendUpiSuffix('@okaxis')">@okaxis</span>
+                  <span class="upi-suffix-chip" onclick="appendUpiSuffix('@okhdfcbank')">@okhdfcbank</span>
+                  <span class="upi-suffix-chip" onclick="appendUpiSuffix('@paytm')">@paytm</span>
+                  <span class="upi-suffix-chip" onclick="appendUpiSuffix('@ybl')">@ybl</span>
+                  <span class="upi-suffix-chip" onclick="appendUpiSuffix('@upi')">@upi</span>
+                </div>
               </div>
+
               <div class="form-group">
-                <label class="form-label" for="transferConfirmAccNumber">Confirm 12-Digit Account Number</label>
-                <input type="text" id="transferConfirmAccNumber" class="form-control" placeholder="100188492020" maxlength="12" inputmode="numeric" required>
+                <label class="form-label" for="transferUpiPayeeName">Payee Name</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-user input-icon"></i>
+                  <input type="text" id="transferUpiPayeeName" class="form-control" placeholder="Recipient Name" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="transferUpiAmount">Transfer Amount (₹)</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-indian-rupee-sign input-icon"></i>
+                  <input type="number" id="transferUpiAmount" class="form-control" placeholder="1000" min="1" step="0.01" required oninput="updateLiveCalculations()">
+                </div>
+                <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                  <span class="amount-chip" onclick="setQuickAmount(500)">+₹500</span>
+                  <span class="amount-chip" onclick="setQuickAmount(1000)">+₹1,000</span>
+                  <span class="amount-chip" onclick="setQuickAmount(2000)">+₹2,000</span>
+                  <span class="amount-chip" onclick="setQuickAmount(5000)">+₹5,000</span>
+                  <span class="amount-chip" onclick="setQuickAmount(10000)">+₹10,000</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="transferUpiDesc">Payment Note / Description</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-message input-icon"></i>
+                  <input type="text" id="transferUpiDesc" class="form-control" placeholder="e.g. Dinner split, Rent, Project fee">
+                </div>
+              </div>
+
+              <!-- Live Balance Preview Box -->
+              <div class="balance-preview-box">
+                <div class="bp-row">
+                  <span class="bp-label">Current Available Balance</span>
+                  <span class="bp-val" id="bpAvailableBal">₹0.00</span>
+                </div>
+                <div class="bp-row">
+                  <span class="bp-label">Transfer Amount</span>
+                  <span class="bp-val" style="color: var(--warning);" id="bpDebitAmount">-₹0.00</span>
+                </div>
+                <div class="bp-row">
+                  <span class="bp-label">Transaction Fee</span>
+                  <span class="bp-val" style="color: var(--success);">₹0.00 (Zero Fee)</span>
+                </div>
+                <div class="bp-divider"></div>
+                <div class="bp-row">
+                  <span class="bp-label" style="font-weight: 700; color: #fff;">Remaining Balance</span>
+                  <span class="bp-val" style="color: var(--accent-cyan); font-size: 1.05rem;" id="bpRemainingBal">₹0.00</span>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnSubmitUpi">
+                <i class="fa-solid fa-bolt"></i> Review &amp; Pay via UPI
+              </button>
+            </form>
+
+
+            <!-- ================= BANK ACCOUNT TRANSFER FORM ================= -->
+            <form id="moneyTransferForm" style="display: none;">
+              
+              <div class="form-group">
+                <label class="form-label" for="transferBeneficiarySelect">Select from Saved Beneficiaries</label>
+                <select id="transferBeneficiarySelect" class="form-control">
+                  <option value="">-- Choose Saved Beneficiary or Enter Manually --</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="transferBenName">Beneficiary Legal Name</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-user input-icon"></i>
+                  <input type="text" id="transferBenName" class="form-control" placeholder="Recipient Name" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="transferAccNumber">Recipient 12-Digit Account Number</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-id-card input-icon"></i>
+                    <input type="text" id="transferAccNumber" class="form-control" placeholder="100188492020" maxlength="12" inputmode="numeric" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="transferConfirmAccNumber">Confirm 12-Digit Account Number</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-check-double input-icon"></i>
+                    <input type="text" id="transferConfirmAccNumber" class="form-control" placeholder="100188492020" maxlength="12" inputmode="numeric" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="transferIfsc">IFSC Code</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-building-columns input-icon"></i>
+                    <input type="text" id="transferIfsc" class="form-control" placeholder="GGBN0001234" value="GGBN0001234" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="transferAmount">Transfer Amount (₹)</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-indian-rupee-sign input-icon"></i>
+                    <input type="number" id="transferAmount" class="form-control" placeholder="5000" min="1" step="0.01" required oninput="updateLiveCalculations()">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="transferDesc">Payment Purpose / Description</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-message input-icon"></i>
+                  <input type="text" id="transferDesc" class="form-control" placeholder="e.g. Monthly Rent / College Tuition">
+                </div>
+              </div>
+
+              <!-- Live Balance Preview Box -->
+              <div class="balance-preview-box">
+                <div class="bp-row">
+                  <span class="bp-label">Current Available Balance</span>
+                  <span class="bp-val" id="bpAccAvailableBal">₹0.00</span>
+                </div>
+                <div class="bp-row">
+                  <span class="bp-label">Transfer Amount</span>
+                  <span class="bp-val" style="color: var(--warning);" id="bpAccDebitAmount">-₹0.00</span>
+                </div>
+                <div class="bp-row">
+                  <span class="bp-label">Transaction Fee</span>
+                  <span class="bp-val" style="color: var(--success);">₹0.00 (Zero Fee)</span>
+                </div>
+                <div class="bp-divider"></div>
+                <div class="bp-row">
+                  <span class="bp-label" style="font-weight: 700; color: #fff;">Remaining Balance</span>
+                  <span class="bp-val" style="color: var(--accent-cyan); font-size: 1.05rem;" id="bpAccRemainingBal">₹0.00</span>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnSubmitAccount">
+                <i class="fa-solid fa-lock"></i> Review &amp; Transfer
+              </button>
+            </form>
+
+          </div>
+
+          <!-- RIGHT COLUMN: User UPI Profile & Quick Payees -->
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <!-- My Active UPI ID Card -->
+            <div class="card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%); border: 1px solid rgba(0, 240, 255, 0.25);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <span style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-cyan); font-weight: 700;">
+                  <i class="fa-solid fa-at"></i> My Banking UPI ID
+                </span>
+                <span class="badge badge-success" style="font-size: 0.7rem;">Active</span>
+              </div>
+              <div style="font-family: var(--font-mono, monospace); font-size: 1.05rem; font-weight: 800; color: #fff; word-break: break-all;" id="myActiveUpiId">
+                loading...
+              </div>
+              <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 6px;">
+                Linked Account: <span style="font-family: var(--font-mono); color: #fff;" id="myLinkedAccNum">100188••••••</span>
+              </div>
+              <div style="margin-top: 14px; display: flex; gap: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="copyMyUpiId()" style="flex: 1; font-size: 0.78rem;">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+                <a href="qr-pay.html" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.78rem;">
+                  <i class="fa-solid fa-qrcode"></i> My QR
+                </a>
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="transferIfsc">IFSC Code</label>
-                <input type="text" id="transferIfsc" class="form-control" placeholder="GGBN0001234" value="GGBN0001234" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="transferAmount">Transfer Amount (₹)</label>
-                <input type="number" id="transferAmount" class="form-control" placeholder="5000" min="1" step="0.01" required>
+            <!-- Instant Transfer Safeguards -->
+            <div class="card">
+              <h4 style="font-size: 0.92rem; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-shield-halved" style="color: var(--accent-cyan);"></i> Transfer Security
+              </h4>
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem; color: var(--text-secondary);">
+                <div style="display: flex; gap: 8px; align-items: flex-start;">
+                  <i class="fa-solid fa-check" style="color: var(--success); margin-top: 3px;"></i>
+                  <span>Zero transaction fee on all internal and inter-bank transfers.</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: flex-start;">
+                  <i class="fa-solid fa-check" style="color: var(--success); margin-top: 3px;"></i>
+                  <span>Instant double-entry ledger settlement with real-time balance update.</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: flex-start;">
+                  <i class="fa-solid fa-check" style="color: var(--success); margin-top: 3px;"></i>
+                  <span>256-bit encrypted validation with fraud prevention checks.</span>
+                </div>
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="transferDesc">Payment Purpose / Description</label>
-              <input type="text" id="transferDesc" class="form-control" placeholder="e.g. Monthly Rent / College Tuition">
-            </div>
+          </div>
 
-            <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
-              <i class="fa-solid fa-lock"></i> Review & Transfer
-            </button>
-          </form>
         </div>
       </main>
     </div>
@@ -138,40 +508,44 @@
   <div class="modal-backdrop" id="transferConfirmModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title">Confirm Money Transfer</h3>
+        <h3 class="modal-title" id="modalConfirmHeaderTitle"><i class="fa-solid fa-paper-plane" style="color: var(--accent-cyan);"></i> Confirm Money Transfer</h3>
         <button class="modal-close-btn" data-modal-close>&times;</button>
       </div>
-      <p style="font-size: 0.88rem; color: var(--text-secondary);">
-        Please verify the recipient information before final transaction authorization.
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px;">
+        Please verify the transaction details below before final fund authorization.
       </p>
 
       <div class="confirm-details-list">
         <div class="confirm-item">
-          <span class="label">Transfer To:</span>
-          <span class="val" id="modalConfirmTo">Johnathan Doe</span>
+          <span class="label">Transfer Channel:</span>
+          <span class="val" id="modalConfirmChannel" style="color: var(--accent-cyan); font-weight: 700;">UPI Instant Payment</span>
         </div>
         <div class="confirm-item">
-          <span class="label">Recipient Account:</span>
-          <span class="val" id="modalConfirmAcc" style="font-family: var(--font-mono); color: var(--accent-cyan);">1234 5678 901</span>
+          <span class="label">Payee Name:</span>
+          <span class="val" id="modalConfirmTo" style="font-weight: 700;">Recipient Name</span>
+        </div>
+        <div class="confirm-item">
+          <span class="label" id="modalConfirmAccLabel">Recipient UPI ID:</span>
+          <span class="val" id="modalConfirmAcc" style="font-family: var(--font-mono); color: var(--accent-cyan); font-weight: 700;">user@okaxis</span>
         </div>
         <div class="confirm-item">
           <span class="label">Transfer Amount:</span>
-          <span class="val" id="modalConfirmAmount">₹5,000.00</span>
+          <span class="val" id="modalConfirmAmount" style="font-weight: 700;">₹1,000.00</span>
         </div>
         <div class="confirm-item">
           <span class="label">Transaction Fee:</span>
-          <span class="val" style="color: var(--success);">₹0.00 (Free)</span>
+          <span class="val" style="color: var(--success);">₹0.00 (Zero Fee)</span>
         </div>
         <div class="confirm-item total-item">
           <span class="label" style="font-weight: 700;">Total Debit:</span>
-          <span class="val" id="modalConfirmTotal">₹5,000.00</span>
+          <span class="val" id="modalConfirmTotal" style="color: var(--accent-cyan); font-size: 1.15rem; font-weight: 800;">₹1,000.00</span>
         </div>
       </div>
 
-      <div class="modal-footer">
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
         <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
         <button type="button" class="btn btn-primary" id="btnExecuteTransfer">
-          <i class="fa-solid fa-check"></i> Confirm & Transfer
+          <i class="fa-solid fa-lock"></i> Authorize &amp; Send Money
         </button>
       </div>
     </div>
@@ -179,8 +553,10 @@
 
   <script src="js/firebase-config.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/toast.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/app-shell.js"></script>
   <script src="js/transfer.js"></script>
 
 </body>

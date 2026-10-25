@@ -101,6 +101,24 @@ const Utils = {
     return str;
   },
 
+  // Render User Avatar with profile picture support or fallback to initials
+  renderUserAvatar(el, user) {
+    if (!el) return;
+    const photo = user?.avatar || user?.profilePhoto || user?.photoDoc || (user?.documents && (user.documents.photoDoc || user.documents.photo)) || '';
+    if (photo && typeof photo === 'string' && photo.length > 20) {
+      el.innerHTML = `<img src="${photo}" alt="${user?.name || 'User'}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;" onerror="this.onerror=null; this.parentElement.textContent='${((user?.name || 'U').substring(0, 2)).toUpperCase()}';">`;
+    } else {
+      const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'CU';
+      el.textContent = initials;
+    }
+  },
+
+  // Update all .customer-avatar-display elements across the page
+  updateAllUserAvatars(user) {
+    const avatarElems = document.querySelectorAll('.customer-avatar-display');
+    avatarElems.forEach(el => this.renderUserAvatar(el, user));
+  },
+
   // Generate Downloadable Account Details PDF (jsPDF)
   downloadAccountDetailsPDF(customerDetails) {
     if (typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined') {
@@ -149,7 +167,7 @@ const Utils = {
       ['11-Digit Account Number:', customerDetails.accountNumber || '12345678901'],
       ['Account Type:', customerDetails.accountType || 'Savings Account'],
       ['Initial Balance:', 'Rs. 0.00'],
-      ['Account Status:', 'ACTIVE'],
+      ['Account Status:', (customerDetails.status || 'PENDING ADMIN APPROVAL')],
       ['IFSC Code:', 'GGBN0001234'],
       ['Branch:', 'Central Tech Branch'],
       ['Creation Date:', customerDetails.createdDate || new Date().toLocaleDateString('en-GB')]

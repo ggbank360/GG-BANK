@@ -8,8 +8,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Basic Info
   document.querySelectorAll('.customer-name-display').forEach(el => el.textContent = user.name);
-  const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CU';
-  document.querySelectorAll('.customer-avatar-display').forEach(el => el.textContent = initials);
+  if (window.Utils && typeof Utils.renderUserAvatar === 'function') {
+    Utils.updateAllUserAvatars(user);
+  } else {
+    const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CU';
+    document.querySelectorAll('.customer-avatar-display').forEach(el => el.textContent = initials);
+  }
 
   try {
     const accRes = await API.request(`/accounts/user/${user.userId}`);

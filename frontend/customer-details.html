@@ -156,6 +156,66 @@
     </div>
   </div>
 
+  <!-- Edit Customer Profile Modal (Correct Problems / Details) -->
+  <div class="modal-backdrop" id="editCustomerModal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-pen" style="color: var(--accent-cyan);"></i> Edit Customer Dossier & KYC Details</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('editCustomerModal').classList.remove('active')">&times;</button>
+      </div>
+      <form id="editCustomerDetailsForm" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+        <input type="hidden" id="editCustUserId">
+        <div class="form-group">
+          <label class="form-label">Full Legal Name</label>
+          <input type="text" id="editCustName" class="form-control" required>
+        </div>
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="editCustEmail" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mobile Phone</label>
+            <input type="tel" id="editCustPhone" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">PAN Card Number</label>
+            <input type="text" id="editCustPan" class="form-control" style="text-transform: uppercase; font-family: var(--font-mono);">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Aadhaar Number</label>
+            <input type="text" id="editCustAadhaar" class="form-control" style="font-family: var(--font-mono);">
+          </div>
+        </div>
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" id="editCustDob" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Account Status</label>
+            <select id="editCustStatus" class="form-control">
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="PENDING_APPROVAL">PENDING APPROVAL</option>
+              <option value="INACTIVE">INACTIVE</option>
+              <option value="BLOCKED">BLOCKED</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Residential Address</label>
+          <textarea id="editCustAddress" class="form-control" rows="2"></textarea>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border-color-subtle);">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('editCustomerModal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveEditCustomerDossier"><i class="fa-solid fa-check"></i> Save & Apply Corrections</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="js/lib/qrcode.min.js"></script>
   <script src="js/firebase-config.js"></script>

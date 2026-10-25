@@ -34,6 +34,13 @@
           <i class="fa-solid fa-check"></i>
         </div>
 
+        <!-- Applicant Profile Photo Display -->
+        <div style="display: flex; justify-content: center; margin: 0 auto 1.25rem auto;">
+          <div class="customer-avatar-display" id="createdCustomerAvatar" style="width: 88px; height: 88px; border-radius: 50%; border: 3px solid var(--accent-cyan, #00f0ff); box-shadow: 0 4px 18px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: bold; background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan, #00f0ff); overflow: hidden;">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </div>
+
         <h2 class="success-title">ACCOUNT CREATED SUCCESSFULLY!</h2>
         <div class="success-subtitle">Welcome to GG BANK, <span id="createdCustomerNameDisplay">Customer</span></div>
 
@@ -54,15 +61,16 @@
               <span>Initial Balance:</span> <strong id="createdInitialBalanceDisplay" style="color: var(--success);">₹0.00</strong>
             </div>
             <div>
-              <span>Status:</span> <strong style="color: var(--success);">ACTIVE</strong>
+              <span>Status:</span> <strong id="createdAccountStatusDisplay" style="color: var(--warning, #f59e0b);">PENDING ADMIN APPROVAL</strong>
             </div>
           </div>
         </div>
 
         <!-- Warning & Reminder Note -->
-        <div class="important-warning-note">
-          <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning); margin-right: 6px;"></i>
-          <strong>IMPORTANT:</strong> Save this 11-digit account number. You will need it every time you log in to GG BANK.
+        <div class="important-warning-note" style="border-left-color: var(--warning, #f59e0b); background: rgba(245, 158, 11, 0.1);">
+          <i class="fa-solid fa-clock" style="color: var(--warning, #f59e0b); margin-right: 6px;"></i>
+          <strong>APPLICATION STATUS: PENDING ADMIN APPROVAL</strong><br>
+          <span style="font-size: 0.88rem; display: block; margin-top: 4px;">Save your 11-digit account number. Our Bank Admin is reviewing your submitted KYC documents and will activate your account for online banking.</span>
         </div>
 
         <!-- Mandatory Action Buttons -->

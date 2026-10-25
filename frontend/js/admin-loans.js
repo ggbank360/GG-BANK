@@ -495,9 +495,13 @@ function exportLoansCsv() {
   AdminCommon.exportCSV(exportData, 'GG_BANK_Loans.csv');
 }
 
+let adminCurrentViewingLoan = null;
+let adminCurrentDocKey = 'panCard';
+
 function openLoanDocViewer(loanId) {
   const l = allLoans.find(item => item.loanId === loanId);
   if (!l) return;
+  adminCurrentViewingLoan = l;
 
   const nameEl = document.getElementById('loanDocApplicantName');
   if (nameEl) nameEl.textContent = `${l.customerName || 'Customer'} (Acc: ${l.accountNumber})`;
@@ -508,12 +512,35 @@ function openLoanDocViewer(loanId) {
   const badgeEl = document.getElementById('loanDocTypeBadge');
   if (badgeEl) badgeEl.textContent = l.loanType + ' Proof';
 
+  renderAdminLoanDocContent('panCard');
+  document.getElementById('loanDocViewerModal')?.classList.add('active');
+}
+
+function renderAdminLoanDocContent(docKey) {
+  adminCurrentDocKey = docKey;
+  const l = adminCurrentViewingLoan;
+  if (!l) return;
+
+  const docs = l.documents || {};
+  let docData = null;
+  if (docKey === 'panCard') docData = docs.panCard || l.loanDocument;
+  else if (docKey === 'aadhaarCard') docData = docs.aadhaarCard;
+  else if (docKey === 'incomeProof') docData = docs.incomeProof;
+  else if (docKey === 'bankStatement') docData = docs.bankStatement;
+
+  const titles = {
+    panCard: 'PAN Card',
+    aadhaarCard: 'Aadhaar / ID Card',
+    incomeProof: 'Income Proof / Salary Slip',
+    bankStatement: 'Bank Statement'
+  };
+
   const body = document.getElementById('loanDocViewerBody');
   const link = document.getElementById('loanDocDownloadLink');
 
   if (link) {
-    if (l.loanDocument && l.loanDocument.startsWith('http')) {
-      link.href = l.loanDocument;
+    if (docData && (docData.startsWith('http') || docData.startsWith('data:'))) {
+      link.href = docData;
       link.style.display = 'inline-flex';
     } else {
       link.style.display = 'none';
@@ -521,36 +548,65 @@ function openLoanDocViewer(loanId) {
   }
 
   if (body) {
-    if (l.loanDocument && (l.loanDocument.startsWith('http') || l.loanDocument.startsWith('data:image'))) {
+    // Inject tab selector at top of modal body
+    let tabsHtml = `
+      <div style="display: flex; gap: 6px; margin-bottom: 14px; width: 100%; justify-content: center; flex-wrap: wrap;">
+        ${['panCard', 'aadhaarCard', 'incomeProof', 'bankStatement'].map(k => {
+          const isActive = k === docKey;
+          const bg = isActive ? 'background: var(--accent-cyan); color: #070d1e; font-weight: 700;' : 'background: rgba(255,255,255,0.06); color: var(--text-secondary);';
+          return `<button type="button" class="btn btn-sm" onclick="renderAdminLoanDocContent('${k}')" style="${bg} font-size: 0.76rem; border-radius: 6px; padding: 4px 10px;">
+            ${titles[k]}
+          </button>`;
+        }).join('')}
+      </div>
+    `;
+
+    if (docData && (docData.startsWith('http') || docData.startsWith('data:image') || docData.startsWith('<svg'))) {
+      let cleanSrc = docData;
+      if (cleanSrc.startsWith('<svg')) {
+        cleanSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(cleanSrc);
+      }
       body.innerHTML = `
+        ${tabsHtml}
         <div style="position: relative; max-width: 100%;">
-          <img src="${l.loanDocument}" alt="Loan Document" style="max-width: 100%; max-height: 380px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
-          <div style="font-size: 0.8rem; color: var(--accent-cyan); margin-top: 10px;">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Document Stored in Cloudinary (Secure Banking Repository)
+          <div style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 8px;">
+            <i class="fa-solid fa-file-shield" style="color: var(--accent-cyan);"></i> ${titles[docKey]} Preview
           </div>
+          <img src="${cleanSrc}" alt="${titles[docKey]}" style="max-width: 100%; max-height: 320px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); object-fit: contain;">
+          <div style="font-size: 0.78rem; color: var(--success); margin-top: 8px;">
+            <i class="fa-solid fa-circle-check"></i> Verified Supporting Document Attached by Applicant
+          </div>
+        </div>
+      `;
+    } else if (docData && (docData.startsWith('data:application/pdf') || docData.endsWith('.pdf'))) {
+      body.innerHTML = `
+        ${tabsHtml}
+        <div style="text-align: center; padding: 20px;">
+          <i class="fa-solid fa-file-pdf" style="font-size: 3rem; color: var(--danger); margin-bottom: 10px;"></i>
+          <h4 style="color: #fff; margin-bottom: 6px;">${titles[docKey]} (PDF Document)</h4>
+          <a href="${docData}" target="_blank" download="${docKey}.pdf" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-download"></i> Download / View PDF
+          </a>
         </div>
       `;
     } else {
       body.innerHTML = `
-        <div style="background: var(--bg-surface); padding: 30px; border-radius: var(--radius-lg); border: 2px dashed var(--accent-cyan); width: 100%; max-width: 440px;">
-          <div style="font-size: 3rem; color: var(--accent-cyan); margin-bottom: 12px;">
+        ${tabsHtml}
+        <div style="background: var(--bg-surface); padding: 24px; border-radius: var(--radius-lg); border: 2px dashed var(--accent-cyan); width: 100%; max-width: 440px;">
+          <div style="font-size: 2.5rem; color: var(--accent-cyan); margin-bottom: 10px;">
             <i class="fa-solid fa-file-invoice-dollar"></i>
           </div>
-          <h4 style="color: #fff; font-size: 1.15rem; margin-bottom: 6px;">Verified Financial Documentation</h4>
-          <div style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px;">
-            Supporting salary certificates and income proof verified digitally for <strong>${l.customerName || 'Customer'}</strong>.
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-cyan); background: rgba(56, 189, 248, 0.1); padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 14px;">
-            Document Token: CLD-${l.loanId}-DOC
+          <h4 style="color: #fff; font-size: 1.05rem; margin-bottom: 4px;">${titles[docKey]}</h4>
+          <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px;">
+            Authenticated digital record verified for <strong>${l.customerName || 'Customer'}</strong>.
           </div>
           <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Digital Record Authenticated</span>
         </div>
       `;
     }
   }
-
-  document.getElementById('loanDocViewerModal')?.classList.add('active');
 }
+window.renderAdminLoanDocContent = renderAdminLoanDocContent;
 
 window.openLoanApprovalModal = openLoanApprovalModal;
 window.closeLoanApprovalModal = closeLoanApprovalModal;

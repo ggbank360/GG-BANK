@@ -10,7 +10,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelectorAll('.customer-name-display').forEach(el => el.textContent = user.name || 'Customer');
   const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CU';
-  document.querySelectorAll('.customer-avatar-display').forEach(el => el.textContent = initials);
+  if (window.Utils && typeof Utils.renderUserAvatar === 'function') {
+    Utils.updateAllUserAvatars(user);
+  } else {
+    document.querySelectorAll('.customer-avatar-display').forEach(el => el.textContent = initials);
+  }
+
+  // Populate large profile avatar preview from account creation
+  const profilePhoto = user.avatar || user.profilePhoto || user.photoDoc || (user.documents && (user.documents.photoDoc || user.documents.photo)) || '';
+  const avatarPreview = document.getElementById('custProfileAvatarPreview');
+  if (avatarPreview) {
+    if (profilePhoto && profilePhoto.length > 20) {
+      avatarPreview.innerHTML = `<img src="${profilePhoto}" alt="${user.name || 'Customer'}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+    } else {
+      avatarPreview.textContent = initials;
+    }
+  }
 
   let currentAccount = null;
   try {
@@ -347,5 +362,70 @@ function checkPendingEditRequests(userId) {
   }
 }
 
+async function handleCustProfilePhotoChange(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  const user = Auth.getCurrentUser();
+  if (!user) return;
+
+  Utils.showToast(`Uploading profile photo ${file.name}...`, 'info');
+
+  try {
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const dataUrl = evt.target.result;
+      
+      // Update UI preview
+      const preview = document.getElementById('custProfileAvatarPreview');
+      if (preview) {
+        preview.innerHTML = `<img src="${dataUrl}" alt="${user.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+      }
+
+      // Update user in local storage
+      user.avatar = dataUrl;
+      user.profilePhoto = dataUrl;
+      user.photoDoc = dataUrl;
+      if (!user.documents) user.documents = {};
+      user.documents.photoDoc = dataUrl;
+      user.documents.photo = dataUrl;
+      
+      localStorage.setItem('gg_current_user', JSON.stringify(user));
+      localStorage.setItem('gg_user', JSON.stringify(user));
+
+      // Sync with mock users
+      if (window.API && typeof API.getMock === 'function') {
+        const users = API.getMock('gg_users');
+        const idx = users.findIndex(u => u.userId === user.userId);
+        if (idx !== -1) {
+          users[idx].avatar = dataUrl;
+          users[idx].profilePhoto = dataUrl;
+          users[idx].photoDoc = dataUrl;
+          if (!users[idx].documents) users[idx].documents = {};
+          users[idx].documents.photoDoc = dataUrl;
+          API.setMock('gg_users', users);
+        }
+      }
+
+      // Sync with backend if available
+      try {
+        await API.request(`/admin/customers/${user.userId}/photo`, 'PUT', { photo: dataUrl });
+      } catch (beErr) {
+        console.warn('Backend photo sync fallback:', beErr);
+      }
+
+      if (window.Utils && typeof Utils.renderUserAvatar === 'function') {
+        Utils.updateAllUserAvatars(user);
+      }
+
+      Utils.showToast('Profile photo updated successfully!', 'success');
+    };
+    reader.readAsDataURL(file);
+  } catch (err) {
+    Utils.showToast('Failed to update photo: ' + err.message, 'error');
+  }
+}
+
 window.handleProfileDocUpload = handleProfileDocUpload;
 window.viewProfileProofDocument = viewProfileProofDocument;
+window.handleCustProfilePhotoChange = handleCustProfilePhotoChange;

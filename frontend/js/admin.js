@@ -187,14 +187,26 @@ function renderCustomersTable(customers) {
   tableBody.innerHTML = customers.map(c => {
     let statusBadge = 'badge-success';
     if (c.status === 'BLOCKED') statusBadge = 'badge-danger';
-    if (c.status === 'INACTIVE') statusBadge = 'badge-warning';
+    if (c.status === 'INACTIVE' || c.status === 'PENDING_APPROVAL') statusBadge = 'badge-warning';
+
+    const photoSrc = c.avatar || c.profilePhoto || c.photoDoc || '';
+    const avatarHtml = photoSrc 
+      ? `<img src="${photoSrc}" style="width: 100%; height: 100%; object-fit: cover;">`
+      : (c.name ? c.name.charAt(0).toUpperCase() : 'U');
 
     return `
       <tr>
         <td style="font-family: var(--font-mono); font-size: 0.85rem;">${c.userId}</td>
         <td>
-          <div style="font-weight: 700; color: var(--text-primary);">${c.name}</div>
-          <div style="font-size: 0.78rem; color: var(--text-muted);">${c.email}</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="customer-avatar-display" style="width: 36px; height: 36px; border-radius: 50%; background: rgba(0, 114, 255, 0.15); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; overflow: hidden; flex-shrink: 0; border: 1.5px solid rgba(0, 240, 255, 0.4);">
+              ${avatarHtml}
+            </div>
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary);">${c.name}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">${c.email}</div>
+            </div>
+          </div>
         </td>
         <td style="font-family: var(--font-mono); font-weight: 700;">${c.accountNumber || 'N/A'}</td>
         <td>${c.accountType || 'SAVINGS'}</td>
@@ -203,10 +215,13 @@ function renderCustomersTable(customers) {
         <td>
           <div class="table-action-btns">
             <button class="btn btn-primary btn-sm" onclick="openEditCustomerModal('${c.userId}')" title="Edit Customer Details"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-            <button class="btn btn-secondary btn-sm" onclick="openCustomerDetailModal('${c.userId}')" title="View KYC Profile"><i class="fa-solid fa-id-card"></i> KYC</button>
-            ${c.status === 'ACTIVE'
-              ? `<button class="btn btn-warning btn-sm" onclick="updateCustomerStatus('${c.userId}', 'BLOCKED')" title="Block Customer Access"><i class="fa-solid fa-ban"></i> Block</button>`
-              : `<button class="btn btn-success btn-sm" onclick="updateCustomerStatus('${c.userId}', 'ACTIVE')" title="Reactivate Customer"><i class="fa-solid fa-check"></i> Activate</button>`
+            <a class="btn btn-secondary btn-sm" href="customer-details.html?userId=${c.userId}" title="View Complete KYC Dossier & Documents"><i class="fa-solid fa-id-card"></i> Dossier</a>
+            ${c.status === 'PENDING_APPROVAL'
+              ? `<button class="btn btn-success btn-sm" onclick="approveCustomer('${c.userId}')" title="Approve Customer KYC & Activate"><i class="fa-solid fa-check"></i> Approve</button>`
+              : (c.status === 'ACTIVE'
+                ? `<button class="btn btn-warning btn-sm" onclick="updateCustomerStatus('${c.userId}', 'BLOCKED')" title="Block Customer Access"><i class="fa-solid fa-ban"></i> Block</button>`
+                : `<button class="btn btn-success btn-sm" onclick="updateCustomerStatus('${c.userId}', 'ACTIVE')" title="Reactivate Customer"><i class="fa-solid fa-check"></i> Activate</button>`
+              )
             }
             <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.userId}')" title="Permanently Delete Customer"><i class="fa-solid fa-trash"></i> Delete</button>
           </div>
@@ -748,6 +763,17 @@ async function checkDatabaseConnection() {
   }
 }
 
+async function approveCustomer(userId) {
+  if (!confirm('Approve customer KYC documents and activate account?')) return;
+  try {
+    const res = await API.request(`/admin/customers/${userId}/approve`, 'PUT');
+    Toast.success(res.message || 'Customer account approved and activated!');
+    await loadAdminData();
+  } catch (err) {
+    Toast.error(err.message || 'Failed to approve customer');
+  }
+}
+
 // Global exports
 window.switchAdminView = switchAdminView;
 window.openCustomerDetailModal = openCustomerDetailModal;
@@ -758,6 +784,7 @@ window.openEditOfficeModal = openEditOfficeModal;
 window.deleteOffice = deleteOffice;
 window.openApproveLoanModal = openApproveLoanModal;
 window.updateCustomerStatus = updateCustomerStatus;
+window.approveCustomer = approveCustomer;
 window.deleteCustomer = deleteCustomer;
 window.rejectLoan = rejectLoan;
 window.checkDatabaseConnection = checkDatabaseConnection;

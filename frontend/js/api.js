@@ -480,8 +480,9 @@ class ApiService {
     if (endpoint === '/auth/login' && method === 'POST') {
       const accounts = this.getMock('gg_accounts');
       const users = this.getMock('gg_users');
-      const emailInput = (body.email || '').trim().toLowerCase();
-      const accNumInput = (body.accountNumber || '').trim();
+      const rawInput = (body.identifier || body.email || body.accountNumber || '').trim();
+      const emailInput = rawInput.includes('@') ? rawInput.toLowerCase() : (body.email || '').trim().toLowerCase();
+      const accNumInput = !rawInput.includes('@') ? rawInput : (body.accountNumber || '').trim();
       const passwordInput = body.password;
 
       let matchedUser = null;
@@ -492,15 +493,23 @@ class ApiService {
         if (matchedUser) {
           matchedAccount = accounts.find(a => a.userId === matchedUser.userId);
         }
-      } else if (accNumInput) {
-        matchedAccount = accounts.find(a => a.accountNumber === accNumInput);
+      } 
+      
+      if (!matchedUser && accNumInput) {
+        const cleanDigits = accNumInput.replace(/\D/g, '');
+        matchedAccount = accounts.find(a => a.accountNumber === accNumInput || a.accountNumber.replace(/\D/g, '') === cleanDigits);
         if (matchedAccount) {
           matchedUser = users.find(u => u.userId === matchedAccount.userId);
+        } else {
+          matchedUser = users.find(u => u.phone && u.phone.replace(/\D/g, '') === cleanDigits);
+          if (matchedUser) {
+            matchedAccount = accounts.find(a => a.userId === matchedUser.userId);
+          }
         }
       }
 
       if (!matchedUser) {
-        throw new Error(`No registered account found with ${emailInput ? 'email "' + emailInput + '"' : 'account number "' + accNumInput + '"'}. Please check your credentials or click "Open Account" to register.`);
+        throw new Error(`No registered account found with "${rawInput || emailInput || accNumInput}". Please check your credentials or click "Open Account" to register.`);
       }
 
       // STRICT password verification
@@ -511,6 +520,10 @@ class ApiService {
 
       if (matchedUser.status === 'BLOCKED') {
         throw new Error('Account is blocked. Please contact GG BANK administration.');
+      }
+
+      if (matchedUser.status === 'PENDING_APPROVAL') {
+        throw new Error('Your account application is Pending Approval. The Bank Administrator is verifying your KYC documents.');
       }
 
       if (!matchedAccount) {
@@ -558,6 +571,7 @@ class ApiService {
 
       const newUserId = 'usr-' + Date.now().toString().slice(-6);
       const newAccNum = '100188' + Math.floor(100000 + Math.random() * 900000);
+      const photoDoc = body.photoDoc || '';
 
       const newUser = {
         userId: newUserId,
@@ -566,9 +580,31 @@ class ApiService {
         password: body.password || 'Password@123',
         phone: body.phone,
         dateOfBirth: body.dateOfBirth,
+        gender: body.gender || 'Not Specified',
         address: body.address || 'Standard Registered Address',
+        occupation: body.occupation || 'Professional',
         role: 'CUSTOMER',
-        status: 'ACTIVE',
+        status: 'PENDING_APPROVAL',
+        avatar: photoDoc,
+        profilePhoto: photoDoc,
+        photoDoc: photoDoc,
+        panNumber: (body.panNumber || '').toUpperCase(),
+        aadhaarNumber: body.aadhaarNumber || '',
+        documents: {
+          panNumber: (body.panNumber || '').toUpperCase(),
+          panDoc: body.panDoc || '',
+          aadhaarNumber: body.aadhaarNumber || '',
+          aadhaarDoc: body.aadhaarDoc || '',
+          addressProofType: body.addressProofType || 'Utility / Address Bill',
+          addressProofDoc: body.addressProofDoc || '',
+          photoDoc: photoDoc,
+          signatureDoc: body.signatureDoc || ''
+        },
+        nominee: {
+          name: body.nomineeName || 'Not Provided',
+          relationship: body.nomineeRelation || 'N/A',
+          contact: body.nomineePhone || 'N/A'
+        },
         createdAt: new Date().toISOString()
       };
 
@@ -580,7 +616,7 @@ class ApiService {
         balance: 0.00,
         ifscCode: 'GGBN0001234',
         branch: 'Central Tech Branch',
-        status: 'ACTIVE',
+        status: 'PENDING_APPROVAL',
         createdAt: new Date().toISOString()
       };
 
@@ -595,9 +631,11 @@ class ApiService {
         window.saveToFirestore('accounts', newAccount.accountId, newAccount);
       }
 
+      this.logAudit(newUserId, null, 'USER_REGISTRATION', `New customer registration submitted for ${newUser.name}. Status: PENDING_APPROVAL`);
+
       return {
         success: true,
-        message: 'Customer registered successfully',
+        message: 'Customer registered successfully. Status is Pending Admin Approval.',
         data: {
           user: newUser,
           account: newAccount
@@ -631,8 +669,23 @@ class ApiService {
     // POST /transfer
     if (endpoint === '/transfer' && method === 'POST') {
       const accounts = this.getMock('gg_accounts');
+      const users = this.getMock('gg_users');
+      const isUpi = body.transferMethod === 'UPI' || (body.receiverAccount && body.receiverAccount.includes('@')) || !!body.upiId;
       const senderAcc = accounts.find(a => a.accountNumber === body.senderAccount);
-      const receiverAcc = accounts.find(a => a.accountNumber === body.receiverAccount);
+      
+      let receiverAcc = accounts.find(a => a.accountNumber === body.receiverAccount);
+      if (!receiverAcc && isUpi) {
+        const upiTarget = (body.upiId || body.receiverAccount || '').toLowerCase();
+        const handle = upiTarget.split('@')[0];
+        const targetUser = users.find(u => 
+          (u.email && u.email.toLowerCase().startsWith(handle)) ||
+          (u.phone && u.phone.includes(handle)) ||
+          (u.userId && u.userId.includes(handle))
+        );
+        if (targetUser) {
+          receiverAcc = accounts.find(a => a.userId === targetUser.userId);
+        }
+      }
 
       if (!senderAcc || senderAcc.status !== 'ACTIVE') {
         throw new Error('Sender account is invalid or inactive');
@@ -662,11 +715,11 @@ class ApiService {
       const newTxn = {
         transactionId: txnId,
         senderAccount: body.senderAccount,
-        receiverAccount: body.receiverAccount,
+        receiverAccount: body.receiverAccount || body.upiId,
         amount: amount,
-        type: 'TRANSFER',
-        category: 'Transfer',
-        description: body.description || `Transfer to ${body.beneficiaryName || body.receiverAccount}`,
+        type: isUpi ? 'UPI_TRANSFER' : 'TRANSFER',
+        category: isUpi ? 'UPI Transfer' : 'Transfer',
+        description: body.description || (isUpi ? `UPI payment to ${body.beneficiaryName || body.upiId}` : `Transfer to ${body.beneficiaryName || body.receiverAccount}`),
         status: 'COMPLETED',
         balanceAfter: senderAcc.balance,
         createdAt: new Date().toISOString()
@@ -674,8 +727,8 @@ class ApiService {
       txns.unshift(newTxn);
       this.setMock('gg_transactions', txns);
 
-      this.logAudit(senderAcc.userId, null, 'TRANSFER', `Transferred ₹${amount} from ${body.senderAccount} to ${body.receiverAccount}`);
-      return { success: true, message: 'Transfer completed successfully', data: newTxn };
+      this.logAudit(senderAcc.userId, null, isUpi ? 'UPI_TRANSFER' : 'TRANSFER', `Transferred ₹${amount} from ${body.senderAccount} to ${body.receiverAccount || body.upiId}`);
+      return { success: true, message: isUpi ? 'UPI transfer completed successfully' : 'Transfer completed successfully', data: newTxn };
     }
 
     // POST /deposit
@@ -1057,24 +1110,45 @@ class ApiService {
     if (endpoint.startsWith('/admin/customers/') && endpoint.endsWith('/approve') && method === 'PUT') {
       const userId = endpoint.split('/')[3];
       const users = this.getMock('gg_users');
+      const accounts = this.getMock('gg_accounts');
       const u = users.find(user => user.userId === userId);
       if (u) {
         u.status = 'ACTIVE';
+        u.kycStatus = 'VERIFIED';
+        u.approvedAt = new Date().toISOString();
+        u.approvedBy = body.approvedBy || 'GG Bank Administrator';
+        u.adminRemarks = body.remarks || 'KYC Documents Verified and Approved';
         this.setMock('gg_users', users);
       }
-      return { success: true, message: 'Customer approved successfully' };
+      const a = accounts.find(acc => acc.userId === userId);
+      if (a) {
+        a.status = 'ACTIVE';
+        this.setMock('gg_accounts', accounts);
+      }
+      this.logAudit('usr-admin-999', userId, 'KYC_APPROVED', `Admin approved KYC and activated account for customer: ${u ? u.name : userId}`);
+      return { success: true, message: 'Customer KYC approved and account activated successfully', data: u };
     }
 
     // PUT /admin/customers/{userId}/reject
     if (endpoint.startsWith('/admin/customers/') && endpoint.endsWith('/reject') && method === 'PUT') {
       const userId = endpoint.split('/')[3];
       const users = this.getMock('gg_users');
+      const accounts = this.getMock('gg_accounts');
       const u = users.find(user => user.userId === userId);
       if (u) {
         u.status = 'REJECTED';
+        u.kycStatus = 'REJECTED';
+        u.rejectedAt = new Date().toISOString();
+        u.adminRemarks = body.remarks || 'KYC Document verification failed compliance check.';
         this.setMock('gg_users', users);
       }
-      return { success: true, message: 'Customer rejected' };
+      const a = accounts.find(acc => acc.userId === userId);
+      if (a) {
+        a.status = 'REJECTED';
+        this.setMock('gg_accounts', accounts);
+      }
+      this.logAudit('usr-admin-999', userId, 'KYC_REJECTED', `Admin rejected customer registration for: ${u ? u.name : userId}`);
+      return { success: true, message: 'Customer registration application rejected', data: u };
     }
 
     // GET /insights/{userId}
@@ -1168,6 +1242,7 @@ class ApiService {
 
       const fullCustomerList = users.map(u => {
         const acc = accounts.find(a => a.userId === u.userId) || {};
+        const photo = u.avatar || u.profilePhoto || u.photoDoc || (u.documents && u.documents.photoDoc) || '';
         return {
           ...u,
           accountId: acc.accountId || 'acc-' + u.userId,
@@ -1176,10 +1251,18 @@ class ApiService {
           balance: acc.balance || 0,
           ifscCode: acc.ifscCode || 'GGBN0001234',
           accountStatus: acc.status || u.status || 'ACTIVE',
-          documents: u.documents || {
-            panNumber: u.panNumber || 'ABCDE1234F',
-            dlNumber: u.dlNumber || 'DL-1420110012345',
-            aadhaarNumber: u.aadhaarNumber || '2345 6789 0123'
+          avatar: photo,
+          profilePhoto: photo,
+          photoDoc: photo,
+          documents: {
+            panNumber: (u.documents && u.documents.panNumber) || u.panNumber || 'ABCDE1234F',
+            dlNumber: (u.documents && u.documents.dlNumber) || u.dlNumber || 'DL-1420110012345',
+            aadhaarNumber: (u.documents && u.documents.aadhaarNumber) || u.aadhaarNumber || '2345 6789 0123',
+            panDoc: (u.documents && u.documents.panDoc) || '',
+            aadhaarDoc: (u.documents && u.documents.aadhaarDoc) || '',
+            photoDoc: photo,
+            signatureDoc: (u.documents && u.documents.signatureDoc) || '',
+            addressProofDoc: (u.documents && u.documents.addressProofDoc) || ''
           }
         };
       });
@@ -1272,11 +1355,30 @@ class ApiService {
       if (body.dateOfBirth) user.dateOfBirth = body.dateOfBirth;
       if (body.address) user.address = body.address;
       if (body.status) user.status = body.status;
+      if (body.panNumber) {
+        user.panNumber = body.panNumber;
+        if (!user.documents) user.documents = {};
+        user.documents.panNumber = body.panNumber;
+      }
+      if (body.aadhaarNumber) {
+        user.aadhaarNumber = body.aadhaarNumber;
+        if (!user.documents) user.documents = {};
+        user.documents.aadhaarNumber = body.aadhaarNumber;
+      }
+      if (body.profilePhoto || body.avatar) {
+        const p = body.profilePhoto || body.avatar;
+        user.avatar = p;
+        user.profilePhoto = p;
+        user.photoDoc = p;
+        if (!user.documents) user.documents = {};
+        user.documents.photoDoc = p;
+      }
       this.setMock('gg_users', users);
 
       const acc = accounts.find(a => a.userId === userId);
-      if (acc && body.status) {
-        acc.status = body.status;
+      if (acc) {
+        if (body.status) acc.status = body.status;
+        if (body.accountType) acc.accountType = body.accountType;
         this.setMock('gg_accounts', accounts);
       }
 
