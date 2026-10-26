@@ -29,6 +29,8 @@ class ApiService {
   constructor() {
     this.token = localStorage.getItem('gg_auth_token') || null;
     this.memCache = {};
+    this.cache = new Map();
+    this.cacheTtlMs = 20000; // 20s TTL for SWR revalidation
   }
 
   setToken(token) {
@@ -37,6 +39,35 @@ class ApiService {
       localStorage.setItem('gg_auth_token', token);
     } else {
       localStorage.removeItem('gg_auth_token');
+    }
+  }
+
+  getCached(key) {
+    if (!this.cache) return null;
+    const hit = this.cache.get(key);
+    if (!hit) return null;
+    if (Date.now() - hit.timestamp > this.cacheTtlMs) {
+      this.cache.delete(key);
+      return null;
+    }
+    return hit.data;
+  }
+
+  setCached(key, data) {
+    if (!this.cache) this.cache = new Map();
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  invalidateCache(pattern) {
+    if (!this.cache) return;
+    if (!pattern) {
+      this.cache.clear();
+      return;
+    }
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+      }
     }
   }
 
@@ -83,15 +114,26 @@ class ApiService {
   }
 
   /**
-   * Main Request Dispatcher
+   * Main Request Dispatcher with SWR Caching & Revalidation
    * Tries remote HTTP backend if configured; otherwise seamlessly executes against global Cloud Firestore!
    */
   async request(endpoint, method = 'GET', body = null) {
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 
+    if (method === 'GET') {
+      const cached = this.getCached(cleanEndpoint);
+      if (cached) return cached;
+    } else {
+      this.invalidateCache();
+    }
+
     // If no dedicated backend host or running statically on Vercel, route directly through Cloud Firestore engine
     if (!window.GG_BACKEND_URL && (!rawBaseUrl || rawBaseUrl === 'http://localhost:8080' || window.location.hostname.includes('vercel.app'))) {
-      return await this.handleFirestoreEngine(cleanEndpoint, method, body);
+      const res = await this.handleFirestoreEngine(cleanEndpoint, method, body);
+      if (method === 'GET' && res && res.success) {
+        this.setCached(cleanEndpoint, res);
+      }
+      return res;
     }
 
     const url = `${API_BASE_URL}${cleanEndpoint}`;
@@ -106,17 +148,29 @@ class ApiService {
     try {
       const response = await fetch(url, options);
       if (response.ok) {
-        return await response.json();
+        const json = await response.json();
+        if (method === 'GET' && json) {
+          this.setCached(cleanEndpoint, json);
+        }
+        return json;
       }
       if (response.status === 404 || response.status === 405 || response.status >= 502) {
-        return await this.handleFirestoreEngine(cleanEndpoint, method, body);
+        const res = await this.handleFirestoreEngine(cleanEndpoint, method, body);
+        if (method === 'GET' && res && res.success) {
+          this.setCached(cleanEndpoint, res);
+        }
+        return res;
       }
       const errorData = await response.json().catch(() => ({ message: `HTTP ${response.status} error` }));
       const errorMsg = errorData.message || errorData.error || `Request failed with status ${response.status}`;
       throw new Error(errorMsg);
     } catch (err) {
       // If network unreachable, route to Firestore engine
-      return await this.handleFirestoreEngine(cleanEndpoint, method, body);
+      const res = await this.handleFirestoreEngine(cleanEndpoint, method, body);
+      if (method === 'GET' && res && res.success) {
+        this.setCached(cleanEndpoint, res);
+      }
+      return res;
     }
   }
 
@@ -219,12 +273,14 @@ class ApiService {
       const newAccNum = `100188${randomFive}`;
       const newUserId = `usr-${Date.now().toString().slice(-6)}`;
 
-      // Compress KYC document images before saving to Firestore to respect 1MB document limit
-      const compressedPhoto = body.photoDoc ? await window.compressKycImage(body.photoDoc, 600, 0.6) : '';
-      const compressedPan = body.panDoc ? await window.compressKycImage(body.panDoc, 800, 0.6) : '';
-      const compressedAadhaar = body.aadhaarDoc ? await window.compressKycImage(body.aadhaarDoc, 800, 0.6) : '';
-      const compressedAddressProof = body.addressProofDoc ? await window.compressKycImage(body.addressProofDoc, 800, 0.6) : '';
-      const compressedSignature = body.signatureDoc ? await window.compressKycImage(body.signatureDoc, 600, 0.6) : '';
+      // Concurrently compress KYC document images before saving to Firestore to eliminate sequential waterfalls
+      const [compressedPhoto, compressedPan, compressedAadhaar, compressedAddressProof, compressedSignature] = await Promise.all([
+        body.photoDoc ? window.compressKycImage(body.photoDoc, 600, 0.6) : Promise.resolve(''),
+        body.panDoc ? window.compressKycImage(body.panDoc, 800, 0.6) : Promise.resolve(''),
+        body.aadhaarDoc ? window.compressKycImage(body.aadhaarDoc, 800, 0.6) : Promise.resolve(''),
+        body.addressProofDoc ? window.compressKycImage(body.addressProofDoc, 800, 0.6) : Promise.resolve(''),
+        body.signatureDoc ? window.compressKycImage(body.signatureDoc, 600, 0.6) : Promise.resolve('')
+      ]);
 
       const newAccount = {
         accountNumber: newAccNum,
@@ -739,16 +795,20 @@ class ApiService {
       return { success: true, message: `Withdrew ₹${amount.toLocaleString('en-IN')} successfully!`, data: { balanceAfter: finalBalance, transactionId: txnId } };
     }
 
-    // 11. Transactions Query Endpoints
+    // 11. Transactions Query Endpoints with Query Limits & Bounded Memory
     if (endpoint === '/transactions' || endpoint === '/admin/transactions') {
-      const txns = await window.getAllFromFirestore('transactions');
+      const txns = window.getLimitedFromFirestore 
+        ? await window.getLimitedFromFirestore('transactions', 100) 
+        : await window.getAllFromFirestore('transactions');
       const sorted = txns.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       return { success: true, data: sorted };
     }
 
     if (endpoint.startsWith('/transactions/account/')) {
       const accNum = (endpoint.split('/')[3] || '').toLowerCase().trim();
-      const txns = await window.getAllFromFirestore('transactions');
+      const txns = window.getLimitedFromFirestore 
+        ? await window.getLimitedFromFirestore('transactions', 150) 
+        : await window.getAllFromFirestore('transactions');
       const filtered = txns
         .filter(t => {
           const sAcc = String(t.senderAccount || t.fromAccount || '').toLowerCase();
@@ -791,8 +851,10 @@ class ApiService {
       }
       if (!acc) throw new Error('Customer not found with identifier: ' + identifier);
 
-      const allTxns = await window.getAllFromFirestore('transactions');
-      const userTxns = allTxns.filter(t => t.senderAccount === acc.accountNumber || t.receiverAccount === acc.accountNumber);
+      const txns = window.getLimitedFromFirestore 
+        ? await window.getLimitedFromFirestore('transactions', 150) 
+        : await window.getAllFromFirestore('transactions');
+      const userTxns = txns.filter(t => t.senderAccount === acc.accountNumber || t.receiverAccount === acc.accountNumber);
 
       return {
         success: true,
@@ -806,11 +868,13 @@ class ApiService {
       };
     }
 
-    // 14. GET /admin/dashboard & /admin/dashboard/overview
+    // 14. GET /admin/dashboard & /admin/dashboard/overview (Parallel Data Fetching)
     if (endpoint === '/admin/dashboard' || endpoint === '/admin/dashboard/overview') {
-      const accounts = await window.getAllFromFirestore('accounts');
-      const txns = await window.getAllFromFirestore('transactions');
-      const loans = await window.getAllFromFirestore('loans');
+      const [accounts, txns, loans] = await Promise.all([
+        window.getAllFromFirestore('accounts'),
+        window.getLimitedFromFirestore ? window.getLimitedFromFirestore('transactions', 150) : window.getAllFromFirestore('transactions'),
+        window.getAllFromFirestore('loans')
+      ]);
 
       let totalBalance = 0;
       let totalDeposits = 0;
@@ -937,7 +1001,9 @@ class ApiService {
     }
 
     if (endpoint === '/loans' || endpoint === '/admin/loans') {
-      const loans = await window.getAllFromFirestore('loans');
+      const loans = window.getLimitedFromFirestore
+        ? await window.getLimitedFromFirestore('loans', 100)
+        : await window.getAllFromFirestore('loans');
       const sorted = loans.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       return { success: true, data: sorted };
     }

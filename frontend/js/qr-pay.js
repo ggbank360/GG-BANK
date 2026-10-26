@@ -347,11 +347,12 @@ function setupPaymentFormHandlers() {
     });
   }
 
+  let isSubmittingQr = false;
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (!currentPayeeData || !currentAccount) return;
+      if (!currentPayeeData || !currentAccount || isSubmittingQr) return;
 
       const amount = parseFloat(amountInput.value);
       const note = document.getElementById('qrPayNote').value.trim();
@@ -372,6 +373,8 @@ function setupPaymentFormHandlers() {
         return;
       }
 
+      isSubmittingQr = true;
+      if (submitBtn) submitBtn.disabled = true;
       Utils.setLoading(submitBtn, true, 'Executing Secure Payment...');
 
       try {
@@ -386,8 +389,12 @@ function setupPaymentFormHandlers() {
 
         const txn = res.data;
 
-        // Deduct sender balance locally
-        currentAccount.balance = Number(currentAccount.balance) - amount;
+        // Authoritatively update sender balance from server transaction response
+        if (txn && typeof txn.balanceAfter === 'number') {
+          currentAccount.balance = txn.balanceAfter;
+        } else {
+          currentAccount.balance = Number(currentAccount.balance) - amount;
+        }
         localStorage.setItem('gg_current_account', JSON.stringify(currentAccount));
         updateAccountHeaders();
 
@@ -398,6 +405,8 @@ function setupPaymentFormHandlers() {
         console.error('Payment error:', err);
         Utils.showToast(err.message || 'Payment execution failed.', 'error');
       } finally {
+        isSubmittingQr = false;
+        if (submitBtn) submitBtn.disabled = false;
         Utils.setLoading(submitBtn, false, '<i class="fa-solid fa-lock"></i> Authorize &amp; Pay Now');
       }
     });

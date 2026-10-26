@@ -174,7 +174,9 @@ function setupForms() {
         });
 
         if (currentAccount) {
-          currentAccount.balance = Number(currentAccount.balance) + amount;
+          currentAccount.balance = (res && res.data && typeof res.data.balanceAfter === 'number') 
+            ? res.data.balanceAfter 
+            : Number(currentAccount.balance) + amount;
           localStorage.setItem('gg_current_account', JSON.stringify(currentAccount));
         }
 
@@ -217,7 +219,9 @@ function setupForms() {
         });
 
         if (currentAccount) {
-          currentAccount.balance = Number(currentAccount.balance) + amount;
+          currentAccount.balance = (res && res.data && typeof res.data.balanceAfter === 'number') 
+            ? res.data.balanceAfter 
+            : Number(currentAccount.balance) + amount;
           localStorage.setItem('gg_current_account', JSON.stringify(currentAccount));
         }
 
@@ -285,7 +289,9 @@ function setupForms() {
         };
 
         if (currentAccount) {
-          currentAccount.balance = Number(currentAccount.balance) + pendingDeposit.amount;
+          currentAccount.balance = (res && res.data && typeof res.data.balanceAfter === 'number') 
+            ? res.data.balanceAfter 
+            : Number(currentAccount.balance) + pendingDeposit.amount;
           localStorage.setItem('gg_current_account', JSON.stringify(currentAccount));
         }
 

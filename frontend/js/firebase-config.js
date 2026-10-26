@@ -240,6 +240,35 @@ async function getAllFromFirestore(collectionName) {
   }
 }
 
+// Bounded Query Helper: Prevents fetching unbounded datasets and provides pagination/limits
+async function getLimitedFromFirestore(collectionName, limitCount = 50, orderByField = 'createdAt', orderDirection = 'desc') {
+  await window.firebaseReadyPromise;
+  if (!firestoreDb) return [];
+
+  try {
+    let ref = firestoreDb.collection(collectionName);
+    if (orderByField) {
+      try {
+        ref = ref.orderBy(orderByField, orderDirection);
+      } catch (_) {}
+    }
+    if (limitCount && limitCount > 0) {
+      ref = ref.limit(limitCount);
+    }
+    const snap = await ref.get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    // Graceful fallback to unordered limit if index missing
+    try {
+      const snap = await firestoreDb.collection(collectionName).limit(limitCount || 50).get();
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (fallbackErr) {
+      console.error(`🔥 [Firestore Error] Failed limited query on ${collectionName}:`, fallbackErr);
+      throw fallbackErr;
+    }
+  }
+}
+
 // Update specific fields on a document
 async function updateFirestoreDoc(collectionName, docId, updates) {
   await window.firebaseReadyPromise;
@@ -262,13 +291,32 @@ async function updateFirestoreDoc(collectionName, docId, updates) {
   }
 }
 
-// Real-Time Document Listener (onSnapshot)
+// Real-Time Document Listener (onSnapshot) with leak-proof unsubscription
 function listenToFirestoreDoc(collectionName, docId, onUpdate, onError) {
+  let innerUnsub = null;
+  let isCancelled = false;
+
   if (!firestoreDb) {
     window.firebaseReadyPromise.then(() => {
-      listenToFirestoreDoc(collectionName, docId, onUpdate, onError);
+      if (isCancelled || !firestoreDb) return;
+      innerUnsub = firestoreDb.collection(collectionName).doc(String(docId)).onSnapshot((snapshot) => {
+        if (snapshot.exists) {
+          onUpdate({ id: snapshot.id, ...snapshot.data() });
+        } else {
+          onUpdate(null);
+        }
+      }, (err) => {
+        console.error(`🔥 [Firestore Listener Error] on ${collectionName}/${docId}:`, err);
+        if (onError) onError(err);
+      });
+    }).catch(err => {
+      if (onError) onError(err);
     });
-    return () => {};
+
+    return () => {
+      isCancelled = true;
+      if (typeof innerUnsub === 'function') innerUnsub();
+    };
   }
 
   const unsubscribe = firestoreDb.collection(collectionName).doc(String(docId)).onSnapshot((snapshot) => {
@@ -285,13 +333,33 @@ function listenToFirestoreDoc(collectionName, docId, onUpdate, onError) {
   return unsubscribe;
 }
 
-// Real-Time Collection Listener (onSnapshot)
+// Real-Time Collection Listener (onSnapshot) with leak-proof unsubscription
 function listenToFirestoreCollection(collectionName, queryModifiersFn, onUpdate, onError) {
+  let innerUnsub = null;
+  let isCancelled = false;
+
   if (!firestoreDb) {
     window.firebaseReadyPromise.then(() => {
-      listenToFirestoreCollection(collectionName, queryModifiersFn, onUpdate, onError);
+      if (isCancelled || !firestoreDb) return;
+      let ref = firestoreDb.collection(collectionName);
+      if (typeof queryModifiersFn === 'function') {
+        ref = queryModifiersFn(ref);
+      }
+      innerUnsub = ref.onSnapshot((snapshot) => {
+        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        onUpdate(list);
+      }, (err) => {
+        console.error(`🔥 [Firestore Collection Listener Error] on ${collectionName}:`, err);
+        if (onError) onError(err);
+      });
+    }).catch(err => {
+      if (onError) onError(err);
     });
-    return () => {};
+
+    return () => {
+      isCancelled = true;
+      if (typeof innerUnsub === 'function') innerUnsub();
+    };
   }
 
   let ref = firestoreDb.collection(collectionName);
@@ -515,6 +583,7 @@ window.firebaseConfig = firebaseConfig;
 window.saveToFirestore = saveToFirestore;
 window.getFromFirestore = getFromFirestore;
 window.getAllFromFirestore = getAllFromFirestore;
+window.getLimitedFromFirestore = getLimitedFromFirestore;
 window.updateFirestoreDoc = updateFirestoreDoc;
 window.listenToFirestoreDoc = listenToFirestoreDoc;
 window.listenToFirestoreCollection = listenToFirestoreCollection;

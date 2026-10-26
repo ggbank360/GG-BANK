@@ -13,11 +13,25 @@ const BankCharts = {
     }
   },
 
-  renderIncomeExpense(canvasId, income = 72850, expense = 7400) {
+  async ensureChart() {
+    if (typeof Chart !== 'undefined') return true;
+    if (window.Utils && typeof Utils.ensureChartJs === 'function') {
+      try {
+        await Utils.ensureChartJs();
+        return typeof Chart !== 'undefined';
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
+  },
+
+  async renderIncomeExpense(canvasId, income = 72850, expense = 7400) {
     this.destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
-    if (typeof Chart === 'undefined') return;
+    const ready = await this.ensureChart();
+    if (!ready || typeof Chart === 'undefined') return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: 'bar',
@@ -68,11 +82,12 @@ const BankCharts = {
     });
   },
 
-  renderCategorySpending(canvasId, categories = ['Food', 'Bills', 'Shopping', 'Transport'], values = [6200, 3400, 2800, 1900]) {
+  async renderCategorySpending(canvasId, categories = ['Food', 'Bills', 'Shopping', 'Transport'], values = [6200, 3400, 2800, 1900]) {
     this.destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
-    if (typeof Chart === 'undefined') return;
+    const ready = await this.ensureChart();
+    if (!ready || typeof Chart === 'undefined') return;
 
     const colors = [
       '#0ea5e9', // cyan
@@ -122,11 +137,12 @@ const BankCharts = {
     return this.renderTransactionTrend(canvasId, labels, dataPoints);
   },
 
-  renderTransactionTrend(canvasId, labels = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'], dataPoints = [25000, 34000, 42000, 50000, 65450, 65450]) {
+  async renderTransactionTrend(canvasId, labels = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'], dataPoints = [25000, 34000, 42000, 50000, 65450, 65450]) {
     this.destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
-    if (typeof Chart === 'undefined') return;
+    const ready = await this.ensureChart();
+    if (!ready || typeof Chart === 'undefined') return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: 'line',

@@ -869,7 +869,7 @@ function viewLoanSchedule(loanId) {
 /* -------------------------------------------------------------
  * 9. STATEMENT DOWNLOAD VIA jsPDF
  * ------------------------------------------------------------- */
-function downloadLoanStatement(loanId) {
+async function downloadLoanStatement(loanId) {
   const targetLoanId = loanId || (activeScheduleLoan ? activeScheduleLoan.loanId : null);
   const loan = userLoans.find(l => l.loanId === targetLoanId) || activeScheduleLoan;
 
@@ -878,13 +878,17 @@ function downloadLoanStatement(loanId) {
     return;
   }
 
-  if (!window.jspdf || !window.jspdf.jsPDF) {
-    Utils.showToast('Generating statement...', 'info');
+  try {
+    if (window.Utils && typeof Utils.ensureJsPdf === 'function') {
+      await Utils.ensureJsPdf();
+    }
+  } catch (_) {
+    Utils.showToast('Generating statement print view...', 'info');
     window.print();
     return;
   }
 
-  const { jsPDF } = window.jspdf;
+  const { jsPDF } = window.jspdf || window;
   const doc = new jsPDF();
 
   // Header branding
@@ -982,19 +986,23 @@ function openClosedCertificateModal(loanId) {
   if (loan) openClosureModal(loan);
 }
 
-function downloadClosureCertificate() {
+async function downloadClosureCertificate() {
   const loan = lastClosedLoan || userLoans.find(l => l.status === 'CLOSED');
   if (!loan) {
     Utils.showToast('Loan closure details unavailable.', 'error');
     return;
   }
 
-  if (!window.jspdf || !window.jspdf.jsPDF) {
+  try {
+    if (window.Utils && typeof Utils.ensureJsPdf === 'function') {
+      await Utils.ensureJsPdf();
+    }
+  } catch (_) {
     window.print();
     return;
   }
 
-  const { jsPDF } = window.jspdf;
+  const { jsPDF } = window.jspdf || window;
   const doc = new jsPDF('landscape', 'mm', 'a4'); // Landscape certificate
 
   // Golden / Emerald Border

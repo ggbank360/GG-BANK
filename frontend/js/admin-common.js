@@ -423,15 +423,19 @@ const AdminCommon = {
   },
 
   // Universal Export to PDF using jsPDF + AutoTable
-  exportPDF(title, headers, rows, filename) {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
+  async exportPDF(title, headers, rows, filename) {
+    try {
+      if (window.Utils && typeof Utils.ensureJsPdfAutoTable === 'function') {
+        await Utils.ensureJsPdfAutoTable();
+      }
+    } catch (_) {
       Utils.showToast('PDF generator library not loaded. Falling back to CSV export.', 'info');
       this.exportCSV(rows, filename ? filename.replace(/\.pdf$/i, '.csv') : 'report.csv');
       return;
     }
 
     try {
-      const { jsPDF } = window.jspdf;
+      const { jsPDF } = window.jspdf || window;
       const doc = new jsPDF();
 
       // Title & Header Branding

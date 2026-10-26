@@ -4,8 +4,12 @@
  */
 
 const StatementGenerator = {
-  generatePDF(customer, account, transactions) {
-    if (typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined') {
+  async generatePDF(customer, account, transactions) {
+    try {
+      if (window.Utils && typeof Utils.ensureJsPdfAutoTable === 'function') {
+        await Utils.ensureJsPdfAutoTable();
+      }
+    } catch (_) {
       Toast.error('PDF generation library not loaded. Please check your internet connection.');
       return;
     }

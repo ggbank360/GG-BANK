@@ -119,10 +119,41 @@ const Utils = {
     avatarElems.forEach(el => this.renderUserAvatar(el, user));
   },
 
+  // Dynamic on-demand script loaders for bundle & initial load optimization
+  loadScript(src) {
+    if (document.querySelector(`script[src="${src}"]`)) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.onload = () => resolve();
+      s.onerror = (e) => reject(new Error(`Failed to load script: ${src}`));
+      document.head.appendChild(s);
+    });
+  },
+
+  async ensureJsPdf() {
+    if (typeof window.jspdf !== 'undefined' || typeof window.jsPDF !== 'undefined') return;
+    await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  },
+
+  async ensureJsPdfAutoTable() {
+    await this.ensureJsPdf();
+    if (window.jspdf && window.jspdf.jsPDF && window.jspdf.jsPDF.API && window.jspdf.jsPDF.API.autoTable) return;
+    await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');
+  },
+
+  async ensureChartJs() {
+    if (typeof window.Chart !== 'undefined') return;
+    await this.loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+  },
+
   // Generate Downloadable Account Details PDF (jsPDF)
-  downloadAccountDetailsPDF(customerDetails) {
-    if (typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined') {
-      this.showToast('PDF generator library not loaded.', 'error');
+  async downloadAccountDetailsPDF(customerDetails) {
+    try {
+      await this.ensureJsPdf();
+    } catch (_) {
+      this.showToast('Failed to load PDF engine. Please verify internet connection.', 'error');
       return;
     }
 

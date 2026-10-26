@@ -21,6 +21,17 @@ let activeOfficerModalDocType = 'ALL';
 // ─────────────────────────────────────────────
 let accountsListenerUnsub = null;
 
+if (typeof window !== 'undefined') {
+  const cleanupOfficerListener = () => {
+    if (typeof accountsListenerUnsub === 'function') {
+      accountsListenerUnsub();
+      accountsListenerUnsub = null;
+    }
+  };
+  window.addEventListener('beforeunload', cleanupOfficerListener);
+  window.addEventListener('pagehide', cleanupOfficerListener);
+}
+
 function initRealtimeOfficerSync() {
   if (accountsListenerUnsub) return;
   if (typeof window.listenToFirestoreCollection === 'function') {

@@ -16,7 +16,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.customer-name-display').forEach(el => el.textContent = user.name);
 
   try {
-    const accRes = await API.request(`/accounts/user/${user.userId}`);
+    const [accRes, benRes] = await Promise.all([
+      API.request(`/accounts/user/${user.userId}`),
+      API.request('/beneficiaries')
+    ]);
+
     currentAccount = accRes.data || { 
       accountId: 'acc-' + user.userId,
       accountNumber: '100188492019', 
@@ -27,7 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load active UPI ID from user / account
     loadMyUpiId(user, currentAccount);
 
-    const benRes = await API.request('/beneficiaries');
     savedBeneficiaries = benRes.data || [];
 
     setupBeneficiariesDropdown();
@@ -395,10 +398,13 @@ function setupTransferForms() {
     });
   }
 
-  // 3. Confirm & Execute Transfer
+  // 3. Confirm & Execute Transfer (with double-submission guard)
+  let isSubmittingTransfer = false;
   if (confirmBtn) {
     confirmBtn.addEventListener('click', async () => {
-      if (!pendingTransfer) return;
+      if (!pendingTransfer || isSubmittingTransfer) return;
+      isSubmittingTransfer = true;
+      confirmBtn.disabled = true;
       Utils.setLoading(confirmBtn, true, 'Processing Transfer...');
 
       try {
@@ -417,6 +423,8 @@ function setupTransferForms() {
         }, 800);
       } catch (err) {
         Utils.showToast(err.message, 'error', 'Transfer Failed');
+        isSubmittingTransfer = false;
+        confirmBtn.disabled = false;
         Utils.setLoading(confirmBtn, false);
       }
     });

@@ -11,6 +11,17 @@ const PAGE_SIZE = 8;
 
 let adminCustomersUnsub = null;
 
+if (typeof window !== 'undefined') {
+  const cleanupAdminCustomersListener = () => {
+    if (typeof adminCustomersUnsub === 'function') {
+      adminCustomersUnsub();
+      adminCustomersUnsub = null;
+    }
+  };
+  window.addEventListener('beforeunload', cleanupAdminCustomersListener);
+  window.addEventListener('pagehide', cleanupAdminCustomersListener);
+}
+
 function initRealtimeAdminCustomersSync() {
   if (adminCustomersUnsub) return;
   if (typeof window.listenToFirestoreCollection === 'function') {

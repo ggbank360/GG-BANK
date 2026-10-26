@@ -8,6 +8,18 @@ let isBalanceVisible = true;
 let activeAccount = null;
 let activeTransactions = [];
 let currentUser = null;
+let activeAccountListenerUnsub = null;
+
+if (typeof window !== 'undefined') {
+  const cleanupListener = () => {
+    if (typeof activeAccountListenerUnsub === 'function') {
+      activeAccountListenerUnsub();
+      activeAccountListenerUnsub = null;
+    }
+  };
+  window.addEventListener('beforeunload', cleanupListener);
+  window.addEventListener('pagehide', cleanupListener);
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   currentUser = Auth.requireCustomer();
@@ -56,12 +68,18 @@ function initDashboardLayout(user) {
 
 async function loadDashboardData(user) {
   try {
-    // 1. Fetch Account Details
-    const accRes = await API.request(`/accounts/user/${user.userId}`);
+    const userAccNum = user.accountNumber || (activeAccount ? activeAccount.accountNumber : null);
+
+    // Parallel fetch: Account Details and Recent Transactions concurrently
+    const [accRes, txnRes] = await Promise.all([
+      API.request(`/accounts/user/${user.userId}`),
+      userAccNum ? API.request(`/transactions/account/${userAccNum}`) : Promise.resolve({ data: [] })
+    ]);
+
     activeAccount = accRes.data || {
-      accountId: 'acc-gowtham-101',
+      accountId: 'acc-' + (user.userId || 'cust'),
       userId: user.userId,
-      accountNumber: '10018849201',
+      accountNumber: userAccNum || '10018849201',
       accountType: 'Savings',
       balance: 65450.00,
       ifscCode: 'GGBN0001234',
@@ -71,9 +89,23 @@ async function loadDashboardData(user) {
 
     localStorage.setItem('gg_current_account', JSON.stringify(activeAccount));
 
+    // If transactions weren't queryable by userAccNum earlier, fetch using resolved activeAccount
+    if (!userAccNum && activeAccount.accountNumber) {
+      const lateTxn = await API.request(`/transactions/account/${activeAccount.accountNumber}`);
+      activeTransactions = lateTxn.data || [];
+    } else {
+      activeTransactions = txnRes.data || [];
+    }
+
+    // Clean up previous real-time listener if active to prevent memory leak
+    if (typeof activeAccountListenerUnsub === 'function') {
+      activeAccountListenerUnsub();
+      activeAccountListenerUnsub = null;
+    }
+
     // Real-Time Account Balance Listener across devices
-    if (typeof window.listenToFirestoreDoc === 'function') {
-      window.listenToFirestoreDoc('accounts', activeAccount.accountNumber, (liveAcc) => {
+    if (typeof window.listenToFirestoreDoc === 'function' && activeAccount.accountNumber) {
+      activeAccountListenerUnsub = window.listenToFirestoreDoc('accounts', activeAccount.accountNumber, (liveAcc) => {
         if (liveAcc && liveAcc.balance !== undefined && liveAcc.balance !== activeAccount.balance) {
           activeAccount.balance = liveAcc.balance;
           localStorage.setItem('gg_current_account', JSON.stringify(activeAccount));
@@ -83,16 +115,12 @@ async function loadDashboardData(user) {
       });
     }
 
-    // 2. Fetch Transactions
-    const txnRes = await API.request(`/transactions/account/${activeAccount.accountNumber}`);
-    activeTransactions = txnRes.data || [];
-
     updateBalanceDisplay(true);
     updateDashboardMetrics(true);
     renderRecentTransactions(activeTransactions.slice(0, 5));
 
-    // 3. Fetch Linked UPI ID
-    await loadDashboardUpiData();
+    // Concurrently trigger non-blocking widgets
+    loadDashboardUpiData();
 
     // Render Trend Chart
     if (window.BankCharts) {
@@ -373,11 +401,15 @@ function closeTransactionModal() {
   if (modal) modal.classList.remove('active');
 }
 
-function downloadSingleReceipt(txnId) {
+async function downloadSingleReceipt(txnId) {
   const t = activeTransactions.find(x => x.transactionId === txnId);
   if (!t) return;
 
-  if (typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined') {
+  try {
+    if (window.Utils && typeof Utils.ensureJsPdf === 'function') {
+      await Utils.ensureJsPdf();
+    }
+  } catch (_) {
     Utils.showToast('Generating text receipt...', 'info');
     Utils.copyToClipboard(`GG BANK RECEIPT\nTxn ID: ${t.transactionId}\nAmount: ₹${t.amount}\nDate: ${t.createdAt}`, 'Receipt details copied to clipboard.');
     return;

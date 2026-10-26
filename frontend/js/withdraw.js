@@ -139,7 +139,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Transition to success screen
         const txnId = res.data?.transactionId || 'TXN-' + Date.now().toString().slice(-6);
-        const newBal = (res.data?.balance !== undefined) ? res.data.balance : (startingBalance - amount);
+        const newBal = (res.data?.balanceAfter !== undefined) ? res.data.balanceAfter : ((res.data?.balance !== undefined) ? res.data.balance : (startingBalance - amount));
+
+        if (currentAccount) {
+          currentAccount.balance = newBal;
+          localStorage.setItem('gg_current_account', JSON.stringify(currentAccount));
+        }
 
         if (formCard) formCard.style.display = 'none';
         if (successScreen) {

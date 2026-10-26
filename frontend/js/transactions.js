@@ -16,20 +16,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!currentUser) return;
 
   try {
-    const accRes = await API.request(`/accounts/user/${currentUser.userId}`);
-    currentAccount = accRes.data || { accountNumber: '10018849201', balance: 65450.00, accountType: 'Savings' };
+    const userAccNum = currentUser.accountNumber;
+    const [accRes, txnRes] = await Promise.all([
+      API.request(`/accounts/user/${currentUser.userId}`),
+      userAccNum ? API.request(`/transactions/account/${userAccNum}`) : Promise.resolve({ data: [] })
+    ]);
 
-    const txnRes = await API.request(`/transactions/account/${currentAccount.accountNumber}`);
-    allTransactions = txnRes.data || [];
+    currentAccount = accRes.data || { accountNumber: userAccNum || '10018849201', balance: 65450.00, accountType: 'Savings' };
+
+    if (!userAccNum && currentAccount.accountNumber) {
+      const lateTxn = await API.request(`/transactions/account/${currentAccount.accountNumber}`);
+      allTransactions = lateTxn.data || [];
+    } else {
+      allTransactions = txnRes.data || [];
+    }
+
     filteredTransactions = [...allTransactions];
 
     setupFilterListeners();
     renderPaginatedTransactions();
 
-    // Statement Download
+    // Statement Download with dynamic PDF engine loading
     const downloadBtn = document.getElementById('btnDownloadStatement');
     if (downloadBtn) {
-      downloadBtn.addEventListener('click', () => {
+      downloadBtn.addEventListener('click', async () => {
+        if (window.Utils && typeof Utils.ensureJsPdfAutoTable === 'function') {
+          Utils.setLoading(downloadBtn, true, 'Preparing Statement...');
+          try {
+            await Utils.ensureJsPdfAutoTable();
+          } catch (_) {}
+          Utils.setLoading(downloadBtn, false);
+        }
         if (window.StatementGenerator) {
           StatementGenerator.generatePDF(currentUser, currentAccount, allTransactions);
         } else {
@@ -313,11 +330,15 @@ function closeTxnDrawer() {
   if (modal) modal.classList.remove('active');
 }
 
-function downloadReceiptForTxn(txnId) {
+async function downloadReceiptForTxn(txnId) {
   const t = allTransactions.find(x => x.transactionId === txnId);
   if (!t) return;
 
-  if (typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined') {
+  try {
+    if (window.Utils && typeof Utils.ensureJsPdf === 'function') {
+      await Utils.ensureJsPdf();
+    }
+  } catch (_) {
     Utils.showToast('Generating text receipt...', 'info');
     Utils.copyToClipboard(`GG BANK RECEIPT\nTxn ID: ${t.transactionId}\nAmount: ₹${t.amount}\nDate: ${t.createdAt}`, 'Receipt details copied.');
     return;
