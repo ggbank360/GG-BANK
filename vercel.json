@@ -1,109 +1,264 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/officer-dashboard",
+      "destination": "/frontend/officer-dashboard.html",
+      "permanent": false
+    },
+    {
+      "source": "/officer-dashboard.html",
+      "destination": "/frontend/officer-dashboard.html",
+      "permanent": false
+    },
+    {
+      "source": "/officer",
+      "destination": "/frontend/officer-dashboard.html",
+      "permanent": false
+    },
+    {
+      "source": "/officer-login",
+      "destination": "/frontend/officer-login.html",
+      "permanent": false
+    },
+    {
+      "source": "/officer-login.html",
+      "destination": "/frontend/officer-login.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-dashboard",
+      "destination": "/frontend/admin-dashboard.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-dashboard.html",
+      "destination": "/frontend/admin-dashboard.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin",
+      "destination": "/frontend/admin-dashboard.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-login",
+      "destination": "/frontend/admin-login.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-login.html",
+      "destination": "/frontend/admin-login.html",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/frontend/dashboard.html",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard.html",
+      "destination": "/frontend/dashboard.html",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "destination": "/frontend/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/login.html",
+      "destination": "/frontend/login.html",
+      "permanent": false
+    },
+    {
+      "source": "/loans",
+      "destination": "/frontend/loans.html",
+      "permanent": false
+    },
+    {
+      "source": "/loans.html",
+      "destination": "/frontend/loans.html",
+      "permanent": false
+    },
+    {
+      "source": "/transfer",
+      "destination": "/frontend/transfer.html",
+      "permanent": false
+    },
+    {
+      "source": "/transfer.html",
+      "destination": "/frontend/transfer.html",
+      "permanent": false
+    },
+    {
+      "source": "/account",
+      "destination": "/frontend/account.html",
+      "permanent": false
+    },
+    {
+      "source": "/account.html",
+      "destination": "/frontend/account.html",
+      "permanent": false
+    },
+    {
+      "source": "/accounts",
+      "destination": "/frontend/accounts.html",
+      "permanent": false
+    },
+    {
+      "source": "/accounts.html",
+      "destination": "/frontend/accounts.html",
+      "permanent": false
+    },
+    {
+      "source": "/transactions",
+      "destination": "/frontend/transactions.html",
+      "permanent": false
+    },
+    {
+      "source": "/transactions.html",
+      "destination": "/frontend/transactions.html",
+      "permanent": false
+    },
+    {
+      "source": "/qr-pay",
+      "destination": "/frontend/qr-pay.html",
+      "permanent": false
+    },
+    {
+      "source": "/qr-pay.html",
+      "destination": "/frontend/qr-pay.html",
+      "permanent": false
+    },
+    {
+      "source": "/deposit",
+      "destination": "/frontend/deposit.html",
+      "permanent": false
+    },
+    {
+      "source": "/deposit.html",
+      "destination": "/frontend/deposit.html",
+      "permanent": false
+    },
+    {
+      "source": "/withdraw",
+      "destination": "/frontend/withdraw.html",
+      "permanent": false
+    },
+    {
+      "source": "/withdraw.html",
+      "destination": "/frontend/withdraw.html",
+      "permanent": false
+    },
+    {
+      "source": "/profile",
+      "destination": "/frontend/profile.html",
+      "permanent": false
+    },
+    {
+      "source": "/profile.html",
+      "destination": "/frontend/profile.html",
+      "permanent": false
+    },
+    {
+      "source": "/security",
+      "destination": "/frontend/security.html",
+      "permanent": false
+    },
+    {
+      "source": "/security.html",
+      "destination": "/frontend/security.html",
+      "permanent": false
+    },
+    {
+      "source": "/register",
+      "destination": "/frontend/register.html",
+      "permanent": false
+    },
+    {
+      "source": "/register.html",
+      "destination": "/frontend/register.html",
+      "permanent": false
+    },
+    {
+      "source": "/customers",
+      "destination": "/frontend/customers.html",
+      "permanent": false
+    },
+    {
+      "source": "/customers.html",
+      "destination": "/frontend/customers.html",
+      "permanent": false
+    },
+    {
+      "source": "/customer-details",
+      "destination": "/frontend/customer-details.html",
+      "permanent": false
+    },
+    {
+      "source": "/customer-details.html",
+      "destination": "/frontend/customer-details.html",
+      "permanent": false
+    },
+    {
+      "source": "/officers",
+      "destination": "/frontend/officers.html",
+      "permanent": false
+    },
+    {
+      "source": "/officers.html",
+      "destination": "/frontend/officers.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-loans",
+      "destination": "/frontend/admin-loans.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-loans.html",
+      "destination": "/frontend/admin-loans.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-transactions",
+      "destination": "/frontend/admin-transactions.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-transactions.html",
+      "destination": "/frontend/admin-transactions.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-customers",
+      "destination": "/frontend/customers.html",
+      "permanent": false
+    },
+    {
+      "source": "/admin-customers.html",
+      "destination": "/frontend/customers.html",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/",
       "destination": "/frontend/index.html"
     },
     {
-      "source": "/frontend",
-      "destination": "/frontend/index.html"
+      "source": "/css/:match*",
+      "destination": "/frontend/css/:match*"
     },
     {
-      "source": "/frontend/",
-      "destination": "/frontend/index.html"
+      "source": "/js/:match*",
+      "destination": "/frontend/js/:match*"
     },
     {
-      "source": "/login",
-      "destination": "/frontend/index.html"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/frontend/dashboard.html"
-    },
-    {
-      "source": "/loans",
-      "destination": "/frontend/loans.html"
-    },
-    {
-      "source": "/transfer",
-      "destination": "/frontend/transfer.html"
-    },
-    {
-      "source": "/account",
-      "destination": "/frontend/account.html"
-    },
-    {
-      "source": "/accounts",
-      "destination": "/frontend/accounts.html"
-    },
-    {
-      "source": "/transactions",
-      "destination": "/frontend/transactions.html"
-    },
-    {
-      "source": "/qr-pay",
-      "destination": "/frontend/qr-pay.html"
-    },
-    {
-      "source": "/deposit",
-      "destination": "/frontend/deposit.html"
-    },
-    {
-      "source": "/withdraw",
-      "destination": "/frontend/withdraw.html"
-    },
-    {
-      "source": "/profile",
-      "destination": "/frontend/profile.html"
-    },
-    {
-      "source": "/security",
-      "destination": "/frontend/security.html"
-    },
-    {
-      "source": "/register",
-      "destination": "/frontend/register.html"
-    },
-    {
-      "source": "/admin",
-      "destination": "/frontend/admin-dashboard.html"
-    },
-    {
-      "source": "/admin-login",
-      "destination": "/frontend/admin-login.html"
-    },
-    {
-      "source": "/admin-dashboard",
-      "destination": "/frontend/admin-dashboard.html"
-    },
-    {
-      "source": "/admin-loans",
-      "destination": "/frontend/admin-loans.html"
-    },
-    {
-      "source": "/admin-transactions",
-      "destination": "/frontend/admin-transactions.html"
-    },
-    {
-      "source": "/admin-customers",
-      "destination": "/frontend/customers.html"
-    },
-    {
-      "source": "/officer",
-      "destination": "/frontend/officer-dashboard.html"
-    },
-    {
-      "source": "/officer-login",
-      "destination": "/frontend/officer-login.html"
-    },
-    {
-      "source": "/officer-dashboard",
-      "destination": "/frontend/officer-dashboard.html"
-    },
-    {
-      "source": "/((?!frontend/|api/).*)",
-      "destination": "/frontend/$1"
+      "source": "/images/:match*",
+      "destination": "/frontend/images/:match*"
     }
   ],
   "headers": [
