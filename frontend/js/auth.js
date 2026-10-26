@@ -7,7 +7,7 @@
 const Auth = {
   getCurrentUser() {
     try {
-      const userStr = localStorage.getItem('gg_current_user');
+      const userStr = localStorage.getItem('gg_current_user') || localStorage.getItem('gg_user') || sessionStorage.getItem('gg_current_user');
       return userStr ? JSON.parse(userStr) : null;
     } catch (_) {
       return null;
@@ -16,7 +16,7 @@ const Auth = {
 
   getCurrentAccount() {
     try {
-      const accStr = localStorage.getItem('gg_current_account');
+      const accStr = localStorage.getItem('gg_current_account') || localStorage.getItem('gg_account') || sessionStorage.getItem('gg_current_account');
       return accStr ? JSON.parse(accStr) : null;
     } catch (_) {
       return null;
@@ -32,7 +32,11 @@ const Auth = {
       user.profilePhoto = user.profilePhoto || user.avatar;
     }
     localStorage.setItem('gg_current_user', JSON.stringify(user));
-    localStorage.setItem('gg_current_account', JSON.stringify(account));
+    localStorage.setItem('gg_user', JSON.stringify(user));
+    if (account) {
+      localStorage.setItem('gg_current_account', JSON.stringify(account));
+      localStorage.setItem('gg_account', JSON.stringify(account));
+    }
     localStorage.setItem('gg_auth_token', token);
     if (window.API && typeof API.setToken === 'function') {
       window.API.setToken(token);
@@ -45,8 +49,12 @@ const Auth = {
 
   logout() {
     localStorage.removeItem('gg_current_user');
+    localStorage.removeItem('gg_user');
     localStorage.removeItem('gg_current_account');
+    localStorage.removeItem('gg_account');
     localStorage.removeItem('gg_auth_token');
+    sessionStorage.removeItem('gg_current_user');
+    sessionStorage.removeItem('gg_current_account');
     if (window.firebaseAuth) {
       try { window.firebaseAuth.signOut(); } catch (_) {}
     }
@@ -54,21 +62,25 @@ const Auth = {
       Utils.showToast('Logged out successfully.', 'info');
     }
     setTimeout(() => {
-      window.location.href = 'index.html';
+      const target = window.location.pathname.includes('/frontend/') ? 'index.html' : '/';
+      window.location.href = target;
     }, 400);
   },
 
   // Auth Guard for Protected Pages
   requireAuth(requiredRole = null) {
     let user = this.getCurrentUser();
+    const loginTarget = window.location.pathname.includes('/frontend/') ? 'index.html' : '/';
     if (!user) {
       // Auto redirect to login
-      window.location.href = 'index.html';
+      window.location.href = loginTarget;
       return null;
     }
 
-    if (requiredRole && user.role !== requiredRole && user.role !== 'ADMIN') {
-      window.location.href = 'index.html';
+    const uRole = (user.role || '').toUpperCase();
+    const rRole = (requiredRole || '').toUpperCase();
+    if (rRole && uRole !== rRole && uRole !== 'ADMIN') {
+      window.location.href = loginTarget;
       return null;
     }
     return user;

@@ -308,10 +308,28 @@ class ApiService {
 
     // 4. GET /accounts/user/{userId}
     if (endpoint.startsWith('/accounts/user/')) {
-      const uid = endpoint.split('/').pop();
-      const snap = await window.firestoreDb.collection('accounts').where('userId', '==', uid).get();
+      const uid = endpoint.split('/').pop().trim();
+      // First try query by userId
+      let snap = await window.firestoreDb.collection('accounts').where('userId', '==', uid).get();
       if (!snap.empty) {
         return { success: true, data: { id: snap.docs[0].id, ...snap.docs[0].data() } };
+      }
+      // Try direct document by accountNumber / id
+      const direct = await window.getFromFirestore('accounts', uid);
+      if (direct) {
+        return { success: true, data: direct };
+      }
+      // Try query by email if uid looks like email
+      if (uid.includes('@')) {
+        const eSnap = await window.firestoreDb.collection('accounts').where('email', '==', uid.toLowerCase()).get();
+        if (!eSnap.empty) {
+          return { success: true, data: { id: eSnap.docs[0].id, ...eSnap.docs[0].data() } };
+        }
+      }
+      // Fallback check users collection
+      const uDoc = await window.getFromFirestore('users', uid);
+      if (uDoc) {
+        return { success: true, data: uDoc };
       }
       return { success: true, data: null };
     }
@@ -391,22 +409,73 @@ class ApiService {
       return { success: true, message: 'Customer application rejected.', data: { ...targetAcc, ...updates } };
     }
 
-    // 8. POST /transfer (Atomic Money Transfers using Firestore Transactions)
-    if (endpoint === '/transfer' && method === 'POST') {
+    // 8. POST /transfer & POST /qr/pay (Atomic Money Transfers & QR Payments using Firestore Transactions)
+    if ((endpoint === '/transfer' || endpoint === '/qr/pay') && method === 'POST') {
       const senderAccNum = (body.senderAccount || '').trim();
-      const receiverAccNum = (body.receiverAccount || body.upiId || '').trim();
-      const amount = parseFloat(body.amount);
-      const isUpi = body.transferMethod === 'UPI' || receiverAccNum.includes('@');
+      const rawReceiver = (body.receiverAccount || body.upiId || body.toAccount || '').trim();
+      const amount = Number(parseFloat(body.amount));
+      const isQr = endpoint === '/qr/pay';
+      const isUpi = isQr || body.transferMethod === 'UPI' || rawReceiver.includes('@');
 
       if (isNaN(amount) || amount <= 0) {
-        throw new Error('Please enter a transfer amount greater than zero.');
+        throw new Error('Please enter a valid transfer amount greater than zero.');
       }
-      if (senderAccNum === receiverAccNum) {
+      if (senderAccNum && rawReceiver && (senderAccNum === rawReceiver || senderAccNum.toLowerCase() === rawReceiver.toLowerCase())) {
         throw new Error('Cannot transfer money to the same account.');
       }
 
+      // Pre-resolve recipient account document from Firestore if possible
+      let targetReceiverAcc = null;
+      let targetReceiverAccId = null;
+
+      // 1. Try exact document match
+      const directRecDoc = await window.firestoreDb.collection('accounts').doc(rawReceiver).get();
+      if (directRecDoc.exists) {
+        targetReceiverAcc = directRecDoc.data();
+        targetReceiverAccId = directRecDoc.id;
+      }
+
+      // 2. Try lookup by email or upiId
+      if (!targetReceiverAcc && rawReceiver.includes('@')) {
+        const cleanEmail = rawReceiver.toLowerCase();
+        let eSnap = await window.firestoreDb.collection('accounts').where('email', '==', cleanEmail).get();
+        if (eSnap.empty) {
+          eSnap = await window.firestoreDb.collection('accounts').where('upiId', '==', cleanEmail).get();
+        }
+        if (!eSnap.empty) {
+          targetReceiverAcc = eSnap.docs[0].data();
+          targetReceiverAccId = eSnap.docs[0].id;
+        }
+      }
+
+      // 3. Try lookup by phone digits
+      if (!targetReceiverAcc) {
+        const cleanDigits = rawReceiver.replace(/\D/g, '');
+        if (cleanDigits.length >= 10) {
+          const pSnap = await window.firestoreDb.collection('accounts').where('phone', '==', cleanDigits).get();
+          if (!pSnap.empty) {
+            targetReceiverAcc = pSnap.docs[0].data();
+            targetReceiverAccId = pSnap.docs[0].id;
+          }
+        }
+      }
+
+      // 4. Try lookup in users collection
+      if (!targetReceiverAcc) {
+        const uSnap = await window.firestoreDb.collection('users').where('email', '==', rawReceiver.toLowerCase()).get();
+        if (!uSnap.empty) {
+          targetReceiverAcc = uSnap.docs[0].data();
+          targetReceiverAccId = targetReceiverAcc.accountNumber || uSnap.docs[0].id;
+        }
+      }
+
+      const actualReceiverAccNum = targetReceiverAcc ? (targetReceiverAcc.accountNumber || targetReceiverAccId) : rawReceiver;
+      const actualReceiverEmail = targetReceiverAcc ? (targetReceiverAcc.email || '') : (rawReceiver.includes('@') ? rawReceiver : '');
+      const actualReceiverName = targetReceiverAcc ? (targetReceiverAcc.fullName || targetReceiverAcc.name) : (body.beneficiaryName || body.name || 'Authorized Payee');
+
       const txnId = `TXN-2026-${Date.now().toString().slice(-6)}`;
       let finalSenderBalance = 0;
+      let finalReceiverBalance = 0;
 
       await window.runFirestoreTransaction(async (transaction, db) => {
         const senderRef = db.collection('accounts').doc(senderAccNum);
@@ -417,51 +486,175 @@ class ApiService {
         if (senderData.status !== 'ACTIVE') {
           throw new Error(`Sender account is ${senderData.status}. Transfers permitted only for active accounts.`);
         }
-        if (senderData.balance < amount) {
-          throw new Error(`Insufficient funds. Current balance: ₹${senderData.balance.toLocaleString('en-IN')}`);
+
+        const currentSenderBal = Number(senderData.balance || 0);
+        if (currentSenderBal < amount) {
+          throw new Error(`Insufficient funds. Available balance: ₹${currentSenderBal.toLocaleString('en-IN')}`);
         }
 
-        finalSenderBalance = senderData.balance - amount;
+        finalSenderBalance = Number((currentSenderBal - amount).toFixed(2));
         transaction.update(senderRef, { balance: finalSenderBalance });
 
-        // If internal receiver account exists, credit atomically
-        let receiverRef = db.collection('accounts').doc(receiverAccNum);
-        let receiverDoc = await transaction.get(receiverRef);
-        if (receiverDoc.exists) {
-          const newReceiverBal = (receiverDoc.data().balance || 0) + amount;
-          transaction.update(receiverRef, { balance: newReceiverBal });
+        // If recipient account exists in system, credit balance atomically
+        if (targetReceiverAccId) {
+          const recRef = db.collection('accounts').doc(String(targetReceiverAccId));
+          const recDoc = await transaction.get(recRef);
+          const currentRecBal = recDoc.exists ? Number(recDoc.data().balance || 0) : Number(targetReceiverAcc.balance || 0);
+          finalReceiverBalance = Number((currentRecBal + amount).toFixed(2));
+          transaction.update(recRef, { balance: finalReceiverBalance });
         }
 
-        // Write global ledger transaction record
+        // Global Transaction Record linking both accounts
         const txnRef = db.collection('transactions').doc(txnId);
         const txnRecord = {
           transactionId: txnId,
           txId: txnId,
           fromAccount: senderAccNum,
           senderAccount: senderAccNum,
-          toAccount: receiverAccNum,
-          receiverAccount: receiverAccNum,
+          senderEmail: senderData.email || '',
+          senderName: senderData.fullName || senderData.name || 'GG Bank Customer',
+          toAccount: actualReceiverAccNum,
+          receiverAccount: actualReceiverAccNum,
+          receiverEmail: actualReceiverEmail,
+          receiverName: actualReceiverName,
           amount: amount,
-          type: isUpi ? 'UPI_TRANSFER' : 'TRANSFER',
-          category: isUpi ? 'UPI Payment' : 'Internal Transfer',
-          description: body.description || (isUpi ? `UPI payment to ${receiverAccNum}` : `Transfer to Account ${receiverAccNum}`),
+          type: isQr ? 'QR_PAYMENT' : (isUpi ? 'UPI_TRANSFER' : 'TRANSFER'),
+          category: isQr ? 'Scan & Pay' : (isUpi ? 'UPI Payment' : 'Internal Transfer'),
+          description: body.description || body.note || (isQr ? `QR payment to ${actualReceiverName}` : (isUpi ? `UPI payment to ${rawReceiver}` : `Transfer to Account ${actualReceiverAccNum}`)),
           status: 'COMPLETED',
           balanceAfter: finalSenderBalance,
+          digitalSeal: `SEAL-${txnId}-VERIFIED`,
           createdAt: new Date().toISOString()
         };
         transaction.set(txnRef, txnRecord);
       });
 
-      await this.logAudit(senderAccNum, null, 'TRANSFER', `Transferred ₹${amount} to ${receiverAccNum} (Txn: ${txnId})`);
+      // Synchronize users collection
+      if (senderAccNum) {
+        const uSnap = await window.firestoreDb.collection('users').where('accountNumber', '==', senderAccNum).get();
+        if (!uSnap.empty) {
+          await uSnap.docs[0].ref.update({ balance: finalSenderBalance }).catch(() => {});
+        }
+      }
+      if (targetReceiverAcc && targetReceiverAcc.userId) {
+        await window.updateFirestoreDoc('users', targetReceiverAcc.userId, { balance: finalReceiverBalance }).catch(() => {});
+      }
+
+      // Update current user session in localStorage immediately if sender is current user
+      try {
+        const sessionAcc = JSON.parse(localStorage.getItem('gg_current_account') || 'null');
+        if (sessionAcc && (sessionAcc.accountNumber === senderAccNum || sessionAcc.userId === senderAccNum)) {
+          sessionAcc.balance = finalSenderBalance;
+          localStorage.setItem('gg_current_account', JSON.stringify(sessionAcc));
+        }
+      } catch (_) {}
+
+      await this.logAudit(senderAccNum, null, isQr ? 'QR_PAYMENT' : 'TRANSFER', `Transferred ₹${amount} to ${actualReceiverName} (${actualReceiverAccNum}) [Txn: ${txnId}]`);
 
       return {
         success: true,
-        message: isUpi ? 'UPI transfer completed successfully!' : 'Transfer completed successfully!',
+        message: isQr ? `₹${amount.toLocaleString('en-IN')} paid successfully via QR code!` : (isUpi ? 'UPI transfer completed successfully!' : 'Transfer completed successfully!'),
         data: {
           transactionId: txnId,
           balanceAfter: finalSenderBalance,
-          amount
+          amount,
+          senderAccount: senderAccNum,
+          receiverAccount: actualReceiverAccNum,
+          receiverName: actualReceiverName,
+          digitalSeal: `SEAL-${txnId}-VERIFIED`,
+          createdAt: new Date().toISOString()
         }
+      };
+    }
+
+    // 8B. POST /qr/validate (Validates Scanned QR Payload)
+    if (endpoint === '/qr/validate' && method === 'POST') {
+      const rawData = body.qrData;
+      let parsed = null;
+
+      if (typeof rawData === 'object' && rawData !== null) {
+        parsed = rawData;
+      } else if (typeof rawData === 'string') {
+        const str = rawData.trim();
+        if (str.startsWith('{') && str.endsWith('}')) {
+          try {
+            parsed = JSON.parse(str);
+          } catch (_) {}
+        } else if (str.startsWith('upi://pay')) {
+          try {
+            const url = new URL(str);
+            const pa = url.searchParams.get('pa') || '';
+            const pn = url.searchParams.get('pn') || 'GG Bank Payee';
+            const am = parseFloat(url.searchParams.get('am')) || null;
+            parsed = {
+              accountNumber: pa.includes('@') ? pa.split('@')[0] : pa,
+              upi: pa,
+              name: decodeURIComponent(pn),
+              requestedAmount: am
+            };
+          } catch (_) {
+            const params = new URLSearchParams(str.replace(/^upi:\/\/pay\??/, ''));
+            const pa = params.get('pa') || '';
+            const pn = params.get('pn') || 'GG Bank Payee';
+            const am = parseFloat(params.get('am')) || null;
+            parsed = {
+              accountNumber: pa.includes('@') ? pa.split('@')[0] : pa,
+              upi: pa,
+              name: decodeURIComponent(pn),
+              requestedAmount: am
+            };
+          }
+        } else {
+          parsed = {
+            accountNumber: str.includes('@') ? str.split('@')[0] : str,
+            rawIdentifier: str,
+            name: str.includes('@') ? str.split('@')[0] : 'GG Bank Customer'
+          };
+        }
+      }
+
+      if (!parsed) {
+        throw new Error('Invalid QR code format. Unable to decode payment payload.');
+      }
+
+      if (parsed.type === 'RECEIPT_QR' || parsed.protocol === 'GGBANK_RECEIPT') {
+        return {
+          success: true,
+          type: 'RECEIPT_QR',
+          data: parsed
+        };
+      }
+
+      const lookupKey = (parsed.accountNumber || parsed.email || parsed.upi || parsed.rawIdentifier || '').trim();
+      let matchedAcc = null;
+
+      if (lookupKey) {
+        const direct = await window.getFromFirestore('accounts', lookupKey);
+        if (direct) {
+          matchedAcc = direct;
+        } else if (lookupKey.includes('@')) {
+          const eSnap = await window.firestoreDb.collection('accounts').where('email', '==', lookupKey.toLowerCase()).get();
+          if (!eSnap.empty) matchedAcc = eSnap.docs[0].data();
+        } else {
+          const numSnap = await window.firestoreDb.collection('accounts').where('accountNumber', '==', lookupKey).get();
+          if (!numSnap.empty) matchedAcc = numSnap.docs[0].data();
+        }
+      }
+
+      const resultPayload = {
+        accountNumber: matchedAcc ? matchedAcc.accountNumber : (parsed.accountNumber || '100188492020'),
+        name: matchedAcc ? (matchedAcc.fullName || matchedAcc.name) : (parsed.name || 'Authorized Payee'),
+        email: matchedAcc ? (matchedAcc.email || '') : (parsed.email || ''),
+        ifscCode: matchedAcc ? (matchedAcc.ifscCode || 'GGBN0001234') : (parsed.ifsc || 'GGBN0001234'),
+        upiId: matchedAcc ? (matchedAcc.upiId || `${matchedAcc.accountNumber}@ggbank`) : (parsed.upi || `${parsed.accountNumber || 'user'}@ggbank`),
+        requestedAmount: parsed.amount || parsed.requestedAmount || null,
+        qrIdentifier: parsed.qrIdentifier || `QR-${matchedAcc ? matchedAcc.accountNumber : lookupKey}`
+      };
+
+      return {
+        success: true,
+        type: 'CUSTOMER_QR',
+        data: resultPayload
       };
     }
 
@@ -554,10 +747,16 @@ class ApiService {
     }
 
     if (endpoint.startsWith('/transactions/account/')) {
-      const accNum = endpoint.split('/')[3];
+      const accNum = (endpoint.split('/')[3] || '').toLowerCase().trim();
       const txns = await window.getAllFromFirestore('transactions');
       const filtered = txns
-        .filter(t => t.senderAccount === accNum || t.receiverAccount === accNum || t.fromAccount === accNum || t.toAccount === accNum)
+        .filter(t => {
+          const sAcc = String(t.senderAccount || t.fromAccount || '').toLowerCase();
+          const rAcc = String(t.receiverAccount || t.toAccount || '').toLowerCase();
+          const sEmail = String(t.senderEmail || '').toLowerCase();
+          const rEmail = String(t.receiverEmail || '').toLowerCase();
+          return sAcc === accNum || rAcc === accNum || sEmail === accNum || rEmail === accNum;
+        })
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       return { success: true, data: filtered };
     }
@@ -611,6 +810,7 @@ class ApiService {
     if (endpoint === '/admin/dashboard' || endpoint === '/admin/dashboard/overview') {
       const accounts = await window.getAllFromFirestore('accounts');
       const txns = await window.getAllFromFirestore('transactions');
+      const loans = await window.getAllFromFirestore('loans');
 
       let totalBalance = 0;
       let totalDeposits = 0;
@@ -618,25 +818,31 @@ class ApiService {
       let totalWithdrawals = 0;
 
       accounts.forEach(a => {
-        totalBalance += (a.balance || 0);
+        totalBalance += Number(a.balance || 0);
       });
 
       txns.forEach(t => {
-        if (t.type === 'DEPOSIT') totalDeposits += (t.amount || 0);
-        else if (t.type === 'TRANSFER' || t.type === 'UPI_TRANSFER') totalTransfers += (t.amount || 0);
-        else if (t.type === 'WITHDRAWAL') totalWithdrawals += (t.amount || 0);
+        const amt = Number(t.amount || 0);
+        if (t.type === 'DEPOSIT' || t.type === 'LOAN_DISBURSEMENT') totalDeposits += amt;
+        else if (t.type === 'TRANSFER' || t.type === 'UPI_TRANSFER' || t.type === 'QR_PAYMENT') totalTransfers += amt;
+        else if (t.type === 'WITHDRAWAL') totalWithdrawals += amt;
+      });
+
+      const pendingLoans = loans.filter(l => {
+        const s = (l.status || '').toLowerCase();
+        return s === 'pending' || s === 'under_review' || s === 'submitted';
       });
 
       const stats = {
         totalCustomers: accounts.length,
         totalAccounts: accounts.length,
-        totalBalance,
-        totalDeposits,
-        totalWithdrawals,
-        totalTransfers,
+        totalBalance: Number(totalBalance.toFixed(2)),
+        totalDeposits: Number(totalDeposits.toFixed(2)),
+        totalWithdrawals: Number(totalWithdrawals.toFixed(2)),
+        totalTransfers: Number(totalTransfers.toFixed(2)),
         activeAccounts: accounts.filter(a => a.status === 'ACTIVE').length,
         pendingAccounts: accounts.filter(a => a.status === 'PENDING_APPROVAL').length,
-        pendingLoans: 0
+        pendingLoans: pendingLoans.length
       };
 
       if (endpoint === '/admin/dashboard/overview') {
@@ -645,7 +851,7 @@ class ApiService {
           data: {
             stats,
             recentTransactions: txns.slice(0, 6),
-            pendingLoans: []
+            pendingLoans: pendingLoans
           }
         };
       }
@@ -674,10 +880,230 @@ class ApiService {
       return { success: true, data: sorted };
     }
 
-    // 17. Loans Collection
-    if (endpoint === '/admin/loans') {
+    // 17. Loans Endpoints (Application, Retrieval, Admin Approval & Fund Disbursement)
+    if ((endpoint === '/loans' || endpoint === '/loans/apply') && method === 'POST') {
+      const loanId = body.loanId || `LN-${Date.now().toString().slice(-6)}`;
+      const reqAmt = Number(parseFloat(body.requestedAmount || body.amount || 0));
+      const tenure = Number(parseInt(body.tenure || 36));
+      const rate = Number(parseFloat(body.interestRate || 10.5));
+      const feePct = Number(parseFloat(body.processingFeePercent || 1.0));
+      const fee = Number(parseFloat(body.processingFee || Math.round(reqAmt * (feePct / 100))));
+      const netDisb = Number(parseFloat(body.netDisbursement || (reqAmt - fee)));
+      const income = Number(parseFloat(body.monthlyIncome || 0));
+      const existingEmi = Number(parseFloat(body.existingEmi || 0));
+      const emi = Number(parseFloat(body.estimatedEMI || 0));
+      const interest = Number(parseFloat(body.totalInterest || 0));
+      const repayment = Number(parseFloat(body.totalRepayment || (reqAmt + interest)));
+
+      const loanRecord = {
+        loanId,
+        id: loanId,
+        accountNumber: String(body.accountNumber || ''),
+        customerName: String(body.customerName || body.name || 'Customer'),
+        email: String(body.email || '').toLowerCase(),
+        userId: String(body.userId || ''),
+        loanType: String(body.loanType || 'Personal Loan'),
+        requestedAmount: reqAmt,
+        amount: reqAmt,
+        tenure,
+        interestRate: rate,
+        processingFeePercent: feePct,
+        processingFee: fee,
+        netDisbursement: netDisb,
+        monthlyIncome: income,
+        existingEmi,
+        estimatedEMI: emi,
+        totalInterest: interest,
+        totalRepayment: repayment,
+        purpose: String(body.purpose || 'General Funding'),
+        status: 'pending',
+        loanDocument: body.loanDocument || null,
+        documents: body.documents || {},
+        creditScore: Number(body.creditScore || 720),
+        paidEmisCount: 0,
+        totalEmisCount: tenure,
+        outstandingBalance: reqAmt,
+        createdAt: new Date().toISOString()
+      };
+
+      await window.saveToFirestore('loans', loanId, loanRecord);
+      await this.logAudit(body.userId, null, 'LOAN_APPLICATION', `Submitted ${loanRecord.loanType} for ₹${reqAmt} (Loan ID: ${loanId})`);
+
+      return {
+        success: true,
+        message: 'Loan application submitted successfully for review.',
+        data: loanRecord
+      };
+    }
+
+    if (endpoint === '/loans' || endpoint === '/admin/loans') {
       const loans = await window.getAllFromFirestore('loans');
-      return { success: true, data: loans };
+      const sorted = loans.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      return { success: true, data: sorted };
+    }
+
+    if (endpoint.startsWith('/admin/loans/') && endpoint.endsWith('/approve') && method === 'PUT') {
+      const loanId = endpoint.split('/')[3];
+      let loan = await window.getFromFirestore('loans', loanId);
+      if (!loan) {
+        const snap = await window.firestoreDb.collection('loans').where('loanId', '==', loanId).get();
+        if (!snap.empty) loan = { id: snap.docs[0].id, ...snap.docs[0].data() };
+      }
+      if (!loan) throw new Error(`Loan record ${loanId} not found in Firestore.`);
+
+      const officerName = (body && body.officerName) || 'Chief Credit Officer';
+      const officerId = (body && body.officerId) || 'off-001';
+      const officerDesignation = (body && body.officerDesignation) || 'Chief Credit Officer';
+      const remarks = (body && body.remarks) || 'Credit Application Approved & Disbursed';
+
+      const loanUpdates = {
+        status: 'approved',
+        approvedAt: new Date().toISOString(),
+        approvedBy: officerName,
+        assignedOfficerId: officerId,
+        assignedOfficerName: officerName,
+        assignedOfficerDesignation: officerDesignation,
+        adminRemarks: remarks
+      };
+
+      await window.updateFirestoreDoc('loans', loan.id || loanId, loanUpdates);
+
+      // Automatically credit approved loan amount (+) to applicant's account balance
+      const disbAmount = Number(loan.requestedAmount || loan.amount || 0);
+      let targetAcc = await window.getFromFirestore('accounts', loan.accountNumber);
+      if (!targetAcc && loan.email) {
+        const accSnap = await window.firestoreDb.collection('accounts').where('email', '==', loan.email.toLowerCase()).get();
+        if (!accSnap.empty) targetAcc = { id: accSnap.docs[0].id, ...accSnap.docs[0].data() };
+      }
+      if (!targetAcc && loan.userId) {
+        const uAccSnap = await window.firestoreDb.collection('accounts').where('userId', '==', loan.userId).get();
+        if (!uAccSnap.empty) targetAcc = { id: uAccSnap.docs[0].id, ...uAccSnap.docs[0].data() };
+      }
+
+      let newBal = 0;
+      if (targetAcc) {
+        const currentBal = Number(targetAcc.balance || 0);
+        newBal = Number((currentBal + disbAmount).toFixed(2));
+        await window.updateFirestoreDoc('accounts', targetAcc.accountNumber, { balance: newBal });
+        if (targetAcc.userId) {
+          await window.updateFirestoreDoc('users', targetAcc.userId, { balance: newBal }).catch(() => {});
+        }
+
+        // Update localStorage if active customer session
+        try {
+          const sessionAcc = JSON.parse(localStorage.getItem('gg_current_account') || 'null');
+          if (sessionAcc && (sessionAcc.accountNumber === targetAcc.accountNumber || sessionAcc.userId === targetAcc.userId)) {
+            sessionAcc.balance = newBal;
+            localStorage.setItem('gg_current_account', JSON.stringify(sessionAcc));
+          }
+        } catch (_) {}
+
+        // Create corresponding "Loan Disbursed" transaction in history
+        const txnId = `TXN-2026-${Date.now().toString().slice(-6)}`;
+        const disbTxn = {
+          transactionId: txnId,
+          txId: txnId,
+          fromAccount: 'GG-BANK-TREASURY',
+          senderAccount: 'GG-BANK-TREASURY',
+          senderName: 'GG BANK Treasury',
+          toAccount: targetAcc.accountNumber,
+          receiverAccount: targetAcc.accountNumber,
+          receiverEmail: targetAcc.email || loan.email || '',
+          receiverName: targetAcc.fullName || targetAcc.name || loan.customerName || 'Customer',
+          amount: disbAmount,
+          type: 'LOAN_DISBURSEMENT',
+          category: 'Loan Disbursed',
+          description: `Loan Disbursed - ${loan.loanType || 'Personal Loan'} (${loan.loanId || loanId})`,
+          status: 'COMPLETED',
+          balanceAfter: newBal,
+          createdAt: new Date().toISOString()
+        };
+        await window.saveToFirestore('transactions', txnId, disbTxn);
+      }
+
+      await this.logAudit(loan.userId, 'ADMIN', 'LOAN_APPROVED', `Approved loan ${loanId} and disbursed ₹${disbAmount} to account ${loan.accountNumber}`);
+
+      return {
+        success: true,
+        message: `Loan ${loanId} approved and ₹${disbAmount.toLocaleString('en-IN')} disbursed successfully!`,
+        data: { ...loan, ...loanUpdates, balanceAfter: newBal }
+      };
+    }
+
+    if (endpoint.startsWith('/admin/loans/') && endpoint.endsWith('/reject') && method === 'PUT') {
+      const loanId = endpoint.split('/')[3];
+      const remarks = (body && body.remarks) ? body.remarks : 'Declined per underwriting guidelines';
+      await window.updateFirestoreDoc('loans', loanId, {
+        status: 'rejected',
+        rejectedAt: new Date().toISOString(),
+        adminRemarks: remarks
+      });
+      return { success: true, message: `Loan ${loanId} rejected.`, data: { loanId, status: 'rejected' } };
+    }
+
+    if (endpoint.startsWith('/admin/loans/') && method === 'DELETE' && !endpoint.includes('clear-all')) {
+      const loanId = endpoint.split('/')[3];
+      await window.firestoreDb.collection('loans').doc(loanId).delete();
+      return { success: true, message: `Loan ${loanId} deleted successfully.` };
+    }
+
+    if (endpoint === '/admin/loans/clear-all' && method === 'DELETE') {
+      const snap = await window.firestoreDb.collection('loans').get();
+      for (const d of snap.docs) {
+        await d.ref.delete();
+      }
+      return { success: true, message: 'All loan records cleared.' };
+    }
+
+    if (endpoint.startsWith('/loans/') && endpoint.endsWith('/pay-emi') && method === 'POST') {
+      const loanId = endpoint.split('/')[2];
+      let loan = await window.getFromFirestore('loans', loanId);
+      if (!loan) throw new Error(`Loan ${loanId} not found.`);
+
+      const emi = Number(loan.estimatedEMI || 5000);
+      const accNum = body.accountNumber || loan.accountNumber;
+      let acc = await window.getFromFirestore('accounts', accNum);
+      if (!acc) throw new Error(`Account ${accNum} not found.`);
+
+      if (Number(acc.balance || 0) < emi) throw new Error('Insufficient balance to pay EMI installment.');
+
+      const newBal = Number((acc.balance - emi).toFixed(2));
+      await window.updateFirestoreDoc('accounts', accNum, { balance: newBal });
+      if (acc.userId) {
+        await window.updateFirestoreDoc('users', acc.userId, { balance: newBal }).catch(() => {});
+      }
+
+      const newPaidCount = Number(loan.paidEmisCount || 0) + 1;
+      const newOutstanding = Math.max(0, Number(loan.outstandingBalance || loan.requestedAmount) - Math.round(emi * 0.8));
+      const loanUpdate = {
+        paidEmisCount: newPaidCount,
+        outstandingBalance: newOutstanding,
+        status: newOutstanding === 0 ? 'closed' : 'approved'
+      };
+      await window.updateFirestoreDoc('loans', loan.id || loanId, loanUpdate);
+
+      const txnId = `TXN-2026-${Date.now().toString().slice(-6)}`;
+      await window.saveToFirestore('transactions', txnId, {
+        transactionId: txnId,
+        txId: txnId,
+        fromAccount: accNum,
+        senderAccount: accNum,
+        toAccount: 'GG-BANK-LOAN-DESK',
+        receiverAccount: 'GG-BANK-LOAN-DESK',
+        amount: emi,
+        type: 'TRANSFER',
+        category: 'Loan EMI Payment',
+        description: `EMI Payment for Loan ${loan.loanId || loanId}`,
+        status: 'COMPLETED',
+        balanceAfter: newBal,
+        createdAt: new Date().toISOString()
+      });
+
+      return {
+        success: true,
+        message: `EMI installment of ₹${emi.toLocaleString('en-IN')} paid successfully!`,
+        data: { receiptId: `RCPT-${Date.now().toString().slice(-6)}`, amountPaid: emi, balanceAfter: newBal }
+      };
     }
 
     // 18. Notifications Collection

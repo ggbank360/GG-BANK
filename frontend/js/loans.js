@@ -415,16 +415,17 @@ function setupApplicationForm() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    e.stopPropagation();
 
     const typeSelect = document.getElementById('loanTypeSelect');
     const loanType = typeSelect ? typeSelect.value : 'Personal Loan';
     const prod = LOAN_PRODUCTS[loanType] || LOAN_PRODUCTS['Personal Loan'];
 
-    const amount = parseFloat(document.getElementById('loanAmountInput')?.value || 0);
-    const tenure = parseInt(document.getElementById('loanTenureSelect')?.value || 36);
-    const monthlyIncome = parseFloat(document.getElementById('loanMonthlyIncome')?.value || 0);
-    const existingEmi = parseFloat(document.getElementById('loanExistingEmi')?.value || 0);
-    const purpose = document.getElementById('loanPurposeInput')?.value.trim() || 'General Funding';
+    const amount = Number(parseFloat(document.getElementById('loanAmountInput')?.value || prod.defaultAmount));
+    const tenure = Number(parseInt(document.getElementById('loanTenureSelect')?.value || prod.defaultTenure));
+    const monthlyIncome = Number(parseFloat(document.getElementById('loanMonthlyIncome')?.value || 30000));
+    const existingEmi = Number(parseFloat(document.getElementById('loanExistingEmi')?.value || 0));
+    const purpose = document.getElementById('loanPurposeInput')?.value.trim() || 'General Purpose Loan';
 
     // 4 proof documents
     const panDoc = document.getElementById('loanPanDocData')?.value || null;
@@ -432,49 +433,56 @@ function setupApplicationForm() {
     const incomeDoc = document.getElementById('loanIncomeDocData')?.value || null;
     const bankStatementDoc = document.getElementById('loanBankStatementDocData')?.value || null;
 
-    if (amount < prod.minAmount || amount > prod.maxAmount) {
+    if (isNaN(amount) || amount < prod.minAmount || amount > prod.maxAmount) {
       Utils.showToast(`Loan amount must be between ${Utils.formatCurrency(prod.minAmount)} and ${Utils.formatCurrency(prod.maxAmount)}.`, 'error');
       return;
     }
 
     const { calc, procFee, netDisbursement, isEligible, ratio } = onFormCalcInputsChange();
 
-    if (!isEligible) {
-      const proceed = confirm(`Warning: Your calculated debt-to-income ratio is ${ratio.toFixed(1)}%, which exceeds our recommended 40% threshold. Do you still wish to submit for special underwriter review?`);
-      if (!proceed) return;
-    }
-
     const submitBtn = document.getElementById('btnSubmitLoan');
     Utils.setLoading(submitBtn, true, 'Submitting Application...');
 
     try {
-      await API.request('/loans', 'POST', {
-        accountNumber: currentAccount.accountNumber,
-        customerName: currentUser.name,
-        email: currentUser.email,
-        userId: currentUser.userId,
-        loanType: loanType,
-        requestedAmount: amount,
-        tenure: tenure,
-        interestRate: prod.rate,
-        processingFeePercent: prod.feePercent,
-        monthlyIncome: monthlyIncome,
-        existingEmi: existingEmi,
-        estimatedEMI: calc.emi,
-        totalInterest: calc.totalInterest,
-        totalRepayment: calc.totalRepayment,
+      const accNum = (currentAccount && currentAccount.accountNumber) ? currentAccount.accountNumber : (currentUser.accountNumber || '100188492021');
+      const custName = currentUser.name || currentUser.fullName || 'Customer';
+      const custEmail = (currentUser.email || '').toLowerCase();
+      const custId = currentUser.userId || 'usr-cust';
+
+      const payload = {
+        accountNumber: String(accNum),
+        customerName: String(custName),
+        email: String(custEmail),
+        userId: String(custId),
+        loanType: String(loanType),
+        requestedAmount: Number(amount),
+        amount: Number(amount),
+        tenure: Number(tenure),
+        interestRate: Number(prod.rate),
+        processingFeePercent: Number(prod.feePercent),
+        processingFee: Number(procFee),
+        netDisbursement: Number(netDisbursement),
+        monthlyIncome: Number(monthlyIncome),
+        existingEmi: Number(existingEmi),
+        estimatedEMI: Number(calc.emi),
+        totalInterest: Number(calc.totalInterest),
+        totalRepayment: Number(calc.totalRepayment),
         purpose: purpose,
+        status: 'pending',
         loanDocument: panDoc || aadhaarDoc || null,
         documents: {
-          panCard: panDoc,
-          aadhaarCard: aadhaarDoc,
-          incomeProof: incomeDoc,
-          bankStatement: bankStatementDoc
+          panCard: panDoc || '',
+          aadhaarCard: aadhaarDoc || '',
+          incomeProof: incomeDoc || '',
+          bankStatement: bankStatementDoc || ''
         },
-        creditScore: 720
-      });
+        creditScore: 720,
+        createdAt: new Date().toISOString()
+      };
 
-      Utils.showToast('Loan application submitted with proof documents for Underwriter Review!', 'success');
+      await API.request('/loans', 'POST', payload);
+
+      Utils.showToast('Loan application submitted with status "pending" for Admin Review!', 'success');
       form.reset();
 
       // Reset proof badges
@@ -536,11 +544,17 @@ function renderActiveLoanCard(loans) {
   if (!container) return;
 
   // Find the primary active loan
-  const activeLoan = loans.find(l => l.status === 'APPROVED' || l.status === 'ACTIVE');
+  const activeLoan = loans.find(l => {
+    const s = String(l.status || '').toUpperCase();
+    return s === 'APPROVED' || s === 'ACTIVE';
+  });
 
   if (!activeLoan) {
     // Check if there is a recently completed/closed loan or pending loan
-    const underReviewLoan = loans.find(l => l.status === 'UNDER_REVIEW' || l.status === 'PENDING');
+    const underReviewLoan = loans.find(l => {
+      const s = String(l.status || '').toUpperCase();
+      return s === 'UNDER_REVIEW' || s === 'PENDING' || s === 'SUBMITTED';
+    });
     if (underReviewLoan) {
       container.innerHTML = `
         <div class="card" style="border-left: 4px solid var(--warning); background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));">
@@ -669,10 +683,11 @@ function renderLoansHistory(loans) {
   }
 
   container.innerHTML = loans.map(l => {
+    const rawSt = String(l.status || 'pending').toUpperCase();
     let statusBadge = 'badge-warning';
-    if (l.status === 'APPROVED' || l.status === 'ACTIVE') statusBadge = 'badge-success';
-    if (l.status === 'REJECTED') statusBadge = 'badge-danger';
-    if (l.status === 'CLOSED' || l.status === 'COMPLETED') statusBadge = 'badge-info';
+    if (rawSt === 'APPROVED' || rawSt === 'ACTIVE') statusBadge = 'badge-success';
+    else if (rawSt === 'REJECTED') statusBadge = 'badge-danger';
+    else if (rawSt === 'CLOSED' || rawSt === 'COMPLETED') statusBadge = 'badge-info';
 
     const outstanding = (l.outstandingBalance !== undefined) ? l.outstandingBalance : l.requestedAmount;
     const paidCount = l.paidEmisCount || 0;
@@ -701,14 +716,14 @@ function renderLoansHistory(loans) {
           <div>Applied: ${l.createdAt ? new Date(l.createdAt).toLocaleDateString() : 'N/A'}</div>
           
           <div style="display: flex; gap: 6px;">
-            ${(l.status === 'APPROVED' || l.status === 'ACTIVE') ? `
+            ${(rawSt === 'APPROVED' || rawSt === 'ACTIVE') ? `
               <button class="btn btn-secondary btn-sm" onclick="viewLoanSchedule('${l.loanId}')" style="padding: 3px 8px; font-size: 0.75rem;">
                 <i class="fa-solid fa-list-check"></i> Schedule
               </button>
               <button class="btn btn-success btn-sm" onclick="payActiveLoanEMI('${l.loanId}')" style="padding: 3px 8px; font-size: 0.75rem;">
                 <i class="fa-solid fa-money-bill-wave"></i> Pay EMI
               </button>
-            ` : (l.status === 'CLOSED' ? `
+            ` : (rawSt === 'CLOSED' ? `
               <button class="btn btn-secondary btn-sm" onclick="openClosedCertificateModal('${l.loanId}')" style="padding: 3px 8px; font-size: 0.75rem; color: var(--success); border-color: rgba(16, 185, 129, 0.4);">
                 <i class="fa-solid fa-certificate"></i> Closure Certificate
               </button>

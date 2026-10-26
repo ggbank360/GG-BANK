@@ -122,7 +122,7 @@
           </div>
         </div>
 
-        <div class="card" style="max-width: 840px;">
+        <div class="card" style="max-width: 880px;">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;">
             <div>
               <div class="form-label">Customer Name</div>
@@ -141,6 +141,21 @@
               <span id="accViewRawNumber" style="display: none;"></span>
             </div>
             <div>
+              <div class="form-label">Primary UPI ID (VPA)</div>
+              <div style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan);" id="accViewUpiId">-</div>
+              <button class="btn btn-secondary btn-sm" id="btnCopyMyUpiId" style="margin-top: 6px; font-size: 0.75rem;">
+                <i class="fa-regular fa-copy"></i> Copy UPI ID
+              </button>
+            </div>
+            <div>
+              <div class="form-label">Linked Mobile Number</div>
+              <div style="font-family: var(--font-mono); color: #ffffff; font-weight: 600;" id="accViewPhone">-</div>
+            </div>
+            <div>
+              <div class="form-label">Registered Email</div>
+              <div style="color: #ffffff; font-weight: 600; word-break: break-all;" id="accViewEmail">-</div>
+            </div>
+            <div>
               <div class="form-label">Account Facility</div>
               <div><span class="badge badge-info" id="accViewType">SAVINGS ACCOUNT</span></div>
             </div>
@@ -149,12 +164,25 @@
               <div style="font-family: var(--font-mono); font-weight: 600; color: #ffffff;" id="accViewIfsc">GGBN0001234</div>
             </div>
             <div>
+              <div class="form-label">MICR Code</div>
+              <div style="font-family: var(--font-mono); color: var(--text-secondary);" id="accViewMicr">560002144</div>
+            </div>
+            <div>
               <div class="form-label">Branch</div>
               <div id="accViewBranch" style="color: #ffffff;">Central Tech Branch, Bengaluru</div>
             </div>
             <div>
-              <div class="form-label">Account Status</div>
-              <div><span class="badge badge-success" id="accViewStatus">ACTIVE</span></div>
+              <div class="form-label">Account & KYC Status</div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <span class="badge badge-success" id="accViewStatus">ACTIVE</span>
+                <span class="badge badge-success" id="accViewKycStatus" style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3);">
+                  <i class="fa-solid fa-circle-check"></i> KYC VERIFIED
+                </span>
+              </div>
+            </div>
+            <div>
+              <div class="form-label">Daily UPI / IMPS Limit</div>
+              <div style="font-family: var(--font-mono); color: var(--accent-cyan); font-weight: 700;" id="accViewLimit">₹1,00,000 / Day</div>
             </div>
             <div>
               <div class="form-label">Available Balance</div>
@@ -164,6 +192,23 @@
               <div class="form-label">Account Opening Date</div>
               <div id="accViewCreated" style="color: var(--text-secondary);">-</div>
             </div>
+            <div>
+              <div class="form-label">VPA Network Status</div>
+              <div><span class="badge badge-success"><i class="fa-solid fa-bolt"></i> NPCI UPI LIVE</span></div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons Row -->
+          <div style="display: flex; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-color-subtle); flex-wrap: wrap;">
+            <a href="transfer.html" class="btn btn-primary btn-sm">
+              <i class="fa-solid fa-paper-plane"></i> Send Money
+            </a>
+            <a href="qr-pay.html?tab=myqr" class="btn btn-secondary btn-sm">
+              <i class="fa-solid fa-qrcode"></i> Receive via QR
+            </a>
+            <a href="transactions.html" class="btn btn-secondary btn-sm">
+              <i class="fa-solid fa-list-check"></i> View Transactions
+            </a>
           </div>
         </div>
       </main>

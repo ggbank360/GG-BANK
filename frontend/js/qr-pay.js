@@ -1,3 +1,4 @@
+"use client";
 /**
  * GG BANK - QR Code Banking & Scan & Pay Controller (qr-pay.js)
  * "Secure Banking. Smarter Future."
@@ -15,6 +16,15 @@ let isScannerRunning = false;
 let currentPayeeData = null;
 let personalQrInstance = null;
 let receiptQrInstance = null;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    if (typeof stopCameraScanner === 'function') stopCameraScanner();
+  });
+  window.addEventListener('pagehide', () => {
+    if (typeof stopCameraScanner === 'function') stopCameraScanner();
+  });
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   currentUser = Auth.requireCustomer() || {
@@ -110,6 +120,21 @@ async function startCameraScanner() {
   const startBtn = document.getElementById('btnStartScanner');
   const stopBtn = document.getElementById('btnStopScanner');
 
+  if (typeof window === 'undefined' || typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (placeholderEl) {
+      placeholderEl.innerHTML = `
+        <i class="fa-solid fa-camera-slash" style="font-size: 2.8rem; color: var(--warning); margin-bottom: 12px; display: block;"></i>
+        <div style="font-weight: 700; color: #fff; margin-bottom: 4px;">Camera Media Not Supported Here</div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); max-width: 320px; margin: 0 auto 14px auto;">
+          Please use "Upload QR Image" or the Quick Demo Payees below.
+        </div>
+      `;
+      placeholderEl.style.display = 'block';
+    }
+    Utils.showToast('Camera not available. Please use "Upload QR Image" or Quick Demo Payees.', 'warning');
+    return;
+  }
+
   if (!window.Html5Qrcode) {
     Utils.showToast('Scanner library not loaded. Please use file upload or demo payees.', 'warning');
     return;
@@ -139,7 +164,6 @@ async function startCameraScanner() {
 
   } catch (err) {
     console.warn('Camera start error:', err);
-    // If device camera is blocked/unavailable (e.g. no webcam on desktop)
     if (placeholderEl) {
       placeholderEl.innerHTML = `
         <i class="fa-solid fa-camera-slash" style="font-size: 2.8rem; color: var(--danger); margin-bottom: 12px; display: block;"></i>
@@ -156,14 +180,27 @@ async function startCameraScanner() {
 }
 
 async function stopCameraScanner() {
-  if (html5QrScanner && isScannerRunning) {
+  if (html5QrScanner) {
     try {
-      await html5QrScanner.stop();
-      isScannerRunning = false;
+      if (isScannerRunning) {
+        await html5QrScanner.stop();
+      }
     } catch (e) {
       console.warn('Scanner stop error:', e);
     }
+    isScannerRunning = false;
   }
+
+  // Defensively stop any hardware media tracks
+  try {
+    const video = document.querySelector('#qrCameraReader video');
+    if (video && video.srcObject) {
+      const stream = video.srcObject;
+      const tracks = stream.getTracks ? stream.getTracks() : [];
+      tracks.forEach(track => track.stop());
+      video.srcObject = null;
+    }
+  } catch (_) {}
 
   const laserEl = document.getElementById('scannerLaser');
   const placeholderEl = document.getElementById('scannerPlaceholder');

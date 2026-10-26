@@ -34,6 +34,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupTransferForms();
     updateLiveCalculations();
 
+    // Auto-populate from URL query params (from QR scanner or link)
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetTo = urlParams.get('to') || urlParams.get('account') || urlParams.get('upi') || urlParams.get('email');
+    const targetName = urlParams.get('name');
+    const targetAmount = urlParams.get('amount');
+    const targetIfsc = urlParams.get('ifsc');
+
+    if (targetTo) {
+      if (targetTo.includes('@')) {
+        switchTransferMode('UPI');
+        const upiInp = document.getElementById('transferUpiId');
+        if (upiInp) upiInp.value = targetTo;
+        if (targetName) {
+          const nameInp = document.getElementById('transferUpiPayeeName');
+          if (nameInp) nameInp.value = decodeURIComponent(targetName);
+        }
+        if (targetAmount) {
+          const amtInp = document.getElementById('transferUpiAmount');
+          if (amtInp) amtInp.value = targetAmount;
+        }
+        verifyRecipientUpi();
+      } else {
+        switchTransferMode('ACCOUNT');
+        const accInp = document.getElementById('transferAccNumber');
+        const confInp = document.getElementById('transferConfirmAccNumber');
+        if (accInp) accInp.value = targetTo;
+        if (confInp) confInp.value = targetTo;
+        if (targetName) {
+          const nameInp = document.getElementById('transferBenName');
+          if (nameInp) nameInp.value = decodeURIComponent(targetName);
+        }
+        if (targetIfsc) {
+          const ifscInp = document.getElementById('transferIfsc');
+          if (ifscInp) ifscInp.value = targetIfsc;
+        }
+        if (targetAmount) {
+          const amtInp = document.getElementById('transferAmount');
+          if (amtInp) amtInp.value = targetAmount;
+        }
+      }
+      updateLiveCalculations();
+    }
+
   } catch (err) {
     Utils.showToast(err.message, 'error');
   }

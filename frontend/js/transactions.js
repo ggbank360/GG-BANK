@@ -73,7 +73,11 @@ function setupFilterListeners() {
       const matchCategory = cat === 'ALL' || (t.category && t.category.toLowerCase() === cat.toLowerCase());
 
       // Income / Expense Flow
-      const isCredit = t.type === 'DEPOSIT' || t.type === 'LOAN_DISBURSEMENT';
+      const myAcc = currentAccount ? currentAccount.accountNumber : '';
+      const myEm = (currentUser && currentUser.email) ? currentUser.email.toLowerCase() : '';
+      const isCredit = t.type === 'DEPOSIT' || t.type === 'LOAN_DISBURSEMENT' ||
+        (myAcc && (t.receiverAccount === myAcc || t.toAccount === myAcc)) ||
+        (myEm && (t.receiverEmail && t.receiverEmail.toLowerCase() === myEm));
       let matchFlow = true;
       if (flow === 'INCOME') matchFlow = isCredit;
       else if (flow === 'EXPENSE') matchFlow = !isCredit;
@@ -155,7 +159,11 @@ function renderPaginatedTransactions() {
 
   tableBody.innerHTML = pageItems.map((t, idx) => {
     const globalIdx = startIndex + idx;
-    const isCredit = t.type === 'DEPOSIT' || t.type === 'LOAN_DISBURSEMENT';
+    const myAcc = currentAccount ? currentAccount.accountNumber : '';
+    const myEm = (currentUser && currentUser.email) ? currentUser.email.toLowerCase() : '';
+    const isCredit = t.type === 'DEPOSIT' || t.type === 'LOAN_DISBURSEMENT' ||
+      (myAcc && (t.receiverAccount === myAcc || t.toAccount === myAcc)) ||
+      (myEm && (t.receiverEmail && t.receiverEmail.toLowerCase() === myEm));
     const amountColor = isCredit ? 'var(--success)' : 'var(--danger)';
     const sign = isCredit ? '+' : '-';
 

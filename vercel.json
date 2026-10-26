@@ -14,6 +14,94 @@
       "destination": "/frontend/index.html"
     },
     {
+      "source": "/login",
+      "destination": "/frontend/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/frontend/dashboard.html"
+    },
+    {
+      "source": "/loans",
+      "destination": "/frontend/loans.html"
+    },
+    {
+      "source": "/transfer",
+      "destination": "/frontend/transfer.html"
+    },
+    {
+      "source": "/account",
+      "destination": "/frontend/account.html"
+    },
+    {
+      "source": "/accounts",
+      "destination": "/frontend/accounts.html"
+    },
+    {
+      "source": "/transactions",
+      "destination": "/frontend/transactions.html"
+    },
+    {
+      "source": "/qr-pay",
+      "destination": "/frontend/qr-pay.html"
+    },
+    {
+      "source": "/deposit",
+      "destination": "/frontend/deposit.html"
+    },
+    {
+      "source": "/withdraw",
+      "destination": "/frontend/withdraw.html"
+    },
+    {
+      "source": "/profile",
+      "destination": "/frontend/profile.html"
+    },
+    {
+      "source": "/security",
+      "destination": "/frontend/security.html"
+    },
+    {
+      "source": "/register",
+      "destination": "/frontend/register.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/frontend/admin-dashboard.html"
+    },
+    {
+      "source": "/admin-login",
+      "destination": "/frontend/admin-login.html"
+    },
+    {
+      "source": "/admin-dashboard",
+      "destination": "/frontend/admin-dashboard.html"
+    },
+    {
+      "source": "/admin-loans",
+      "destination": "/frontend/admin-loans.html"
+    },
+    {
+      "source": "/admin-transactions",
+      "destination": "/frontend/admin-transactions.html"
+    },
+    {
+      "source": "/admin-customers",
+      "destination": "/frontend/customers.html"
+    },
+    {
+      "source": "/officer",
+      "destination": "/frontend/officer-dashboard.html"
+    },
+    {
+      "source": "/officer-login",
+      "destination": "/frontend/officer-login.html"
+    },
+    {
+      "source": "/officer-dashboard",
+      "destination": "/frontend/officer-dashboard.html"
+    },
+    {
       "source": "/((?!frontend/|api/).*)",
       "destination": "/frontend/$1"
     }

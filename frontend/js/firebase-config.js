@@ -353,9 +353,7 @@ async function seedInitialFirestoreData() {
   try {
     const accountsRef = firestoreDb.collection('accounts');
     const existing = await accountsRef.limit(1).get();
-    if (!existing.empty) return; // Data already exists in Firestore!
-
-    console.log("🔥 GG BANK: Seeding default demo accounts to Cloud Firestore...");
+    const needsFullSeed = existing.empty;
 
     const demoAccounts = [
       {
@@ -372,6 +370,7 @@ async function seedInitialFirestoreData() {
         branch: "Central Tech Branch",
         status: "ACTIVE",
         kycStatus: "VERIFIED",
+        upiId: "gowtham@ggbank",
         dateOfBirth: "2003-05-14",
         address: "42 Cyber City, Tech Park, Bangalore",
         occupation: "Software Engineer",
@@ -392,9 +391,31 @@ async function seedInitialFirestoreData() {
         branch: "Central Tech Branch",
         status: "ACTIVE",
         kycStatus: "VERIFIED",
+        upiId: "sarah@ggbank",
         dateOfBirth: "2001-11-20",
         address: "77 Silicon Boulevard, Chennai",
         occupation: "Product Designer",
+        role: "CUSTOMER",
+        createdAt: new Date().toISOString()
+      },
+      {
+        accountNumber: "100188492021",
+        userId: "usr-saravan-103",
+        fullName: "K Saravanapriyan",
+        name: "K Saravanapriyan",
+        email: "ksaravanapriyan8@gmail.com",
+        phone: "9876543219",
+        password: "Password@123",
+        accountType: "SAVINGS",
+        balance: 50000.00,
+        ifscCode: "GGBN0001234",
+        branch: "Central Tech Branch",
+        status: "ACTIVE",
+        kycStatus: "VERIFIED",
+        upiId: "ksaravanapriyan8@ggbank",
+        dateOfBirth: "2000-01-15",
+        address: "12 Anna Salai, Chennai, Tamil Nadu",
+        occupation: "Technology Consultant",
         role: "CUSTOMER",
         createdAt: new Date().toISOString()
       }
@@ -441,18 +462,49 @@ async function seedInitialFirestoreData() {
       }
     ];
 
-    for (const acc of demoAccounts) {
-      await accountsRef.doc(acc.accountNumber).set(acc);
-      await firestoreDb.collection('users').doc(acc.userId).set(acc);
-    }
-    for (const off of demoOfficers) {
-      await firestoreDb.collection('officers').doc(off.officerId).set(off);
-    }
-    for (const tx of demoTxns) {
-      await firestoreDb.collection('transactions').doc(tx.transactionId).set(tx);
+    if (needsFullSeed) {
+      console.log("🔥 GG BANK: Seeding default demo accounts to Cloud Firestore...");
+      for (const acc of demoAccounts) {
+        await accountsRef.doc(acc.accountNumber).set(acc);
+        await firestoreDb.collection('users').doc(acc.userId).set(acc);
+      }
+      for (const off of demoOfficers) {
+        await firestoreDb.collection('officers').doc(off.officerId).set(off);
+      }
+      for (const tx of demoTxns) {
+        await firestoreDb.collection('transactions').doc(tx.transactionId).set(tx);
+      }
+      console.log("🔥 GG BANK: Seeded accounts, officers, and transactions successfully!");
+    } else {
+      // Ensure ksaravanapriyan8@gmail.com account exists even if other data already exists
+      const kAcc = demoAccounts.find(a => a.email === 'ksaravanapriyan8@gmail.com');
+      const kCheck = await accountsRef.doc(kAcc.accountNumber).get();
+      if (!kCheck.exists) {
+        console.log("🔥 GG BANK: Seeding ksaravanapriyan8@gmail.com account to Cloud Firestore...");
+        await accountsRef.doc(kAcc.accountNumber).set(kAcc);
+        await firestoreDb.collection('users').doc(kAcc.userId).set(kAcc);
+      }
     }
 
-    console.log("🔥 GG BANK: Seeded accounts, officers, and transactions to Firestore successfully!");
+    // Ensure admin user and treasury account are in Firestore
+    const adminDoc = await firestoreDb.collection('users').doc('usr-admin-999').get();
+    if (!adminDoc.exists) {
+      const adminData = {
+        userId: 'usr-admin-999',
+        name: 'GG Bank Administrator',
+        fullName: 'GG Bank Administrator',
+        email: 'admin@ggbank.com',
+        phone: '9000000000',
+        password: 'Password@123',
+        role: 'ADMIN',
+        status: 'ACTIVE',
+        accountNumber: 'GG-BANK-TREASURY-01',
+        balance: 999999999.00,
+        createdAt: new Date().toISOString()
+      };
+      await firestoreDb.collection('users').doc('usr-admin-999').set(adminData);
+      await accountsRef.doc('GG-BANK-TREASURY-01').set(adminData);
+    }
   } catch (err) {
     console.warn("Seeding notice:", err.message);
   }

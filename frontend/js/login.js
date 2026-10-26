@@ -27,22 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. Strict 11-Digit Numeric Input Enforcement
   if (accInput) {
     accInput.addEventListener('input', (e) => {
-      // Remove any non-numeric characters
-      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 12);
-    });
-
-    accInput.addEventListener('keypress', (e) => {
-      // Prevent non-number keys (allow control keys)
-      if (!/[0-9]/.test(e.key)) {
-        e.preventDefault();
-      }
+      // If user is entering digits only, allow up to 12 digits, but if typing email/letters do not truncate
     });
 
     accInput.addEventListener('paste', (e) => {
-      e.preventDefault();
-      const pasteData = (e.clipboardData || window.clipboardData).getData('text');
-      const numericOnly = pasteData.replace(/\D/g, '').slice(0, 12);
-      e.target.value = numericOnly;
+      // Allow pasting either email or account number
     });
   }
 
@@ -59,18 +48,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const accNum = accInput.value.trim();
+      const identifier = accInput.value.trim();
       const pass = passInput.value;
 
-      if (accNum.length !== 11) {
-        Utils.showToast('Please enter your complete 11-digit account number.', 'warning', 'Invalid Account Number');
+      if (!identifier) {
+        Utils.showToast('Please enter your account number or registered email.', 'warning', 'Required');
         accInput.focus();
         return;
       }
 
       Utils.setLoading(submitBtn, true, 'Logging In...');
       try {
-        const { user } = await Auth.loginWithAccountNumber(accNum, pass);
+        const { user } = await Auth.loginWithEmail(identifier, pass);
         Utils.showToast(`Welcome back, ${user.name}!`, 'success');
         setTimeout(() => {
           window.location.href = 'dashboard.html';

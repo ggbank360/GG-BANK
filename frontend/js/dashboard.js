@@ -256,7 +256,11 @@ function renderRecentTransactions(txns) {
   }
 
   container.innerHTML = txns.map((t, idx) => {
-    const isCredit = t.type === 'DEPOSIT' || t.type === 'LOAN_DISBURSEMENT';
+    const myAccNum = activeAccount ? activeAccount.accountNumber : '';
+    const myEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase() : '';
+    const isCredit = t.type === 'DEPOSIT' || t.type === 'LOAN_DISBURSEMENT' ||
+      (myAccNum && (t.receiverAccount === myAccNum || t.toAccount === myAccNum)) ||
+      (myEmail && (t.receiverEmail && t.receiverEmail.toLowerCase() === myEmail));
     const sign = isCredit ? '+' : '-';
     const amountClass = isCredit ? 'txn-amount-positive' : 'txn-amount-negative';
     const iconMeta = getCategoryIcon(t.category, t.type);
